@@ -1,0 +1,83 @@
+/**
+ * API Route proxy para endpoints de autenticación
+ * Ruta: /api/proxy/auth/[...path]
+ * Redirige a: process.env.API_AUTH_URL/[...path]
+ *
+ * Corre únicamente en el servidor — la URL real de la API nunca se envía al navegador.
+ * Los clientes en otros segmentos de red sólo necesitan acceso al servidor Next.js.
+ */
+
+type Props = {
+  params: Promise<{ path: string[] }>;
+};
+
+function getBaseUrl(): string {
+  const raw = process.env.API_AUTH_URL ?? "";
+  if (!raw) {
+    throw new Error(
+      "API_AUTH_URL no está configurada en las variables de entorno",
+    );
+  }
+  return raw.startsWith("http") ? raw : `http://${raw}`;
+}
+
+function buildHeaders(request: Request): Record<string, string> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  const cookie = request.headers.get("cookie");
+  if (cookie) headers["Cookie"] = cookie;
+  const auth = request.headers.get("authorization");
+  if (auth) headers["Authorization"] = auth;
+  return headers;
+}
+
+async function proxyRequest(
+  request: Request,
+  props: Props,
+  method: string,
+  withBody = false,
+): Promise<Response> {
+  try {
+    const { path } = await props.params;
+    const { search } = new URL(request.url);
+    const fullUrl = `${getBaseUrl()}/${path.join("/")}${search}`;
+
+    let body: string | undefined;
+    if (withBody) {
+      body = JSON.stringify(await request.json());
+    }
+
+    const response = await fetch(fullUrl, {
+      method,
+      headers: buildHeaders(request),
+      body,
+    });
+
+    const text = await response.text();
+    let data: unknown;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = text;
+    }
+
+    return Response.json(data, { status: response.status });
+  } catch (error) {
+    return Response.json(
+      { error: error instanceof Error ? error.message : String(error) },
+      { status: 500 },
+    );
+  }
+}
+
+export const GET = (req: Request, props: Props) =>
+  proxyRequest(req, props, "GET");
+export const POST = (req: Request, props: Props) =>
+  proxyRequest(req, props, "POST", true);
+export const PUT = (req: Request, props: Props) =>
+  proxyRequest(req, props, "PUT", true);
+export const DELETE = (req: Request, props: Props) =>
+  proxyRequest(req, props, "DELETE", true);
+export const PATCH = (req: Request, props: Props) =>
+  proxyRequest(req, props, "PATCH", true);
