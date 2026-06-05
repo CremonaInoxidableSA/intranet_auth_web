@@ -492,6 +492,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const clearAuthStorage = () => {
+    if (typeof window === "undefined") return
+
+    try {
+      localStorage.removeItem("access_token")
+      localStorage.removeItem("token")
+      localStorage.removeItem("user")
+      localStorage.removeItem(SETUP_CACHE_KEY)
+      Cookies.remove("access_token")
+      Cookies.remove("auth_token")
+      Cookies.remove("accessToken")
+    } catch (e) {
+      console.warn("Could not remove tokens from storage", e)
+    }
+  }
+
   const logout = async (): Promise<boolean> => {
     try {
       const res = await fetch(`/api/proxy/auth/logout`, {
@@ -507,31 +523,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setUser(null)
-      try {
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("access_token")
-          localStorage.removeItem("user")
-          localStorage.removeItem(SETUP_CACHE_KEY)
-          Cookies.remove("access_token")
-        }
-      } catch (e) {
-        console.warn("Could not remove tokens from localStorage", e)
-      }
+      clearAuthStorage()
 
       router.push("/login")
 
       return res.ok && (data.success ?? true)
     } catch {
       setUser(null)
-      try {
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("access_token")
-          localStorage.removeItem("user")
-          localStorage.removeItem(SETUP_CACHE_KEY)
-        }
-      } catch (e) {
-        console.warn("Could not remove tokens from localStorage", e)
-      }
+      clearAuthStorage()
       router.push("/login")
       return false
     }

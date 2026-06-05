@@ -20,18 +20,7 @@ export default function HeaderPrincipal() {
         <div className="hidden xl:flex flex-row h-full w-[30%] justify-start gap-5 items-center">
           <UserIcon />
           <ThemeSwitcher />
-          <Link
-            href="/"
-            className="opacity-70 hover:opacity-100 transition-opacity"
-          >
-            Inventario
-          </Link>
-          <Link
-            href="/gestion"
-            className="opacity-70 hover:opacity-100 transition-opacity"
-          >
-            Gestión
-          </Link>
+          <Link href="/">Inicio</Link>
         </div>
 
         {/* Mobile: hamburger izquierda */}
@@ -47,18 +36,12 @@ export default function HeaderPrincipal() {
 
         {/* Título centrado */}
         <p className="flex flex-1 xl:w-[40%] justify-center header font-bold">
-          Control de Software Aprobado
+          Intranet General de Trabajo Cremona Inoxidable S.A.
         </p>
 
         {/* Desktop: links + logo */}
         <div className="hidden xl:flex flex-row w-[30%] justify-end">
           <ul className="flex flex-row w-full h-full gap-7.5 justify-end items-center">
-            <Link
-              href="http://192.168.20.198:3001"
-              className="opacity-70 hover:opacity-100 transition-opacity"
-            >
-              Control Apps
-            </Link>
             <Link
               href="https://creminox.com"
               rel="noopener noreferrer"

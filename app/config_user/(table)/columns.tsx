@@ -1,12 +1,6 @@
 "use client";
 
 import type { ReactNode } from "react";
-import {
-  IoEllipsisHorizontal,
-  IoPencilOutline,
-  IoTrashOutline,
-  IoRemoveCircleOutline,
-} from "react-icons/io5";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,6 +9,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { CircleMinus, Ellipsis, PencilLine, Trash2 } from "lucide-react";
 
 export type ColumnDef<T> = {
   accessorKey?: keyof T;
@@ -84,7 +79,7 @@ export const columns = (
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">Abrir menú</span>
-              <IoEllipsisHorizontal className="h-4 w-4" />
+              <Ellipsis className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -92,16 +87,16 @@ export const columns = (
             <DropdownMenuItem
               onClick={() => onEditUser(user.id, user.username)}
             >
-              <IoPencilOutline className="mr-2 h-4 w-4" /> Editar
+              <PencilLine className="mr-2 h-4 w-4" /> Editar
             </DropdownMenuItem>
             {user.habilitado === 1 ? (
               <DropdownMenuItem onClick={() => onDisableUser(user.username)}>
-                <IoRemoveCircleOutline className="mr-2 h-4 w-4" />
+                <CircleMinus className="mr-2 h-4 w-4" />
                 Deshabilitar
               </DropdownMenuItem>
             ) : (
               <DropdownMenuItem onClick={() => onEnableUser(user.username)}>
-                <IoRemoveCircleOutline className="mr-2 h-4 w-4" />
+                <CircleMinus className="mr-2 h-4 w-4" />
                 Habilitar
               </DropdownMenuItem>
             )}
@@ -109,7 +104,7 @@ export const columns = (
               onClick={() => onDeleteUser(user.username)}
               className="text-redcremona focus:text-redcremona"
             >
-              <IoTrashOutline className="mr-2 h-4 w-4" />
+              <Trash2 className="mr-2 h-4 w-4" />
               Eliminar
             </DropdownMenuItem>
           </DropdownMenuContent>
