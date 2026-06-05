@@ -34,12 +34,10 @@ export default function Page() {
           <Link
             key={sistema.url}
             href={sistema.url}
-            className="flex h-[15vw] min-h-35 max-h-55 w-[15vw] min-w-35 max-w-55 flex-col items-center justify-center gap-3 rounded border-none bg-background2 p-4 font-semibold text-[#5d5d5d] transition-colors duration-200 ease-in-out hover:text-[#e82a31]"
+            className="flex h-[15vw] max-h-55 min-h-35 w-[15vw] max-w-55 min-w-35 flex-col items-center justify-center gap-3 rounded border-none bg-background2 p-4 font-semibold text-[#5d5d5d] transition-colors duration-200 ease-in-out hover:text-[#e82a31]"
           >
-            <div className="flex h-full w-full items-center justify-center text-[#5d5d5d]">
-              <Icon className="h-full w-full" />
-            </div>
-            <span className="text-sm leading-tight">{sistema.titulo}</span>
+            <Icon className="flex h-full w-full items-center justify-center text-[#5d5d5d]" />
+            <span className="text-sm">{sistema.titulo}</span>
           </Link>
         )
       })}
@@ -47,7 +45,7 @@ export default function Page() {
   )
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center justify-center gap-5 p-5 text-center font-medium">
+    <div className="flex w-full flex-col items-center gap-5 p-5 text-center font-medium">
       <p className="max-w-3xl text-base leading-7">
         Hola, bienvenido a la Sistema General de Cremona Inoxidable S.A. Desde acá
         podés acceder a los siguientes sistemas:
