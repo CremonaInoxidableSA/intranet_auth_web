@@ -9,6 +9,8 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { UserAvatar } from "@/components/userIcon/userAvatar";
 
 import FormUsuario from "./(formulario)/formUsuario";
+import FormRol from "./(formulario)/formRol";
+import FormModulo from "./(formulario)/formModulo";
 import EditarUsuario from "./(table)/editarUsuario";
 
 import { columns, User } from "./(table)/columns";
@@ -154,8 +156,8 @@ export default function ConfiguracionUsuario() {
   }`.trim();
 
   return (
-    <div className="w-full flex flex-row gap-5 p-5">
-      <div className="h-full w-1/5 flex flex-col bg-background2 rounded p-5 justify-start self-stretch gap-5">
+    <div className="flex w-full flex-row gap-5 p-5">
+      <div className="flex h-full w-1/5 flex-col justify-start gap-5 self-stretch rounded bg-background2 p-5">
         <div className="flex w-full items-center justify-center">
           <UserAvatar
             nombre={nombre}
@@ -169,33 +171,51 @@ export default function ConfiguracionUsuario() {
 
         <div className="flex flex-col gap-5 text-left">
           <div>
-            <p className="font-semibold text-xl">Nombre</p>
+            <p className="text-xl font-semibold">Nombre</p>
             <p>{fullname || "-"}</p>
           </div>
 
           <div>
-            <p className="font-semibold text-lg">Email</p>
+            <p className="text-lg font-semibold">Email</p>
             <p>{email || "-"}</p>
           </div>
 
           <div>
-            <p className="font-semibold text-lg">Rol</p>
+            <p className="text-lg font-semibold">Rol</p>
             <p>{rol ? getRoleName(rol) : "-"}</p>
           </div>
         </div>
 
         <Dialog>
           <DialogTrigger asChild>
-            <Button className="w-full h-10 border border-botonredborder bg-botonred hover:bg-botonredhover text-botonredborder text-md cursor-pointer">
+            <Button className="border-redcremona bg-redcremona/20 hover:bg-redcremona/30 text-redcremona text-md h-10 w-full cursor-pointer border">
               Crear Usuario
             </Button>
           </DialogTrigger>
           <FormUsuario onUserCreated={refetchUsuarios} />
         </Dialog>
+
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="border-bluecremona bg-bluecremona/20 hover:bg-bluecremona/30 text-bluecremona text-md h-10 w-full cursor-pointer border">
+              Crear Rol
+            </Button>
+          </DialogTrigger>
+          <FormRol />
+        </Dialog>
+
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="border-greencremona bg-greencremona/20 hover:bg-greencremona/30 text-greencremona text-md h-10 w-full cursor-pointer border">
+              Agregar Modulo
+            </Button>
+          </DialogTrigger>
+          <FormModulo />
+        </Dialog>
       </div>
-      <div className="flex flex-col h-full w-4/5 gap-5">
+      <div className="flex h-full w-4/5 flex-col gap-5">
         <div className="flex items-center justify-between">
-          <p className="text-2xl w-full flex justify-center">
+          <p className="flex w-full justify-center text-2xl">
             Lista de Usuarios
           </p>
           {isLoading && (
@@ -211,7 +231,7 @@ export default function ConfiguracionUsuario() {
             editarUsuario,
             deshabilitarUsuario,
             habilitarUsuario,
-            eliminarUsuario,
+            eliminarUsuario
           )}
           data={data}
         />
@@ -229,5 +249,5 @@ export default function ConfiguracionUsuario() {
         <div className="mt-4"></div>
       </div>
     </div>
-  );
+  )
 }

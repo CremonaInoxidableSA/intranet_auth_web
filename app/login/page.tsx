@@ -92,7 +92,7 @@ const Login = () => {
           </div>
 
           <Button
-            className="bg-[#e82a31] mt-1.25 p-1 rounded w-full h-13 flex items-center justify-center border-none font-semibold cursor-pointer disabled:bg-[#a82328] disabled:cursor-not-allowed text-white"
+            className="bg-redcremona/80 hover:bg-redcremona/50 p-1 rounded border border-redcremona w-full h-13 flex items-center justify-center cursor-pointer text-white"
             disabled={loading}
             onClick={handleSubmit}
           >
@@ -101,7 +101,7 @@ const Login = () => {
         </form>
 
         <Link
-          className="w-full flex text-center justify-center text-[#5d5d5d] h-auto text-[14px] font-semibold tracking-[0.5px] cursor-pointer hover:text-[#e82a31] ease-in-out"
+          className="flex text-center justify-center text-foreground/50 h-auto text-[14px] font-semibold tracking-[0.5px] cursor-pointer hover:text-redcremona ease-in-out"
           href="/login/recuperacion"
         >
           Recuperar contraseña
