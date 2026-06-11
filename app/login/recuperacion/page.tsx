@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { toast } from "sonner"
+import { urlConfig } from "@/lib/config"
 
 import { LogoCreminoxInnovate as Logo } from "@/components/Logos"
 import { Button } from "@/components/ui/button"
@@ -100,7 +101,7 @@ const Recuperacion = () => {
 
         <Link
           className="flex h-auto w-full cursor-pointer justify-center text-center text-[14px] font-semibold tracking-[0.5px] text-[#5d5d5d] ease-in-out hover:text-[#e82a31]"
-          href="/login"
+          href={urlConfig.loginUrl}
         >
           Iniciar sesión
         </Link>

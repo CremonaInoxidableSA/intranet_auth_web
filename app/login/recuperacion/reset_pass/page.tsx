@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { toast } from "sonner"
+import { urlConfig } from "@/lib/config"
 
 import { Button } from "@/components/ui/button"
 import { LogoCreminoxInnovate as Logo } from "@/components/Logos"
@@ -110,7 +111,7 @@ const ResetPasswordContent = () => {
       if (response.ok && data.success) {
         toast.success("Contraseña actualizada exitosamente")
         timerRef.current = setTimeout(() => {
-          router.push("/login")
+          router.push(urlConfig.loginUrl)
         }, 2000)
       } else {
         toast.error(data.error || "Error al actualizar la contraseña")
@@ -147,13 +148,13 @@ const ResetPasswordContent = () => {
             </p>
             <Link
               className="flex h-auto w-full cursor-pointer justify-center text-center text-[14px] font-semibold tracking-[0.5px] text-[#5d5d5d] ease-in-out hover:text-[#e82a31]"
-              href="/login/recuperacion"
+              href={urlConfig.recuperacionUrl}
             >
               Solicitar nuevo enlace
             </Link>
             <Link
               className="flex h-auto w-full cursor-pointer justify-center text-center text-[14px] font-semibold tracking-[0.5px] text-[#5d5d5d] ease-in-out hover:text-[#e82a31]"
-              href="/login"
+              href={urlConfig.loginUrl}
             >
               Volver al inicio de sesión
             </Link>
@@ -230,7 +231,7 @@ const ResetPasswordContent = () => {
 
         <Link
           className="mt-2 flex h-auto w-full cursor-pointer justify-center text-center text-[14px] font-semibold tracking-[0.5px] text-[#5d5d5d] ease-in-out hover:text-[#e82a31]"
-          href="/login"
+          href={urlConfig.loginUrl}
         >
           Volver al inicio de sesión
         </Link>

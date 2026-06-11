@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { verifyToken } from "./lib/auth"
+import { urlConfig } from "@/lib/config"
 
 const publicRoutes = [
-  "/login",
-  "/register",
-  "/login/recuperacion",
-  "/login/recuperacion/reset_pass",
+  urlConfig.loginUrl,
+  urlConfig.recuperacionUrl,
+  urlConfig.resetPasswordUrl,
 ]
-const adminRoutes = ["/config_user", "/api/config"]
-const routesWithOwnToken = ["/login/recuperacion/reset_pass"]
+
+const adminRoutes = [urlConfig.gestionUrl]
+const routesWithOwnToken = [urlConfig.resetPasswordUrl]
 
 async function getBootstrapStatus(request: NextRequest): Promise<boolean> {
   try {

@@ -2,22 +2,22 @@ import Link from "next/link"
 import { SiAutodesk } from "react-icons/si"
 import { IoIosCloudDone } from "react-icons/io"
 import { MdOutlineFactory } from "react-icons/md"
-import { moduleRoutes } from "@/lib/config"
+import { urlConfig } from "@/lib/config"
 
 const sistemas = [
   {
     titulo: "Control de Software Aprobado",
-    url: moduleRoutes.softwareAprobado,
+    url: urlConfig.softwareAprobadoUrl,
     Icon: IoIosCloudDone,
   },
   {
     titulo: "Control AutoDesk",
-    url: moduleRoutes.autodesk,
+    url: urlConfig.autodeskUrl,
     Icon: SiAutodesk,
   },
   {
     titulo: "Produccion",
-    url: moduleRoutes.produccion,
+    url: urlConfig.produccionUrl,
     Icon: MdOutlineFactory,
   },
 ]
