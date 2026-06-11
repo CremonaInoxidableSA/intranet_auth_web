@@ -1,77 +1,69 @@
-"use client";
+"use client"
 
-import { ThemeSwitcher } from "@/components/theme/themeSwitcher";
-import UserIcon from "@/components/userIcon/userIcon";
+import { ThemeSwitcher } from "@/components/theme/themeSwitcher"
+import UserIcon from "@/components/userIcon/userIcon"
 
-import Link from "next/link";
-import Image from "next/image";
-import { useState } from "react";
+import Link from "next/link"
+import { useState } from "react"
+import { LogoCreminox as Logo } from "@/components/Logos"
 
-import Logo from "@/public/logo/creminox_innovate.webp";
-import { Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react"
 
 export default function HeaderPrincipal() {
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   return (
     <>
-      <header className="flex bg-headerbg -header p-5 items-center">
+      <header className="-header flex items-center bg-headerbg p-5">
         {/* Desktop: iconos izquierda */}
-        <div className="hidden xl:flex flex-row h-full w-[30%] justify-start gap-5 items-center">
+        <div className="hidden h-full w-[30%] flex-row items-center justify-start gap-5 xl:flex">
           <UserIcon />
           <ThemeSwitcher />
-          <Link href="/">Inicio</Link>
+          <Link
+            href="/"
+            className="text-base opacity-70 transition-opacity hover:opacity-100"
+            onClick={() => setDrawerOpen(false)}
+          >
+            Home
+          </Link>
         </div>
 
         {/* Mobile: hamburger izquierda */}
-        <div className="flex xl:hidden items-center">
+        <div className="flex items-center xl:hidden">
           <button
             onClick={() => setDrawerOpen(true)}
             aria-label="Abrir menú"
-            className="cursor-pointer flex items-center justify-center"
+            className="flex cursor-pointer items-center justify-center"
           >
             <Menu size={24} />
           </button>
         </div>
 
         {/* Título centrado */}
-        <p className="flex flex-1 xl:w-[40%] justify-center header font-bold">
+        <p className="header flex flex-1 justify-center font-bold xl:w-[40%]">
           Intranet General de Trabajo Cremona Inoxidable S.A.
         </p>
 
         {/* Desktop: links + logo */}
-        <div className="hidden xl:flex flex-row w-[30%] justify-end">
-          <ul className="flex flex-row w-full h-full gap-7.5 justify-end items-center">
-            <Link
-              href="https://creminox.com"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              <Image
-                src={Logo}
-                alt="Creminox logo"
-                className="h-6 w-auto"
-                priority
-                loading="eager"
-              />
-            </Link>
-          </ul>
+        <div className="hidden w-[30%] justify-end xl:flex">
+          <Link
+            href="https://creminox.com"
+            rel="noopener noreferrer"
+            target="_blank"
+            className="h-full"
+          >
+            <Logo extraClass="h-6" />
+          </Link>
         </div>
 
         {/* Mobile: logo derecha */}
-        <div className="flex xl:hidden items-center">
+        <div className="flex items-center xl:hidden">
           <Link
             href="https://creminox.com"
             rel="noopener noreferrer"
             target="_blank"
           >
-            <Image
-              src={Logo}
-              alt="Creminox logo"
-              className="h-6 w-auto"
-              priority
-              loading="eager"
-            />
+            <Logo extraClass="h-6" />
           </Link>
         </div>
       </header>
@@ -79,19 +71,19 @@ export default function HeaderPrincipal() {
       {/* Overlay */}
       {drawerOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 xl:hidden"
+          className="fixed inset-0 z-40 bg-black/50 xl:hidden"
           onClick={() => setDrawerOpen(false)}
         />
       )}
 
       {/* Drawer lateral izquierdo */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-headerbg -header z-50 xl:hidden flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`-header fixed top-0 left-0 z-50 flex h-full w-64 flex-col bg-headerbg transition-transform duration-300 ease-in-out xl:hidden ${
           drawerOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Fila superior: perfil + theme + cerrar */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-current/20">
+        <div className="flex items-center justify-between border-b border-current/20 px-4 py-4">
           <div className="flex items-center gap-4">
             <UserIcon />
             <ThemeSwitcher />
@@ -99,30 +91,23 @@ export default function HeaderPrincipal() {
           <button
             onClick={() => setDrawerOpen(false)}
             aria-label="Cerrar menú"
-            className="cursor-pointer flex items-center justify-center"
+            className="flex cursor-pointer items-center justify-center"
           >
             <X size={22} />
           </button>
         </div>
 
         {/* Links de navegación */}
-        <nav className="flex flex-col px-4 py-5 gap-5">
+        <nav className="flex flex-col gap-5 px-4 py-5">
           <Link
-            href="/"
-            className="opacity-70 hover:opacity-100 transition-opacity text-base"
+            href="http://192.168.20.150:3000"
+            className="text-base opacity-70 transition-opacity hover:opacity-100"
             onClick={() => setDrawerOpen(false)}
           >
             Home
           </Link>
-          <Link
-            href="http://192.168.20.198:3001"
-            className="opacity-70 hover:opacity-100 transition-opacity text-base"
-            onClick={() => setDrawerOpen(false)}
-          >
-            Control AutoDesk
-          </Link>
         </nav>
       </div>
     </>
-  );
+  )
 }

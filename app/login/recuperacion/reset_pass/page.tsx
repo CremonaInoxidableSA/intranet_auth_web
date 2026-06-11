@@ -5,8 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { toast } from "sonner"
 
-import LogoBase64 from "@/public/logo/LogoBase64"
 import { Button } from "@/components/ui/button"
+import { LogoCreminoxInnovate as Logo } from "@/components/Logos";
 
 const Spinner = () => (
   <div className="h-6 w-6 animate-spin rounded-[100%] border border-solid border-[#f3f3f3] border-t-[#e82a31]" />
@@ -126,7 +126,7 @@ const ResetPasswordContent = () => {
     return (
       <section className="flex h-full w-full items-center justify-center">
         <div className="bg-backgroundoscuro flex h-[40vh] w-auto max-w-480 flex-col items-center justify-center gap-3.75 rounded p-[3rem_4rem_2rem_4rem]">
-          <LogoBase64 className="flex h-auto w-[65%] p-0" />
+          <Logo extraClass="flex h-auto w-[65%] p-0" />
           <div className="flex flex-col items-center gap-4">
             <Spinner />
             <p className="text-center">Verificando token...</p>
@@ -140,7 +140,7 @@ const ResetPasswordContent = () => {
     return (
       <section className="flex h-full w-full items-center justify-center">
         <div className="bg-backgroundoscuro flex h-[40vh] w-auto max-w-480 flex-col items-center justify-center gap-3.75 rounded p-[3rem_4rem_2rem_4rem]">
-          <LogoBase64 className="flex h-auto w-[65%] p-0" />
+          <Logo extraClass="flex h-auto w-[65%] p-0" />
           <div className="flex w-full flex-col items-center gap-4">
             <p className="text-center font-semibold text-redcremona">
               Token inválido o expirado
@@ -166,7 +166,7 @@ const ResetPasswordContent = () => {
   return (
     <section className="flex h-full w-full items-center justify-center">
       <div className="bg-backgroundoscuro flex h-auto w-auto max-w-480 flex-col items-center gap-3.75 rounded p-[3rem_4rem_2rem_4rem]">
-        <LogoBase64 className="flex h-auto w-[65%] p-0" />
+        <Logo extraClass="flex h-auto w-[65%] p-0" />
 
         <div className="mb-4 w-full text-center">
           <h2 className="mb-2 text-xl font-semibold">Restablecer contraseña</h2>

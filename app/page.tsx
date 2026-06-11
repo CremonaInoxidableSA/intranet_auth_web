@@ -6,17 +6,17 @@ import { MdOutlineFactory } from "react-icons/md"
 const sistemas = [
   {
     titulo: "Control de Software Aprobado",
-    url: "http://192.168.20.198:3100",
+    url: "http://192.168.20.150:3100",
     Icon: IoIosCloudDone,
   },
   {
     titulo: "Control AutoDesk",
-    url: "http://192.168.20.198:3101",
+    url: "http://192.168.20.150:3101",
     Icon: SiAutodesk,
   },
   {
     titulo: "Produccion",
-    url: "http://192.168.20.198:3200",
+    url: "http://192.168.20.150:3200",
     Icon: MdOutlineFactory,
   },
 ]

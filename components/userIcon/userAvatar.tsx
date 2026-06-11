@@ -1,7 +1,6 @@
-"use client";
-
-import Image from "next/image";
+"use client"
 import { CircleUserRound } from "lucide-react"
+import { LogoCx as Logo } from "@/components/Logos"
 
 const AVATAR_COLORS = [
   "#2563eb",
@@ -16,38 +15,38 @@ const AVATAR_COLORS = [
   "#0284c7",
   "#c2410c",
   "#b45309",
-];
+]
 
 export const getInitials = (
   nombre?: string | null,
-  apellido?: string | null,
+  apellido?: string | null
 ) => {
-  const first = nombre?.trim()?.[0]?.toUpperCase() ?? "";
-  const last = apellido?.trim()?.[0]?.toUpperCase() ?? "";
-  return first + last || null;
-};
+  const first = nombre?.trim()?.[0]?.toUpperCase() ?? ""
+  const last = apellido?.trim()?.[0]?.toUpperCase() ?? ""
+  return first + last || null
+}
 
 export const getAvatarColor = (
   nombre?: string | null,
-  apellido?: string | null,
+  apellido?: string | null
 ) => {
-  const key = `${nombre ?? ""}${apellido ?? ""}`;
-  if (!key) return AVATAR_COLORS[0];
-  let hash = 0;
+  const key = `${nombre ?? ""}${apellido ?? ""}`
+  if (!key) return AVATAR_COLORS[0]
+  let hash = 0
   for (let i = 0; i < key.length; i++) {
-    hash = (hash * 31 + key.charCodeAt(i)) % AVATAR_COLORS.length;
+    hash = (hash * 31 + key.charCodeAt(i)) % AVATAR_COLORS.length
   }
-  return AVATAR_COLORS[hash];
-};
+  return AVATAR_COLORS[hash]
+}
 
 interface UserAvatarProps {
-  nombre?: string | null;
-  apellido?: string | null;
-  rol?: string | null;
-  loading?: boolean;
-  sizeClass?: string;
-  textClass?: string;
-  imgPx?: number;
+  nombre?: string | null
+  apellido?: string | null
+  rol?: string | null
+  loading?: boolean
+  sizeClass?: string
+  textClass?: string
+  imgPx?: number
 }
 
 export const UserAvatar = ({
@@ -61,29 +60,23 @@ export const UserAvatar = ({
 }: UserAvatarProps) => {
   if (rol === "superadmin") {
     return (
-      <div className={`${sizeClass} rounded-full overflow-hidden shrink-0`}>
-        <Image
-          src="/logo/creminox_pfp.webp"
-          alt="Superadmin"
-          width={imgPx}
-          height={imgPx}
-          unoptimized
-          className="object-cover w-full h-full"
+      <div className={`${sizeClass} shrink-0 overflow-hidden rounded-full`}>
+        <Logo extraClass="h-full w-full object-cover"
         />
       </div>
-    );
+    )
   }
 
   if (!loading && getInitials(nombre, apellido)) {
     return (
       <div
-        className={`${sizeClass} rounded-full flex items-center justify-center text-white ${textClass} font-bold leading-none select-none shrink-0`}
+        className={`${sizeClass} flex items-center justify-center rounded-full text-white ${textClass} shrink-0 leading-none font-bold select-none`}
         style={{ backgroundColor: getAvatarColor(nombre, apellido) }}
       >
         {getInitials(nombre, apellido)}
       </div>
-    );
+    )
   }
 
-  return <CircleUserRound className={sizeClass} />;
-};
+  return <CircleUserRound className={sizeClass} />
+}
