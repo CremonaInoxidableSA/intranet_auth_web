@@ -47,21 +47,21 @@ const Login = () => {
 
   return (
     <section className="flex h-full w-full items-center justify-center">
-      <div className="w-auto h-[60vh] gap-3.75 flex flex-col items-center p-[3rem_4rem_2rem_4rem] max-w-480  bg-backgroundoscuro rounded">
-        <Logo extraClass="h-12" />
+      <div className="bg-backgroundoscuro flex h-[60vh] w-auto max-w-480 flex-col items-center gap-3.75 rounded p-[3rem_4rem_2rem_4rem]">
+        <Logo extraClass="h-1/2" />
         <form
-          className="flex flex-col w-full justify-between h-[60%] gap-2.5"
+          className="flex h-[60%] w-full flex-col justify-between gap-2.5"
           onSubmit={handleSubmit}
         >
-          <div className="flex flex-col gap-1.25 h-1/3">
+          <div className="flex h-1/3 flex-col gap-1.25">
             <label
               htmlFor="email"
-              className="flex font-semibold text-[17px] tracking-[0.5px]"
+              className="flex text-[17px] font-semibold tracking-[0.5px]"
             >
               Introduzca su usuario
             </label>
             <input
-              className="bg-background2 p-1 rounded w-full h-2/3 flex items-center justify-center border-none px-4"
+              className="flex h-2/3 w-full items-center justify-center rounded border-none bg-background2 p-1 px-4"
               id="username"
               name="username"
               type="text"
@@ -72,15 +72,15 @@ const Login = () => {
             />
           </div>
 
-          <div className="flex flex-col gap-1.25 h-1/3">
+          <div className="flex h-1/3 flex-col gap-1.25">
             <label
               htmlFor="password"
-              className="flex font-semibold text-[17px] tracking-[0.5px]"
+              className="flex text-[17px] font-semibold tracking-[0.5px]"
             >
               Introduzca su contraseña
             </label>
             <input
-              className="bg-background2 p-1 rounded w-full h-2/3 flex items-center justify-center border-none px-4"
+              className="flex h-2/3 w-full items-center justify-center rounded border-none bg-background2 p-1 px-4"
               id="password"
               name="password"
               type="password"
@@ -92,7 +92,7 @@ const Login = () => {
           </div>
 
           <Button
-            className="bg-redcremona/80 hover:bg-redcremona/50 p-1 rounded border border-redcremona w-full h-13 flex items-center justify-center cursor-pointer text-white"
+            className="flex h-13 w-full cursor-pointer items-center justify-center rounded border border-redcremona bg-redcremona/80 p-1 text-white hover:bg-redcremona/50"
             disabled={loading}
             onClick={handleSubmit}
           >
@@ -101,14 +101,14 @@ const Login = () => {
         </form>
 
         <Link
-          className="flex text-center justify-center text-foreground/50 h-auto text-[14px] font-semibold tracking-[0.5px] cursor-pointer hover:text-redcremona ease-in-out"
+          className="flex h-auto cursor-pointer justify-center text-center text-[14px] font-semibold tracking-[0.5px] text-foreground/50 ease-in-out hover:text-redcremona"
           href="/login/recuperacion"
         >
           Recuperar contraseña
         </Link>
       </div>
     </section>
-  );
+  )
 };
 
 export default Login;

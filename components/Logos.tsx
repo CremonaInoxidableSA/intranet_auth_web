@@ -27,6 +27,8 @@ export function LogoCreminoxInnovate({ extraClass }: { extraClass?: string }) {
       className={`aspect-auto w-auto ${extraClass || ""}`}
       alt="Creminox Logo"
       src="/creminox_innovate.png"
+      onError={(e) => console.log("ERROR imagen:", e)}
+      onLoad={() => console.log("OK imagen cargada")}
     />
   )
 }

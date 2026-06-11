@@ -126,7 +126,7 @@ const ResetPasswordContent = () => {
     return (
       <section className="flex h-full w-full items-center justify-center">
         <div className="bg-backgroundoscuro flex h-[40vh] w-auto max-w-480 flex-col items-center justify-center gap-3.75 rounded p-[3rem_4rem_2rem_4rem]">
-          <Logo extraClass="flex h-auto w-[65%] p-0" />
+          <Logo extraClass="h-1/3" />
           <div className="flex flex-col items-center gap-4">
             <Spinner />
             <p className="text-center">Verificando token...</p>
