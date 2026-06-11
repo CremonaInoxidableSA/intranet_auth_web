@@ -93,14 +93,14 @@ const Recuperacion = () => {
           <Button
             disabled={loading}
             onClick={handleSubmit}
-            className="mt-1.25 flex h-13 w-full cursor-pointer items-center justify-center rounded border-none bg-[#e82a31] p-1 font-semibold text-white disabled:cursor-not-allowed disabled:bg-[#a82328]"
+            className="h-13 w-full items-center justify-center rounded border border-redcremona bg-redcremona/80 p-1 text-white hover:bg-redcremona/50"
           >
             {loading ? <Spinner /> : "Enviar correo de recuperación"}
           </Button>
         </form>
 
         <Link
-          className="flex h-auto w-full cursor-pointer justify-center text-center text-[14px] font-semibold tracking-[0.5px] text-[#5d5d5d] ease-in-out hover:text-[#e82a31]"
+          className="h-auto text-[14px] font-semibold opacity-40 ease-in-out hover:text-redcremona hover:opacity-100"
           href={urlConfig.loginUrl}
         >
           Iniciar sesión

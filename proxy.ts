@@ -11,9 +11,7 @@ const publicRoutes = [
 ]
 
 const adminRoutes = [middlewarePaths.gestion]
-const routesWithOwnToken = [
-  middlewarePaths.resetPassword,
-]
+const routesWithOwnToken = [middlewarePaths.resetPassword]
 
 async function getBootstrapStatus(request: NextRequest): Promise<boolean> {
   try {
@@ -37,7 +35,26 @@ async function getBootstrapStatus(request: NextRequest): Promise<boolean> {
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // Obtener token antes de validar APIs
+  const token =
+    request.cookies.get("auth_token")?.value ||
+    request.cookies.get("access_token")?.value ||
+    request.cookies.get("accessToken")?.value ||
+    null
+
+  // Proteger endpoints API
   if (pathname.startsWith("/api/")) {
+    // /api/needs-setup: solo accesible durante bootstrap
+    if (pathname.startsWith("/api/needs-setup")) {
+      const isBootstrapRequest = pathname.includes("/bootstrap")
+      if (!isBootstrapRequest && !token) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      }
+    }
+    // Otros endpoints /api/ requieren token válido
+    else if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
     return NextResponse.next()
   }
 
@@ -57,12 +74,6 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL("/login", request.url))
     }
   }
-
-  const token =
-    request.cookies.get("auth_token")?.value ||
-    request.cookies.get("access_token")?.value ||
-    request.cookies.get("accessToken")?.value ||
-    null
 
   if (pathname.startsWith("/bootstrap")) {
     const needsSetup = await getBootstrapStatus(request)

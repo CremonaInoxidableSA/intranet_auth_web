@@ -92,7 +92,7 @@ const Login = () => {
           </div>
 
           <Button
-            className="flex h-13 w-full cursor-pointer items-center justify-center rounded border border-redcremona bg-redcremona/80 p-1 text-white hover:bg-redcremona/50"
+            className="h-13 w-full cursor-pointer items-center justify-center rounded border border-redcremona bg-redcremona/80 p-1 text-white hover:bg-redcremona/50"
             disabled={loading}
             onClick={handleSubmit}
           >
@@ -101,7 +101,7 @@ const Login = () => {
         </form>
 
         <Link
-          className="flex h-auto cursor-pointer justify-center text-center text-[14px] font-semibold tracking-[0.5px] text-foreground/50 ease-in-out hover:text-redcremona"
+          className="h-auto text-[14px] font-semibold opacity-40 ease-in-out hover:opacity-100 hover:text-redcremona"
           href="/login/recuperacion"
         >
           Recuperar contraseña
