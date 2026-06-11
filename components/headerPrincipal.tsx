@@ -5,6 +5,7 @@ import UserIcon from "@/components/userIcon/userIcon"
 
 import Link from "next/link"
 import { useState } from "react"
+import { siteConfig } from "@/lib/config"
 import { LogoCreminox as Logo } from "@/components/Logos"
 
 import { Menu, X } from "lucide-react"
@@ -20,7 +21,7 @@ export default function HeaderPrincipal() {
           <UserIcon />
           <ThemeSwitcher />
           <Link
-            href="/"
+            href={siteConfig.homeUrl}
             className="text-base opacity-70 transition-opacity hover:opacity-100"
             onClick={() => setDrawerOpen(false)}
           >
@@ -47,7 +48,7 @@ export default function HeaderPrincipal() {
         {/* Desktop: links + logo */}
         <div className="hidden w-[30%] justify-end xl:flex">
           <Link
-            href="https://creminox.com"
+            href={siteConfig.externalUrl}
             rel="noopener noreferrer"
             target="_blank"
             className="h-full"
@@ -59,7 +60,7 @@ export default function HeaderPrincipal() {
         {/* Mobile: logo derecha */}
         <div className="flex items-center xl:hidden">
           <Link
-            href="https://creminox.com"
+            href={siteConfig.externalUrl}
             rel="noopener noreferrer"
             target="_blank"
           >
@@ -100,7 +101,7 @@ export default function HeaderPrincipal() {
         {/* Links de navegación */}
         <nav className="flex flex-col gap-5 px-4 py-5">
           <Link
-            href="http://192.168.20.150:3000"
+            href={siteConfig.homeUrl}
             className="text-base opacity-70 transition-opacity hover:opacity-100"
             onClick={() => setDrawerOpen(false)}
           >
