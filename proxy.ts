@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { verifyToken } from "./lib/auth"
-import { urlConfig } from "@/lib/config"
+import { middlewarePaths } from "./lib/config"
 
+// Rutas definidas directamente sin dependencias externas
 const publicRoutes = [
-  urlConfig.loginUrl,
-  urlConfig.recuperacionUrl,
-  urlConfig.resetPasswordUrl,
+  middlewarePaths.login,
+  middlewarePaths.recuperacion,
+  middlewarePaths.resetPassword,
 ]
 
-const adminRoutes = [urlConfig.gestionUrl]
-const routesWithOwnToken = [urlConfig.resetPasswordUrl]
+const adminRoutes = [middlewarePaths.gestion]
+const routesWithOwnToken = [
+  middlewarePaths.resetPassword,
+]
 
 async function getBootstrapStatus(request: NextRequest): Promise<boolean> {
   try {

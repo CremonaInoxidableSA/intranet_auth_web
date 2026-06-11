@@ -29,9 +29,10 @@ export function LogoCreminoxInnovate({ extraClass }: { extraClass?: string }) {
     <Image
       alt="Creminox Logo"
       src="/creminox_innovate.png"
-      width={200}
-      height={48}
+      width={821}
+      height={201}
       className={`w-auto ${extraClass || ""}`}
+      loading="eager"
     />
   )
 }

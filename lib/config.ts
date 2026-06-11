@@ -2,6 +2,13 @@ const hosts = {
   localHost: `http://${process.env.NEXT_PUBLIC_IP}:${process.env.NEXT_PUBLIC_PORT}`,
 }
 
+export const middlewarePaths = {
+  login: process.env.LOGIN_URL ?? "/login",
+  recuperacion: process.env.RECUPERACION_URL ?? "/recuperacion",
+  resetPassword: process.env.RESET_PASSWORD_URL ?? "/reset_pass",
+  gestion: process.env.GESTION_URL ?? "/config_user",
+} as const
+
 export const urlConfig = {
   /* URL globales */
   externalUrl: "https://creminox.com",
