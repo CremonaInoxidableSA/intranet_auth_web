@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react"
 import {
   Table,
   TableBody,
@@ -8,21 +8,21 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/table"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 
 export type DataTableColumn<TData> = {
-  accessorKey?: keyof TData;
-  header?: string;
-  id?: string;
-  cell?: (props: { row: TData }) => ReactNode;
-};
+  accessorKey?: keyof TData
+  header?: string
+  id?: string
+  cell?: (props: { row: TData }) => ReactNode
+}
 
 interface DataTableProps<TData> {
-  columns: DataTableColumn<TData>[];
-  data: TData[];
-  pageSize?: number;
+  columns: DataTableColumn<TData>[]
+  data: TData[]
+  pageSize?: number
 }
 
 export function DataTable<TData extends Record<string, unknown>>({
@@ -30,17 +30,17 @@ export function DataTable<TData extends Record<string, unknown>>({
   data,
   pageSize = 10,
 }: DataTableProps<TData>) {
-  const [pageIndex, setPageIndex] = useState(0);
+  const [pageIndex, setPageIndex] = useState(0)
 
-  const safeData = useMemo(() => (Array.isArray(data) ? data : []), [data]);
-  const pageCount = Math.max(1, Math.ceil(safeData.length / pageSize));
+  const safeData = useMemo(() => (Array.isArray(data) ? data : []), [data])
+  const pageCount = Math.max(1, Math.ceil(safeData.length / pageSize))
   const currentPageData = useMemo(
     () => safeData.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize),
-    [safeData, pageIndex, pageSize],
-  );
+    [safeData, pageIndex, pageSize]
+  )
 
-  const canPreviousPage = pageIndex > 0;
-  const canNextPage = pageIndex < pageCount - 1;
+  const canPreviousPage = pageIndex > 0
+  const canNextPage = pageIndex < pageCount - 1
 
   return (
     <div>
@@ -90,7 +90,7 @@ export function DataTable<TData extends Record<string, unknown>>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center bg-background3"
+                  className="h-24 bg-background3 text-center"
                 >
                   No results.
                 </TableCell>
@@ -120,5 +120,5 @@ export function DataTable<TData extends Record<string, unknown>>({
         </Button>
       </div>
     </div>
-  );
+  )
 }

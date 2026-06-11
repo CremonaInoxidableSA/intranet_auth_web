@@ -6,7 +6,7 @@ import Link from "next/link"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
-import { LogoCreminoxInnovate as Logo } from "@/components/Logos";
+import { LogoCreminoxInnovate as Logo } from "@/components/Logos"
 
 const Spinner = () => (
   <div className="h-6 w-6 animate-spin rounded-[100%] border border-solid border-[#f3f3f3] border-t-[#e82a31]" />

@@ -1,49 +1,49 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { useAuth } from "@/context/AuthProvider";
+import { useState, useEffect } from "react"
+import Link from "next/link"
+import { useAuth } from "@/context/AuthProvider"
 
 import { LogoCreminoxInnovate as Logo } from "@/components/Logos"
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
 
 const Spinner = () => (
-  <div className="border border-solid border-[#f3f3f3] border-t-[#e82a31] rounded-[100%] w-6 h-6 animate-spin" />
-);
+  <div className="h-6 w-6 animate-spin rounded-[100%] border border-solid border-[#f3f3f3] border-t-[#e82a31]" />
+)
 
 const Login = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+  const { login } = useAuth()
 
   useEffect(() => {
     if (error) {
       toast.error(error, {
         position: "top-center",
-      });
+      })
     }
-  }, [error]);
+  }, [error])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+    e.preventDefault()
+    setError("")
+    setLoading(true)
 
     try {
-      const result = await login(username, password);
+      const result = await login(username, password)
 
       if (!result.success) {
-        setError(result.error || "Error");
+        setError(result.error || "Error")
       }
     } catch {
-      setError("Error");
+      setError("Error")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <section className="flex h-full w-full items-center justify-center">
@@ -109,6 +109,6 @@ const Login = () => {
       </div>
     </section>
   )
-};
+}
 
-export default Login;
+export default Login

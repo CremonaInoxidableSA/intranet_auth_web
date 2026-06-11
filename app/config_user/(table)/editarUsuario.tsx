@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { authFetch } from "@/app/api/api";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react"
+import { authFetch } from "@/app/api/api"
+import { Button } from "@/components/ui/button"
 import {
   DialogClose,
   DialogContent,
@@ -10,7 +10,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog"
 import {
   Select,
   SelectContent,
@@ -19,22 +19,22 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 type Props = {
-  onUserCreated: () => void;
-  usernameToEdit?: string;
-  userIdToEdit?: number;
-};
+  onUserCreated: () => void
+  usernameToEdit?: string
+  userIdToEdit?: number
+}
 
 export default function FormUsuario({
   onUserCreated,
   usernameToEdit,
   userIdToEdit,
 }: Props) {
-  const [loading, setLoading] = useState(!!usernameToEdit);
+  const [loading, setLoading] = useState(!!usernameToEdit)
   const [form, setForm] = useState({
     id: userIdToEdit || undefined,
     email: "",
@@ -45,25 +45,25 @@ export default function FormUsuario({
     password: "",
     reporte: true,
     habilitado: 1,
-  });
+  })
 
-  const isEditing = !!usernameToEdit;
+  const isEditing = !!usernameToEdit
 
   useEffect(() => {
-    if (!usernameToEdit) return;
+    if (!usernameToEdit) return
 
     const fetchUserData = async () => {
       try {
         const res = await authFetch(
           `/api/proxy/auth/data_usuario/${usernameToEdit}`,
-          { method: "GET" },
-        );
+          { method: "GET" }
+        )
 
         if (!res.ok) {
-          throw new Error("Error al cargar datos del usuario");
+          throw new Error("Error al cargar datos del usuario")
         }
 
-        const data = await res.json();
+        const data = await res.json()
         setForm({
           id: data.id || userIdToEdit,
           email: data.email,
@@ -74,71 +74,71 @@ export default function FormUsuario({
           password: "",
           reporte: data.reporte,
           habilitado: data.habilitado,
-        });
+        })
       } catch {
-        alert("Error al cargar usuario");
+        alert("Error al cargar usuario")
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchUserData();
-  }, [usernameToEdit, userIdToEdit]);
+    fetchUserData()
+  }, [usernameToEdit, userIdToEdit])
 
   const handleChange = (key: string, value: string | boolean | number) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  };
+    setForm((prev) => ({ ...prev, [key]: value }))
+  }
 
   const handleSubmit = async () => {
     if (!form.email.includes("@")) {
-      alert("Correo electrónico inválido");
-      return;
+      alert("Correo electrónico inválido")
+      return
     }
 
     if (!isEditing && !form.password) {
-      alert("Contraseña requerida");
-      return;
+      alert("Contraseña requerida")
+      return
     }
 
     const payload = {
       ...form,
       habilitado: form.habilitado ? 1 : 0,
       password: isEditing && !form.password ? undefined : form.password,
-    };
+    }
 
-    const endpoint = isEditing ? "/editar_usuario" : "/crear_usuario";
+    const endpoint = isEditing ? "/editar_usuario" : "/crear_usuario"
     const res = await authFetch(`/api/proxy/auth${endpoint}`, {
       method: "POST",
       body: JSON.stringify(payload),
-    });
+    })
 
     if (!res.ok) {
-      const err = await res.json();
+      const err = await res.json()
       alert(
         err.detail ||
-          (isEditing ? "Error al editar usuario" : "Error al crear usuario"),
-      );
-      return;
+          (isEditing ? "Error al editar usuario" : "Error al crear usuario")
+      )
+      return
     }
 
-    onUserCreated();
-  };
+    onUserCreated()
+  }
 
   if (loading) {
     return (
-      <DialogContent className="sm:max-w-150 bg-background3 z-800">
+      <DialogContent className="z-800 bg-background3 sm:max-w-150">
         <DialogHeader>
           <DialogTitle>Cargando...</DialogTitle>
         </DialogHeader>
-        <div className="flex justify-center items-center py-8">
+        <div className="flex items-center justify-center py-8">
           <p>Cargando...</p>
         </div>
       </DialogContent>
-    );
+    )
   }
 
   return (
-    <DialogContent className="sm:max-w-150 bg-background2 z-800">
+    <DialogContent className="z-800 bg-background2 sm:max-w-150">
       <DialogHeader>
         <DialogTitle>
           {isEditing ? "Editar Usuario" : "Crear Usuario"}
@@ -160,7 +160,7 @@ export default function FormUsuario({
             onChange={(e) => handleChange("email", e.target.value)}
             placeholder="Ingrese el correo electrónico del usuario"
             required
-            className="bg-background3 border border-background6"
+            className="border border-background6 bg-background3"
           />
         </div>
 
@@ -172,7 +172,7 @@ export default function FormUsuario({
             onChange={(e) => handleChange("username", e.target.value)}
             placeholder="Asigne un usuario único"
             required
-            className="bg-background3 border border-background6"
+            className="border border-background6 bg-background3"
           />
         </div>
 
@@ -184,7 +184,7 @@ export default function FormUsuario({
             onChange={(e) => handleChange("nombre", e.target.value)}
             placeholder="Ingrese el nombre del usuario"
             required
-            className="bg-background3 border border-background6"
+            className="border border-background6 bg-background3"
           />
         </div>
 
@@ -196,7 +196,7 @@ export default function FormUsuario({
             onChange={(e) => handleChange("apellido", e.target.value)}
             placeholder="Ingrese el apellido del usuario"
             required
-            className="bg-background3 border border-background6"
+            className="border border-background6 bg-background3"
           />
         </div>
 
@@ -206,7 +206,7 @@ export default function FormUsuario({
             value={form.rol}
             onValueChange={(v) => handleChange("rol", v)}
           >
-            <SelectTrigger className="w-full bg-background3 border border-background6">
+            <SelectTrigger className="w-full border border-background6 bg-background3">
               <SelectValue placeholder="Seleccione un rol" />
             </SelectTrigger>
             <SelectContent position="popper" className="z-900">
@@ -230,7 +230,7 @@ export default function FormUsuario({
           type="password"
           value={form.password}
           onChange={(e) => handleChange("password", e.target.value)}
-          className="bg-background3 border border-background6"
+          className="border border-background6 bg-background3"
           placeholder={
             isEditing
               ? "Dejar vacío para mantener la contraseña actual"
@@ -248,5 +248,5 @@ export default function FormUsuario({
         </Button>
       </DialogFooter>
     </DialogContent>
-  );
+  )
 }

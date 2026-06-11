@@ -47,8 +47,8 @@ export default function Page() {
   return (
     <div className="flex w-full flex-col items-center gap-5 p-5 text-center font-medium">
       <p className="max-w-3xl text-base leading-7">
-        Hola, bienvenido a la Sistema General de Cremona Inoxidable S.A. Desde acá
-        podés acceder a los siguientes sistemas:
+        Hola, bienvenido a la Sistema General de Cremona Inoxidable S.A. Desde
+        acá podés acceder a los siguientes sistemas:
       </p>
       {renderRow(firstRow)}
       {secondRow.length > 0 && renderRow(secondRow)}

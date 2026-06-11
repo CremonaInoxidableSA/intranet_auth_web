@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
   DialogClose,
   DialogContent,
@@ -6,7 +6,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog"
 import {
   Select,
   SelectContent,
@@ -15,44 +15,44 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@/components/ui/textarea"
 
-import { useState } from "react";
-import { authFetch } from "@/app/api/api";
-import { useAuth } from "@/context/AuthProvider";
-import { toast } from "sonner";
+import { useState } from "react"
+import { authFetch } from "@/app/api/api"
+import { useAuth } from "@/context/AuthProvider"
+import { toast } from "sonner"
 
 export default function GenerarReclamo() {
-  const { email } = useAuth();
+  const { email } = useAuth()
 
   const [form, setForm] = useState({
     nombre: "",
     apellido: "",
     area: "",
     reporte: "",
-  });
+  })
 
   const handleChange = (key: string, value: string | boolean | number) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  };
+    setForm((prev) => ({ ...prev, [key]: value }))
+  }
 
   const handleSubmit = async () => {
     if (!form.nombre || !form.apellido || !form.area || !form.reporte) {
       toast.error("Complete todos los campos", {
         position: "top-center",
-      });
-      return;
+      })
+      return
     }
 
     if (!email) {
       toast.error("Error: correo electrónico no disponible", {
         position: "top-center",
-      });
-      return;
+      })
+      return
     }
 
     try {
@@ -65,34 +65,34 @@ export default function GenerarReclamo() {
           reporte: form.reporte,
           email: email,
         }),
-      });
+      })
 
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json()
         if (data.enviado) {
           toast.success("Reclamo enviado correctamente", {
             position: "top-center",
-          });
-          setForm({ nombre: "", apellido: "", area: "", reporte: "" });
+          })
+          setForm({ nombre: "", apellido: "", area: "", reporte: "" })
         } else {
           toast.error("Error al enviar el reclamo", {
             position: "top-center",
-          });
+          })
         }
       } else {
         toast.error("Error al enviar el reclamo", {
           position: "top-center",
-        });
+        })
       }
     } catch (error) {
       toast.error(`Error al enviar el reclamo: ${error}`, {
         position: "top-center",
-      });
+      })
     }
-  };
+  }
 
   return (
-    <DialogContent className="sm:max-w-150 bg-background3 z-800">
+    <DialogContent className="z-800 bg-background3 sm:max-w-150">
       <DialogHeader>
         <DialogTitle>Generar Reclamo</DialogTitle>
         <DialogDescription>
@@ -162,5 +162,5 @@ export default function GenerarReclamo() {
         <Button onClick={handleSubmit}>Generar Reclamo</Button>
       </DialogFooter>
     </DialogContent>
-  );
+  )
 }

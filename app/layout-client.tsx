@@ -1,34 +1,34 @@
-"use client";
-import { usePathname } from "next/navigation";
+"use client"
+import { usePathname } from "next/navigation"
 
-import Header from "@/components/headerPrincipal";
+import Header from "@/components/headerPrincipal"
 
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner"
 
 export default function LayoutClient({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  const pathname = usePathname();
+  const pathname = usePathname()
   const hideHeader = [
     "/signup",
     "/login",
     "/login/recuperacion",
     "/login/recuperacion/reset_pass",
-  ].includes(pathname);
+  ].includes(pathname)
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="sticky top-0 left-0 w-full z-551">
+    <div className="flex min-h-screen flex-col">
+      <div className="sticky top-0 left-0 z-551 w-full">
         {!hideHeader && <Header />}
       </div>
       <main
-        className={`grow flex w-full min-w-0 ${
+        className={`flex w-full min-w-0 grow ${
           pathname === "/login" ||
           pathname === "/login/recuperacion" ||
           pathname === "/login/recuperacion/reset_pass"
-            ? "flex justify-center items-center"
+            ? "flex items-center justify-center"
             : ""
         }`}
       >
@@ -36,5 +36,5 @@ export default function LayoutClient({
       </main>
       <Toaster />
     </div>
-  );
+  )
 }

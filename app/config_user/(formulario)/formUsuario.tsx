@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { authFetch } from "@/app/api/api";
-import { Button } from "@/components/ui/button";
+import { useState } from "react"
+import { authFetch } from "@/app/api/api"
+import { Button } from "@/components/ui/button"
 import {
   DialogClose,
   DialogContent,
@@ -10,7 +10,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog"
 import {
   Select,
   SelectContent,
@@ -19,13 +19,13 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 type Props = {
-  onUserCreated: () => void;
-};
+  onUserCreated: () => void
+}
 
 export default function FormUsuario({ onUserCreated }: Props) {
   const [form, setForm] = useState({
@@ -37,36 +37,36 @@ export default function FormUsuario({ onUserCreated }: Props) {
     password: "",
     reporte: true,
     habilitado: 1,
-  });
+  })
 
   const handleChange = (key: string, value: string | boolean | number) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  };
+    setForm((prev) => ({ ...prev, [key]: value }))
+  }
 
   const handleSubmit = async () => {
     if (!form.email.includes("@")) {
-      alert("Email inválido");
-      return;
+      alert("Email inválido")
+      return
     }
 
-    const payload = { ...form, habilitado: form.habilitado ? 1 : 0 };
+    const payload = { ...form, habilitado: form.habilitado ? 1 : 0 }
 
     const res = await authFetch(`/api/proxy/auth/crear_usuario`, {
       method: "POST",
       body: JSON.stringify(payload),
-    });
+    })
 
     if (!res.ok) {
-      const err = await res.json();
-      alert(err.detail || "Error al crear usuario");
-      return;
+      const err = await res.json()
+      alert(err.detail || "Error al crear usuario")
+      return
     }
 
-    onUserCreated();
-  };
+    onUserCreated()
+  }
 
   return (
-    <DialogContent className="sm:max-w-150 bg-background2 z-800">
+    <DialogContent className="z-800 bg-background2 sm:max-w-150">
       <DialogHeader>
         <DialogTitle>Crear Usuario</DialogTitle>
         <DialogDescription>
@@ -84,7 +84,7 @@ export default function FormUsuario({ onUserCreated }: Props) {
             onChange={(e) => handleChange("email", e.target.value)}
             placeholder="Ingrese el correo electrónico del usuario"
             required
-            className="bg-background3 border border-background6"
+            className="border border-background6 bg-background3"
           />
         </div>
 
@@ -96,7 +96,7 @@ export default function FormUsuario({ onUserCreated }: Props) {
             onChange={(e) => handleChange("username", e.target.value)}
             placeholder="Asigne un usuario único"
             required
-            className="bg-background3 border border-background6"
+            className="border border-background6 bg-background3"
           />
         </div>
 
@@ -108,7 +108,7 @@ export default function FormUsuario({ onUserCreated }: Props) {
             onChange={(e) => handleChange("nombre", e.target.value)}
             placeholder="Ingrese el nombre del usuario"
             required
-            className="bg-background3 border border-background6"
+            className="border border-background6 bg-background3"
           />
         </div>
 
@@ -120,14 +120,14 @@ export default function FormUsuario({ onUserCreated }: Props) {
             onChange={(e) => handleChange("apellido", e.target.value)}
             placeholder="Ingrese el apellido del usuario"
             required
-            className="bg-background3 border border-background6"
+            className="border border-background6 bg-background3"
           />
         </div>
 
         <div className="grid gap-2">
           <Label>Rol</Label>
           <Select onValueChange={(v) => handleChange("rol", v)}>
-            <SelectTrigger className="w-full bg-background3 border border-background6">
+            <SelectTrigger className="w-full border border-background6 bg-background3">
               <SelectValue placeholder="Seleccione un rol" />
             </SelectTrigger>
             <SelectContent position="popper" className="z-900">
@@ -148,7 +148,7 @@ export default function FormUsuario({ onUserCreated }: Props) {
           type="password"
           value={form.password}
           onChange={(e) => handleChange("password", e.target.value)}
-          className="bg-background3 border border-background6"
+          className="border border-background6 bg-background3"
           placeholder="Ingrese la contraseña del usuario"
         />
       </div>
@@ -160,5 +160,5 @@ export default function FormUsuario({ onUserCreated }: Props) {
         <Button onClick={handleSubmit}>Crear Usuario</Button>
       </DialogFooter>
     </DialogContent>
-  );
+  )
 }

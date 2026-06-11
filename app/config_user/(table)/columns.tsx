@@ -1,39 +1,39 @@
-"use client";
+"use client"
 
-import type { ReactNode } from "react";
-import { Button } from "@/components/ui/button";
+import type { ReactNode } from "react"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { CircleMinus, Ellipsis, PencilLine, Trash2 } from "lucide-react";
+} from "@/components/ui/dropdown-menu"
+import { CircleMinus, Ellipsis, PencilLine, Trash2 } from "lucide-react"
 
 export type ColumnDef<T> = {
-  accessorKey?: keyof T;
-  header?: string;
-  id?: string;
-  cell?: (props: { row: T }) => ReactNode;
-};
+  accessorKey?: keyof T
+  header?: string
+  id?: string
+  cell?: (props: { row: T }) => ReactNode
+}
 
 export type User = {
-  id?: number;
-  email: string;
-  username: string;
-  nombre: string;
-  apellido: string;
-  rol: string;
-  habilitado: number;
-  reporte: number;
-};
+  id?: number
+  email: string
+  username: string
+  nombre: string
+  apellido: string
+  rol: string
+  habilitado: number
+  reporte: number
+}
 
 export const columns = (
   onEditUser: (id: number | undefined, username: string) => void,
   onDisableUser: (username: string) => void,
   onEnableUser: (username: string) => void,
-  onDeleteUser: (username: string) => void,
+  onDeleteUser: (username: string) => void
 ): ColumnDef<User>[] => [
   {
     accessorKey: "email",
@@ -55,13 +55,13 @@ export const columns = (
     accessorKey: "rol",
     header: "Rol",
     cell: ({ row }) => {
-      const role = row.rol;
+      const role = row.rol
       const roleMap: Record<string, string> = {
         superadmin: "Superadmin",
         admin: "Admin",
         user: "Usuario",
-      };
-      return roleMap[role] ?? role ?? "—";
+      }
+      return roleMap[role] ?? role ?? "—"
     },
   },
   {
@@ -72,7 +72,7 @@ export const columns = (
   {
     id: "actions",
     cell: ({ row }) => {
-      const user = row;
+      const user = row
 
       return (
         <DropdownMenu>
@@ -109,7 +109,7 @@ export const columns = (
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      );
+      )
     },
   },
-];
+]
