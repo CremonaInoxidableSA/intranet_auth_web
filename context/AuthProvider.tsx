@@ -147,137 +147,111 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkSession = useCallback(async () => {
     try {
+      // 1. Verificar bootstrap
       const setupCache = getStoredSetupCache()
-      if (setupCache !== null) {
-        if (setupCache === true) {
-          setNeedBootstrap(true)
-          setUser(null)
-          setLoading(false)
-          return
-        } else {
-          setNeedBootstrap(false)
-        }
-      } else {
+      if (setupCache === true) {
+        setNeedBootstrap(true)
+        setUser(null)
+        return
+      }
+      if (setupCache === null) {
         await checkSetupStatus()
       }
 
-      const token =
-        (typeof window !== "undefined" &&
-          localStorage.getItem("access_token")) ||
-        undefined
-
-      let hydratedFromStorage = false
-      let storedUserRaw: string | null = null
+      // 2. Leer token: primero localStorage, luego cookie como fallback
+      let token: string | undefined
       if (typeof window !== "undefined") {
-        storedUserRaw = localStorage.getItem("user")
-        if (storedUserRaw) {
-          try {
-            const parsed = JSON.parse(storedUserRaw)
-            setUser(parsed)
-            hydratedFromStorage = true
-          } catch (e) {
-            console.warn("Failed to parse stored user", e)
-          }
+        token =
+          localStorage.getItem("access_token") ??
+          document.cookie
+            .split("; ")
+            .find((c) => c.startsWith("access_token="))
+            ?.split("=")[1] ??
+          undefined
+        // Si vino de cookie pero no estaba en localStorage, sincronizar
+        if (token && !localStorage.getItem("access_token")) {
+          localStorage.setItem("access_token", token)
         }
       }
 
-      const decodeToken = (t?: string) => {
-        if (!t) return null
+      if (!token) {
+        setUser(null)
+        return
+      }
+
+      // 3. Verificar que el token no esté expirado
+      const isTokenValid = (t: string): boolean => {
         try {
-          const parts = t.split(".")
-          if (parts.length < 2) return null
-          const payload = parts[1]
-          const b64 = payload.replace(/-/g, "+").replace(/_/g, "/")
-          const json = decodeURIComponent(
-            atob(b64)
-              .split("")
-              .map((c) => `%${("00" + c.charCodeAt(0).toString(16)).slice(-2)}`)
-              .join("")
+          const b64 = t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")
+          const payload = JSON.parse(
+            decodeURIComponent(
+              atob(b64)
+                .split("")
+                .map(
+                  (c) => `%${("00" + c.charCodeAt(0).toString(16)).slice(-2)}`
+                )
+                .join("")
+            )
           )
-          const decoded = JSON.parse(json)
-          return decoded
+          if (!payload?.sub) return false
+          if (payload.exp && payload.exp < Math.floor(Date.now() / 1000))
+            return false
+          return true
         } catch {
-          return null
+          return false
         }
       }
 
-      if (hydratedFromStorage && token) {
-        const payload = decodeToken(token)
-        if (payload && payload.sub) {
-          setNeedBootstrap(false)
-          setLoading(false)
-          return
-        }
+      if (!isTokenValid(token)) {
+        // Token expirado o inválido — limpiar y forzar re-login
+        localStorage.removeItem("access_token")
+        localStorage.removeItem("user")
+        setUser(null)
+        return
       }
 
-      if (token && !hydratedFromStorage) {
-        const payload = decodeToken(token)
-        if (payload && payload.sub) {
-          setUser({
-            username: payload.sub,
-            rol: payload.rol ?? undefined,
-          } as UserSession)
-          setLoading(false)
-          return
-        } else {
-          setUser(null)
-          setLoading(false)
-          return
-        }
-      }
-
-      if (!hydratedFromStorage || !token) {
+      // 4. Hidratar usuario desde localStorage (evita un fetch innecesario)
+      const storedUserRaw = localStorage.getItem("user")
+      if (storedUserRaw) {
         try {
-          const res = await fetch(`/api/proxy/auth/check`, {
-            credentials: "include",
-            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-          })
-
-          if (res.ok) {
-            let data: {
-              success?: boolean
-              data?: { needBootstrap?: boolean; user?: unknown }
-            } = {}
-            try {
-              data = await res.json()
-            } catch {
-              data = {}
-            }
-
-            if (data && data.success) {
-              if (data.data && data.data.needBootstrap) {
-                setNeedBootstrap(true)
-                setUser(null)
-                setLoading(false)
-                return
-              }
-
-              if (data.data && data.data.user) {
-                setNeedBootstrap(false)
-                const incomingUser = data.data.user
-                const normalized =
-                  Array.isArray(incomingUser) && incomingUser.length > 0
-                    ? incomingUser[0]
-                    : incomingUser
-                setUser(normalized)
-                try {
-                  if (typeof window !== "undefined")
-                    localStorage.setItem("user", JSON.stringify(normalized))
-                } catch (e) {
-                  console.warn(
-                    "Could not persist user from /check to localStorage",
-                    e
-                  )
-                }
-                setLoading(false)
-                return
-              }
-            }
+          const parsed = JSON.parse(storedUserRaw)
+          if (parsed?.username) {
+            setUser(parsed)
+            setNeedBootstrap(false)
+            return
           }
-        } catch (err) {
-          console.warn("Error checking session with /check endpoint:", err)
+        } catch {
+          // JSON corrupto, continuar al fetch
         }
       }
+
+      // 5. Fallback: pedir el usuario al backend
+      try {
+        const res = await fetch(`/api/proxy/auth/check`, {
+          credentials: "include",
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (res.ok) {
+          const data = await res.json().catch(() => ({}))
+          if (data?.success && data?.data?.user) {
+            const incomingUser = data.data.user
+            const normalized = Array.isArray(incomingUser)
+              ? incomingUser[0]
+              : incomingUser
+            setUser(normalized)
+            setNeedBootstrap(false)
+            try {
+              localStorage.setItem("user", JSON.stringify(normalized))
+            } catch {}
+            return
+          }
+        }
+      } catch (err) {
+        console.warn("Error en /check:", err)
+      }
+
+      // Si llegamos acá sin usuario, limpiar
+      setUser(null)
     } catch {
       setUser(null)
     } finally {
@@ -403,75 +377,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         data.data?.access_token
 
       if (token) {
+        // Guardar token en localStorage (para authFetch).
+        // La cookie la setea el backend en su respuesta y el proxy route.ts la propaga.
         try {
-          if (typeof window !== "undefined") {
-            localStorage.setItem("access_token", token)
-            Cookies.set("access_token", token)
-          }
+          localStorage.setItem("access_token", token)
         } catch (e) {
-          console.warn("Could not store access_token in localStorage", e)
+          console.warn("Could not store access_token", e)
         }
 
-        const decodeToken = (t: string) => {
-          try {
-            const parts = t.split(".")
-            if (parts.length < 2) return null
-            const payload = parts[1]
-            const b64 = payload.replace(/-/g, "+").replace(/_/g, "/")
-            const json = decodeURIComponent(
-              atob(b64)
-                .split("")
-                .map(
-                  (c) => `%${("00" + c.charCodeAt(0).toString(16)).slice(-2)}`
-                )
-                .join("")
-            )
-            return JSON.parse(json)
-          } catch {
-            return null
-          }
-        }
-
-        const payload = decodeToken(token)
-        if (payload && payload.sub) {
-          setUser({
-            username: payload.sub,
-            rol: payload.rol ?? undefined,
-          } as UserSession)
-          try {
-            if (typeof window !== "undefined")
-              localStorage.setItem(
-                "user",
-                JSON.stringify({
-                  username: payload.sub,
-                  rol: payload.rol ?? undefined,
-                  token,
-                })
-              )
-          } catch (e) {
-            console.warn("Could not store user in localStorage", e)
-          }
-        }
-
+        // El backend devuelve { success, data: { token, user } }
+        // Usar el objeto user completo de la respuesta
         const incomingUser = data.data?.user ?? data.user
         if (incomingUser) {
           const u = Array.isArray(incomingUser) ? incomingUser[0] : incomingUser
           const userToStore = { ...(u || {}), token }
           setUser(userToStore)
           try {
-            if (typeof window !== "undefined")
-              localStorage.setItem("user", JSON.stringify(userToStore))
+            localStorage.setItem("user", JSON.stringify(userToStore))
           } catch (e) {
             console.warn("Could not store user in localStorage", e)
           }
         }
 
         setNeedBootstrap(false)
-        if (token) {
-          router.push(`/?token=${encodeURIComponent(token)}`)
-        } else {
-          router.push("/")
-        }
+        // window.location.href fuerza un request HTTP completo al servidor
+        // para que la cookie seteada por el backend (propagada por el proxy)
+        // sea enviada en el siguiente request.
+        window.location.href = "/"
 
         return { success: true, data }
       }

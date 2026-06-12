@@ -6,7 +6,7 @@ import {
 } from "@/lib/setup-cache"
 
 const API_AUTH_URL = process.env.API_AUTH_URL ?? "http://192.168.20.150:8000"
-const SETUP_SECRET_TOKEN = process.env.SETUP_SECRET_TOKEN
+const JWT_SECRET = process.env.JWT_SECRET
 
 // Validar acceso a needs-setup
 function isAuthorizedForSetup(request: NextRequest): boolean {
@@ -17,8 +17,7 @@ function isAuthorizedForSetup(request: NextRequest): boolean {
 
   const isBootstrapReferer = referer.includes("/bootstrap")
   const hasValidSecret =
-    SETUP_SECRET_TOKEN &&
-    (authHeader === SETUP_SECRET_TOKEN || queryToken === SETUP_SECRET_TOKEN)
+    JWT_SECRET && (authHeader === JWT_SECRET || queryToken === JWT_SECRET)
 
   return isBootstrapReferer || hasValidSecret
 }

@@ -4,7 +4,8 @@
  * Redirige a: process.env.API_AUTH_URL/[...path]
  *
  * Corre únicamente en el servidor — la URL real de la API nunca se envía al navegador.
- * Los clientes en otros segmentos de red sólo necesitan acceso al servidor Next.js.
+ * IMPORTANTE: propaga Set-Cookie del backend al browser para que la cookie
+ * httponly quede seteada en el dominio de Next.js (puerto 3000).
  */
 
 type Props = {
@@ -52,20 +53,18 @@ async function proxyRequest(
           body = JSON.stringify(jsonBody)
         } catch {
           const textBody = await request.text()
-          if (textBody) {
-            body = textBody
-          }
+          if (textBody) body = textBody
         }
       }
     }
 
-    const response = await fetch(fullUrl, {
+    const backendResponse = await fetch(fullUrl, {
       method,
       headers: buildHeaders(request),
       body,
     })
 
-    const text = await response.text()
+    const text = await backendResponse.text()
     let data: unknown
     try {
       data = JSON.parse(text)
@@ -73,7 +72,22 @@ async function proxyRequest(
       data = text
     }
 
-    return Response.json(data, { status: response.status })
+    // Construir respuesta y propagar Set-Cookie del backend al browser
+    const response = Response.json(data, { status: backendResponse.status })
+
+    const setCookie = backendResponse.headers.get("set-cookie")
+    if (setCookie) {
+      // El backend setea la cookie con httponly en su dominio.
+      // La reemplazamos sin httponly para que el middleware de Next.js
+      // también pueda leerla, manteniendo samesite=lax y path=/.
+      const cookieValue = setCookie
+        .replace(/;\s*httponly/gi, "")
+        .replace(/;\s*secure/gi, "")
+
+      response.headers.set("set-cookie", cookieValue)
+    }
+
+    return response
   } catch (error) {
     return Response.json(
       { error: error instanceof Error ? error.message : String(error) },

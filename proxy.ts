@@ -3,7 +3,6 @@ import type { NextRequest } from "next/server"
 import { verifyToken } from "./lib/auth"
 import { middlewarePaths } from "./lib/config"
 
-// Rutas definidas directamente sin dependencias externas
 const publicRoutes = [
   middlewarePaths.login,
   middlewarePaths.recuperacion,
@@ -21,9 +20,7 @@ async function getBootstrapStatus(request: NextRequest): Promise<boolean> {
       cache: "no-store",
     })
 
-    if (!response.ok) {
-      return false
-    }
+    if (!response.ok) return false
 
     const data = await response.json()
     return data.needs_setup === true
@@ -32,39 +29,52 @@ async function getBootstrapStatus(request: NextRequest): Promise<boolean> {
   }
 }
 
-export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl
-
-  // Obtener token antes de validar APIs
-  const token =
+function getToken(request: NextRequest): string | null {
+  return (
     request.cookies.get("auth_token")?.value ||
     request.cookies.get("access_token")?.value ||
     request.cookies.get("accessToken")?.value ||
     null
+  )
+}
 
-  // Proteger endpoints API
+export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl
+  const token = getToken(request)
+
+  // ── Proteger endpoints /api/ ──────────────────────────────────────────────
   if (pathname.startsWith("/api/")) {
-    // /api/needs-setup: solo accesible durante bootstrap
+    // Endpoints públicos: no requieren token
+    const publicApiRoutes = [
+      "/api/proxy/auth/login",
+      "/api/proxy/auth/register",
+      "/api/proxy/auth/recuperacion",
+      "/api/proxy/auth/reset-password",
+    ]
+    const isPublicApi = publicApiRoutes.some((route) =>
+      pathname.startsWith(route)
+    )
+    if (isPublicApi) return NextResponse.next()
+
     if (pathname.startsWith("/api/needs-setup")) {
       const isBootstrapRequest = pathname.includes("/bootstrap")
       if (!isBootstrapRequest && !token) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
       }
-    }
-    // Otros endpoints /api/ requieren token válido
-    else if (!token) {
+    } else if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
     return NextResponse.next()
   }
 
+  // ── Token en query string ─────────────────────────────────────────────────
   const usesOwnToken = routesWithOwnToken.some((route) =>
     pathname.startsWith(route)
   )
-
   const tokenFromQuery = request.nextUrl.searchParams.get("token")
+
   if (tokenFromQuery && !usesOwnToken) {
-    const verified = verifyToken(tokenFromQuery)
+    const verified = await verifyToken(tokenFromQuery)
     if (verified) {
       const cleanUrl = new URL(request.nextUrl.pathname, request.url)
       const response = NextResponse.redirect(cleanUrl)
@@ -75,6 +85,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // ── Bootstrap ─────────────────────────────────────────────────────────────
   if (pathname.startsWith("/bootstrap")) {
     const needsSetup = await getBootstrapStatus(request)
     if (!needsSetup) {
@@ -83,12 +94,14 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // ── Rutas públicas ────────────────────────────────────────────────────────
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
 
   if (isPublicRoute) {
     if (token) {
-      const user = verifyToken(token)
+      const user = await verifyToken(token)
       if (!user) {
+        // Token inválido: limpiar cookies y dejar pasar
         const response = NextResponse.next()
         response.cookies.delete("auth_token")
         response.cookies.delete("access_token")
@@ -96,6 +109,7 @@ export async function proxy(request: NextRequest) {
         return response
       }
 
+      // Ya autenticado: redirigir al inicio
       if (pathname.startsWith("/login") || pathname.startsWith("/register")) {
         return NextResponse.redirect(new URL("/", request.url))
       }
@@ -104,11 +118,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // ── Rutas protegidas ──────────────────────────────────────────────────────
   if (!token) {
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
-  const user = verifyToken(token)
+  const user = await verifyToken(token)
   if (!user) {
     const response = NextResponse.redirect(new URL("/login", request.url))
     response.cookies.delete("auth_token")
@@ -117,6 +132,7 @@ export async function proxy(request: NextRequest) {
     return response
   }
 
+  // ── Rutas de admin ────────────────────────────────────────────────────────
   const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route))
   if (isAdminRoute && user.rol !== "admin" && user.rol !== "superadmin") {
     return NextResponse.redirect(new URL("/", request.url))

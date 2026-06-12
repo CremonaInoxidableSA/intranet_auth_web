@@ -1,30 +1,35 @@
-export function verifyToken(token?: string | null) {
-  if (!token) return null
-  try {
-    if (token.toLowerCase().startsWith("bearer "))
-      token = token.split(" ", 2)[1]
+import { jwtVerify, type JWTPayload } from "jose"
 
-    const parts = token.split(".")
-    if (parts.length < 2) return null
+export interface AuthPayload extends JWTPayload {
+  sub?: string
+  username?: string
+  rol?: string
+  [key: string]: unknown
+}
 
-    const payloadB64 = parts[1].replace(/-/g, "+").replace(/_/g, "/")
-    const pad = payloadB64.length % 4
-    const padded = pad === 0 ? payloadB64 : payloadB64 + "=".repeat(4 - pad)
-
-    const json = decodeURIComponent(
-      atob(padded)
-        .split("")
-        .map((c) => `%${("00" + c.charCodeAt(0).toString(16)).slice(-2)}`)
-        .join("")
+function getSecret(): Uint8Array {
+  const secret = process.env.JWT_SECRET
+  if (!secret) {
+    throw new Error(
+      "JWT_SECRET no está configurado en las variables de entorno"
     )
-    const payload = JSON.parse(json)
+  }
+  return new TextEncoder().encode(secret)
+}
 
-    if (payload.exp && typeof payload.exp === "number") {
-      const now = Math.floor(Date.now() / 1000)
-      if (payload.exp < now) return null
+export async function verifyToken(
+  token?: string | null
+): Promise<AuthPayload | null> {
+  if (!token) return null
+
+  try {
+    if (token.toLowerCase().startsWith("bearer ")) {
+      token = token.split(" ", 2)[1]
     }
 
-    return payload
+    const secret = getSecret()
+    const { payload } = await jwtVerify(token, secret)
+    return payload as AuthPayload
   } catch {
     return null
   }

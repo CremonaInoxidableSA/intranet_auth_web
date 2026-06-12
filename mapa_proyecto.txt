@@ -1,0 +1,92 @@
+﻿📁 app/
+    📁 api/
+        📁 needs-setup/
+            📁 invalidate/
+                📄 route.ts
+            📄 route.ts
+        📁 proxy/
+            📁 auth/
+                📁 [...path]/
+        📄 api.ts
+    📁 bootstrap/
+        📄 page.tsx
+    📁 config_user/
+        📁 (formulario)/
+            📄 formModulo.tsx
+            📄 formRol.tsx
+            📄 formUsuario.tsx
+        📁 (reclamo)/
+            📄 reclamo.tsx
+        📁 (table)/
+            📄 columns.tsx
+            📄 data-table.tsx
+            📄 editarUsuario.tsx
+        📄 page.tsx
+    📁 login/
+        📁 recuperacion/
+            📁 reset_pass/
+                📄 page.tsx
+            📄 page.tsx
+        📄 page.tsx
+    📄 favicon.ico
+    📄 globals.css
+    📄 layout.tsx
+    📄 layout-client.tsx
+    📄 page.tsx
+📁 components/
+    📁 theme/
+        📄 themeProvider.tsx
+        📄 themeSwitcher.tsx
+        📄 themeToggleLogic.tsx
+    📁 ui/
+        📄 button.tsx
+        📄 dialog.tsx
+        📄 dropdown-menu.tsx
+        📄 input.tsx
+        📄 label.tsx
+        📄 popover.tsx
+        📄 select.tsx
+        📄 sonner.tsx
+        📄 spinner.tsx
+        📄 table.tsx
+        📄 textarea.tsx
+    📁 userIcon/
+        📄 cambioPass.tsx
+        📄 userAvatar.tsx
+        📄 userIcon.tsx
+    📄 .gitkeep
+    📄 headerPrincipal.tsx
+    📄 Logos.tsx
+📁 context/
+    📄 AuthProvider.tsx
+📁 hooks/
+    📄 .gitkeep
+📁 lib/
+    📄 .gitkeep
+    📄 auth.ts
+    📄 config.ts
+    📄 setup-cache.ts
+    📄 types.ts
+    📄 utils.ts
+📁 public/
+    📄 .gitkeep
+    📄 creminox.png
+    📄 creminox_innovate.png
+    📄 logoMetalizado.png
+📁 types/
+    📄 js-cookie.d.ts
+📄 .env
+📄 .gitignore
+📄 .prettierignore
+📄 .prettierrc
+📄 AGENTS.md
+📄 components.json
+📄 eslint.config.mjs
+📄 mapa_proyecto.txt
+📄 next.config.ts
+📄 next-env.d.ts
+📄 package.json
+📄 postcss.config.mjs
+📄 proxy.ts
+📄 README.md
+📄 tsconfig.json
