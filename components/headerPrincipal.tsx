@@ -23,7 +23,7 @@ export default function HeaderPrincipal() {
 
   return (
     <>
-      <header className="-header flex items-center bg-headerbg p-5">
+      <header className="flex items-center bg-headerbg px-5 py-2 xl:p-5">
         {/* Desktop: iconos izquierda */}
         <div className="hidden h-full w-[30%] flex-row items-center justify-start gap-5 xl:flex">
           <UserIcon />
@@ -53,7 +53,10 @@ export default function HeaderPrincipal() {
 
         {/* Título centrado */}
         <p className="header flex flex-1 justify-center font-bold xl:w-[40%]">
-          Intranet General de Trabajo Cremona Inoxidable S.A.
+          <span className="hidden md:inline">
+            Intranet General de Trabajo Cremona Inoxidable S.A.
+          </span>
+          <span className="md:hidden">Intranet Cremona</span>
         </p>
 
         {/* Desktop: links + logo */}

@@ -20,20 +20,8 @@ export default function LayoutClient({
 
   return (
     <div className="flex min-h-screen flex-col">
-      <div className="sticky top-0 left-0 z-551 w-full">
-        {!hideHeader && <Header />}
-      </div>
-      <main
-        className={`flex w-full min-w-0 grow ${
-          pathname === "/login" ||
-          pathname === "/login/recuperacion" ||
-          pathname === "/login/recuperacion/reset_pass"
-            ? "flex items-center justify-center"
-            : ""
-        }`}
-      >
-        {children}
-      </main>
+      {!hideHeader && <Header />}
+      <main className="flex flex-1 flex-col">{children}</main>
       <Toaster />
     </div>
   )

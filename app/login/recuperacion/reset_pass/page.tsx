@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import { urlConfig } from "@/lib/config"
 
 import { Button } from "@/components/ui/button"
+import { Boton, Inputs } from "@/components/components"
 import { LogoCreminoxInnovate as Logo } from "@/components/Logos"
 
 const Spinner = () => (
@@ -125,9 +126,11 @@ const ResetPasswordContent = () => {
 
   if (validatingToken) {
     return (
-      <section className="flex h-full w-full items-center justify-center">
-        <div className="bg-backgroundoscuro flex h-[40vh] w-auto max-w-480 flex-col items-center justify-center gap-3.75 rounded p-[3rem_4rem_2rem_4rem]">
-          <Logo extraClass="h-1/3" />
+      <section
+        className="flex flex-1 items-center justify-center"
+      >
+        <div className="flex flex-col items-center justify-center gap-5 rounded xl:w-1/2">
+          <Logo extraClass="xl:h-1/3" />
           <div className="flex flex-col items-center gap-4">
             <Spinner />
             <p className="text-center">Verificando token...</p>
@@ -139,9 +142,9 @@ const ResetPasswordContent = () => {
 
   if (!tokenValid) {
     return (
-      <section className="flex h-full w-full items-center justify-center">
-        <div className="bg-backgroundoscuro flex h-[40vh] w-auto max-w-480 flex-col items-center justify-center gap-3.75 rounded p-[3rem_4rem_2rem_4rem]">
-          <Logo extraClass="flex h-auto w-[65%] p-0" />
+      <section className="flex flex-1 items-center justify-center">
+        <div className="flex flex-col items-center justify-center gap-5 rounded xl:w-1/2">
+          <Logo extraClass="xl:h-1/3" />
           <div className="flex w-full flex-col items-center gap-4">
             <p className="text-center font-semibold text-redcremona">
               Token inválido o expirado
@@ -165,28 +168,25 @@ const ResetPasswordContent = () => {
   }
 
   return (
-    <section className="flex h-full w-full items-center justify-center">
-      <div className="bg-backgroundoscuro flex h-auto w-auto max-w-480 flex-col items-center gap-3.75 rounded p-[3rem_4rem_2rem_4rem]">
-        <Logo extraClass="flex h-auto w-[65%] p-0" />
+    <section className="flex flex-1 items-center justify-center">
+      <div className="flex flex-col items-center justify-center gap-5 rounded xl:w-1/2">
+        <Logo extraClass="xl:h-1/3" />
 
         <div className="mb-4 w-full text-center">
           <h2 className="mb-2 text-xl font-semibold">Restablecer contraseña</h2>
-          <p className="text-sm text-gray-400">Para: {email}</p>
+          <p className="text-sm opacity-70">Para: {email}</p>
         </div>
 
         <form
           className="flex w-full flex-col justify-between gap-4"
           onSubmit={handleSubmit}
         >
-          <div className="flex flex-col gap-1.25">
-            <label
-              htmlFor="newPassword"
-              className="flex text-[17px] font-semibold tracking-[0.5px]"
-            >
-              Nueva contraseña
-            </label>
-            <input
-              className="flex w-full items-center justify-center rounded border-none bg-background2 p-3 px-4"
+          <label
+            htmlFor="newPassword"
+            className="flex h-1/3 cursor-pointer flex-col gap-1.25"
+          >
+            <span className="flex font-semibold">Introduzca su usuario</span>
+            <Inputs
               id="newPassword"
               name="newPassword"
               type="password"
@@ -195,19 +195,16 @@ const ResetPasswordContent = () => {
               minLength={6}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Mínimo 6 caracteres"
+              placeholder="Minimo 6 caracteres"
             />
-          </div>
+          </label>
 
-          <div className="flex flex-col gap-1.25">
-            <label
-              htmlFor="confirmPassword"
-              className="flex text-[17px] font-semibold tracking-[0.5px]"
-            >
-              Confirmar contraseña
-            </label>
-            <input
-              className="flex w-full items-center justify-center rounded border-none bg-background2 p-3 px-4"
+          <label
+            htmlFor="newPassword"
+            className="flex h-1/3 cursor-pointer flex-col gap-1.25"
+          >
+            <span className="flex font-semibold">Confirmar contraseña</span>
+            <Inputs
               id="confirmPassword"
               name="confirmPassword"
               type="password"
@@ -218,19 +215,19 @@ const ResetPasswordContent = () => {
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Repetí la contraseña"
             />
-          </div>
+          </label>
 
-          <Button
-            disabled={loading}
+          <Boton
             type="submit"
-            className="mt-1.25 flex h-13 w-full cursor-pointer items-center justify-center rounded border-none bg-[#e82a31] p-3 font-semibold text-white disabled:cursor-not-allowed disabled:bg-[#a82328]"
+            extraClass="items-center justify-center border-redcremona bg-redcremona/50 p-1 text-white hover:bg-redcremona/80"
+            disabled={loading}
           >
-            {loading ? <Spinner /> : "Actualizar contraseña"}
-          </Button>
+            {loading ? <Spinner /> : "Ingresar"}
+          </Boton>
         </form>
 
         <Link
-          className="mt-2 flex h-auto w-full cursor-pointer justify-center text-center text-[14px] font-semibold tracking-[0.5px] text-[#5d5d5d] ease-in-out hover:text-[#e82a31]"
+          className="text-sm font-semibold opacity-40 ease-in-out hover:text-redcremona hover:opacity-100"
           href={urlConfig.loginUrl}
         >
           Volver al inicio de sesión

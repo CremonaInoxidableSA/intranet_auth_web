@@ -176,11 +176,17 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring/50 leading-none;
+  }
+
+  html {
+    @apply h-full font-sans;
+    font-size: 18px;
+    letter-spacing: 0.5px;
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply h-full bg-background text-foreground;
     letter-spacing: 0.5px;
   }
 

@@ -29,7 +29,7 @@ export default function RootLayout({
         roboto.variable
       )}
     >
-      <body>
+      <body className="min-h-screen">
         <ThemeProvider>
           <AuthProvider>
             <LayoutClient>{children}</LayoutClient>

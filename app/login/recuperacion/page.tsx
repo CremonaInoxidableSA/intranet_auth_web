@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { urlConfig } from "@/lib/config"
 
 import { LogoCreminoxInnovate as Logo } from "@/components/Logos"
-import { Button } from "@/components/ui/button"
+import { Boton, Inputs } from "@/components/components"
 
 const Spinner = () => (
   <div className="h-6 w-6 animate-spin rounded-[100%] border border-solid border-[#f3f3f3] border-t-[#e82a31]" />
@@ -44,23 +44,30 @@ const Recuperacion = () => {
   }
 
   return (
-    <section className="flex h-full w-full items-center justify-center">
-      <div className="bg-backgroundoscuro flex h-[60vh] w-auto max-w-480 flex-col items-center gap-3.75 rounded p-[3rem_4rem_2rem_4rem]">
-        <Logo extraClass="h-1/2" />
+    <section
+      className="flex flex-1 items-center justify-center"
+      aria-labelledby="login-title"
+    >
+      <div className="flex flex-col items-center justify-center gap-5 rounded xl:w-1/2">
+        <Logo extraClass="xl:h-1/2" />
+
+        <h1 id="login-title" className="sr-only">
+          Iniciar Sesión
+        </h1>
 
         <form
-          className="flex h-[60%] w-full flex-col justify-between gap-2.5"
+          className="flex h-[60%] w-full flex-col justify-between gap-5"
           onSubmit={handleSubmit}
         >
-          <div className="flex h-1/3 flex-col gap-1.25">
-            <label
-              htmlFor="email"
-              className="flex text-[17px] font-semibold tracking-[0.5px]"
-            >
+          <label
+            htmlFor="email"
+            className="flex h-1/3 cursor-pointer flex-col gap-1.25"
+          >
+            <span className="flex font-semibold">
               Introduzca su correo electrónico
-            </label>
-            <input
-              className="flex h-2/3 w-full items-center justify-center rounded border-none bg-background2 p-1 px-4"
+            </span>
+            <Inputs
+              placeholder="Ingrese el correo electrónico vinculado a la cuenta"
               id="email"
               name="email"
               type="email"
@@ -69,17 +76,15 @@ const Recuperacion = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-          </div>
+          </label>
 
-          <div className="flex h-1/3 flex-col gap-1.25">
-            <label
-              htmlFor="email"
-              className="flex text-[17px] font-semibold tracking-[0.5px]"
-            >
-              Introduzca su usuario
-            </label>
-            <input
-              className="flex h-2/3 w-full items-center justify-center rounded border-none bg-background2 p-1 px-4"
+          <label
+            htmlFor="username"
+            className="flex h-1/3 cursor-pointer flex-col gap-1.25"
+          >
+            <span className="flex font-semibold">Introduzca su usuario</span>
+            <Inputs
+              placeholder="Ingrese su nombre de usuario"
               id="username"
               name="username"
               type="text"
@@ -88,20 +93,20 @@ const Recuperacion = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
-          </div>
+          </label>
 
-          <Button
+          <Boton
+            type="submit"
+            extraClass="items-center justify-center border-redcremona bg-redcremona/50 p-1 text-white hover:bg-redcremona/80"
             disabled={loading}
-            onClick={handleSubmit}
-            className="h-13 w-full items-center justify-center rounded border border-redcremona bg-redcremona/80 p-1 text-white hover:bg-redcremona/50"
           >
-            {loading ? <Spinner /> : "Enviar correo de recuperación"}
-          </Button>
+            {loading ? <Spinner /> : "Enviar correo de recuperacion"}
+          </Boton>
         </form>
 
         <Link
-          className="h-auto text-[14px] font-semibold opacity-40 ease-in-out hover:text-redcremona hover:opacity-100"
-          href={urlConfig.loginUrl}
+          className="text-sm font-semibold opacity-40 ease-in-out hover:text-redcremona hover:opacity-100"
+          href="/login"
         >
           Iniciar sesión
         </Link>

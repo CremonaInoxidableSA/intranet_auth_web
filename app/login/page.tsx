@@ -5,7 +5,7 @@ import Link from "next/link"
 import { useAuth } from "@/context/AuthProvider"
 
 import { LogoCreminoxInnovate as Logo } from "@/components/Logos"
-import { Button } from "@/components/ui/button"
+import { Inputs, Boton } from "@/components/components"
 import { toast } from "sonner"
 
 const Spinner = () => (
@@ -46,22 +46,28 @@ const Login = () => {
   }
 
   return (
-    <section className="flex h-full w-full items-center justify-center">
-      <div className="bg-backgroundoscuro flex h-[60vh] w-auto max-w-480 flex-col items-center gap-3.75 rounded p-[3rem_4rem_2rem_4rem]">
-        <Logo extraClass="h-1/2" />
+    <section
+      className="flex flex-1 items-center justify-center p-5"
+      aria-labelledby="login-title"
+    >
+      <div className="flex xl:w-1/2 flex-col items-center justify-center gap-5 rounded">
+        <Logo extraClass="xl:h-1/2" />
+
+        <h1 id="login-title" className="sr-only">
+          Iniciar Sesión
+        </h1>
+
         <form
-          className="flex h-[60%] w-full flex-col justify-between gap-2.5"
+          className="flex h-[60%] w-full flex-col justify-between gap-5"
           onSubmit={handleSubmit}
         >
-          <div className="flex h-1/3 flex-col gap-1.25">
-            <label
-              htmlFor="email"
-              className="flex text-[17px] font-semibold tracking-[0.5px]"
-            >
-              Introduzca su usuario
-            </label>
-            <input
-              className="flex h-2/3 w-full items-center justify-center rounded border-none bg-background2 p-1 px-4"
+          <label
+            htmlFor="username"
+            className="flex h-1/3 cursor-pointer flex-col gap-1.25"
+          >
+            <span className="flex font-semibold">Introduzca su usuario</span>
+            <Inputs
+              placeholder="Ingrese su nombre de usuario"
               id="username"
               name="username"
               type="text"
@@ -70,17 +76,17 @@ const Login = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
-          </div>
+          </label>
 
-          <div className="flex h-1/3 flex-col gap-1.25">
-            <label
-              htmlFor="password"
-              className="flex text-[17px] font-semibold tracking-[0.5px]"
-            >
+          <label
+            htmlFor="password"
+            className="flex h-1/3 cursor-pointer flex-col gap-1.25"
+          >
+            <span className="flex font-semibold tracking-[0.5px]">
               Introduzca su contraseña
-            </label>
-            <input
-              className="flex h-2/3 w-full items-center justify-center rounded border-none bg-background2 p-1 px-4"
+            </span>
+            <Inputs
+              placeholder="Ingrese su contraseña"
               id="password"
               name="password"
               type="password"
@@ -89,19 +95,19 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-          </div>
+          </label>
 
-          <Button
-            className="h-13 w-full cursor-pointer items-center justify-center rounded border border-redcremona bg-redcremona/80 p-1 text-white hover:bg-redcremona/50"
+          <Boton
+            type="submit"
+            extraClass="items-center justify-center border-redcremona bg-redcremona/50 p-1 text-white hover:bg-redcremona/80"
             disabled={loading}
-            onClick={handleSubmit}
           >
-            {loading ? <Spinner /> : "Acceder"}
-          </Button>
+            {loading ? <Spinner /> : "Ingresar"}
+          </Boton>
         </form>
 
         <Link
-          className="h-auto text-[14px] font-semibold opacity-40 ease-in-out hover:opacity-100 hover:text-redcremona"
+          className="text-sm font-semibold opacity-40 ease-in-out hover:text-redcremona hover:opacity-100"
           href="/login/recuperacion"
         >
           Recuperar contraseña
