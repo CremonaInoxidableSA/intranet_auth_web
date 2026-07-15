@@ -3,7 +3,6 @@
 import { useState } from "react"
 import Link from "next/link"
 import { toast } from "sonner"
-import { urlConfig } from "@/lib/config"
 
 import { LogoCreminoxInnovate as Logo } from "@/components/Logos"
 import { Boton, Inputs } from "@/components/components"
@@ -22,7 +21,7 @@ const Recuperacion = () => {
     setLoading(true)
 
     try {
-      const response = await fetch(`/api/proxy/auth/recuperacion_check`, {
+      const response = await fetch(`/api/auth/recuperacion`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email }),

@@ -30,7 +30,7 @@ const ResetPasswordContent = () => {
   const verificarToken = useCallback(async (tokenToVerify: string) => {
     try {
       const response = await fetch(
-        `/api/proxy/mail/verificar-token-recuperacion?token=${tokenToVerify}`,
+        `/api/auth/verify-reset-token?token=${tokenToVerify}`,
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
@@ -97,7 +97,7 @@ const ResetPasswordContent = () => {
     setLoading(true)
 
     try {
-      const response = await fetch(`/api/proxy/auth/reset-password`, {
+      const response = await fetch(`/api/auth/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

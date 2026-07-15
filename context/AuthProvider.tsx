@@ -1,3 +1,4 @@
+// context/AuthProvider.tsx
 "use client"
 
 import {
@@ -11,7 +12,6 @@ import {
 } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { UserSession } from "@/lib/types"
-import Cookies from "js-cookie"
 
 interface AuthContextType {
   user: UserSession | null
@@ -24,7 +24,6 @@ interface AuthContextType {
   reporte: boolean | null
   loading: boolean
   login: (username: string, password: string) => Promise<ApiResponse>
-  register: (data: RegisterData) => Promise<ApiResponse>
   logout: () => Promise<boolean>
 }
 
@@ -35,21 +34,9 @@ interface ApiResponse {
   message?: string
 }
 
-interface RegisterData {
-  email: string
-  username: UserSession
-  nombre: string
-  apellido: string
-  rol: "admin" | "user"
-  habilitado: boolean
-  reporte: boolean
-  loading: boolean
-}
-
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 let setupCheckInProgress = false
-
 const SETUP_CACHE_KEY = "setup_check_cache"
 const SETUP_CACHE_DURATION = 3600000
 
@@ -59,8 +46,7 @@ function getStoredSetupCache(): boolean | null {
     const cached = localStorage.getItem(SETUP_CACHE_KEY)
     if (!cached) return null
     const { value, timestamp } = JSON.parse(cached)
-    const now = Date.now()
-    if (now - timestamp > SETUP_CACHE_DURATION) {
+    if (Date.now() - timestamp > SETUP_CACHE_DURATION) {
       localStorage.removeItem(SETUP_CACHE_KEY)
       return null
     }
@@ -72,17 +58,10 @@ function getStoredSetupCache(): boolean | null {
 
 function setStoredSetupCache(value: boolean): void {
   if (typeof window === "undefined") return
-  try {
-    localStorage.setItem(
-      SETUP_CACHE_KEY,
-      JSON.stringify({
-        value,
-        timestamp: Date.now(),
-      })
-    )
-  } catch (e) {
-    console.warn("Could not store setup cache:", e)
-  }
+  localStorage.setItem(
+    SETUP_CACHE_KEY,
+    JSON.stringify({ value, timestamp: Date.now() })
+  )
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -103,43 +82,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkSetupStatus = useCallback(async () => {
     const storedCache = getStoredSetupCache()
-
     if (storedCache !== null) {
-      if (storedCache === false) {
-        setNeedBootstrap(false)
-      } else {
-        setNeedBootstrap(true)
-      }
+      setNeedBootstrap(storedCache)
       return
     }
-
-    if (setupCheckInProgress) {
-      return
-    }
-
+    if (setupCheckInProgress) return
     setupCheckInProgress = true
-
     try {
-      const res = await fetch(`/api/bootstrap/needs-setup`, {
-        headers: { "Cache-Control": "max-age=3600" },
-      })
+      const res = await fetch(`/api/bootstrap/needs-setup`)
       const data = await res.json()
-
       const needsSetup = data.needs_setup === true
-
       setStoredSetupCache(needsSetup)
-
-      if (needsSetup) {
-        setNeedBootstrap(true)
-      } else {
-        setNeedBootstrap(false)
-      }
-    } catch (err) {
-      console.warn("Error checking setup status:", err)
+      setNeedBootstrap(needsSetup)
+    } catch {
       setStoredSetupCache(false)
       setNeedBootstrap(false)
     } finally {
       setupCheckInProgress = false
+    }
+  }, [])
+
+  const getToken = useCallback((): string | null => {
+    if (typeof window === "undefined") return null
+    let token = localStorage.getItem("access_token")
+    if (!token) {
+      token =
+        document.cookie
+          .split("; ")
+          .find((c) => c.startsWith("access_token="))
+          ?.split("=")[1] ?? null
+      if (token) localStorage.setItem("access_token", token)
+    }
+    return token
+  }, [])
+
+  const isTokenValid = useCallback((token: string): boolean => {
+    try {
+      const parts = token.split(".")
+      if (parts.length !== 3) return false
+      const payload = JSON.parse(atob(parts[1]))
+      if (!payload.sub) return false
+      if (payload.exp && payload.exp < Math.floor(Date.now() / 1000))
+        return false
+      return true
+    } catch {
+      return false
     }
   }, [])
 
@@ -149,57 +136,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (setupCache === true) {
         setNeedBootstrap(true)
         setUser(null)
+        setLoading(false)
         return
       }
       if (setupCache === null) {
         await checkSetupStatus()
       }
 
-      let token: string | undefined
-      if (typeof window !== "undefined") {
-        token =
-          localStorage.getItem("access_token") ??
-          document.cookie
-            .split("; ")
-            .find((c) => c.startsWith("access_token="))
-            ?.split("=")[1] ??
-          undefined
-        if (token && !localStorage.getItem("access_token")) {
-          localStorage.setItem("access_token", token)
-        }
-      }
-
+      const token = getToken()
       if (!token) {
         setUser(null)
+        setLoading(false)
         return
-      }
-
-      const isTokenValid = (t: string): boolean => {
-        try {
-          const b64 = t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")
-          const payload = JSON.parse(
-            decodeURIComponent(
-              atob(b64)
-                .split("")
-                .map(
-                  (c) => `%${("00" + c.charCodeAt(0).toString(16)).slice(-2)}`
-                )
-                .join("")
-            )
-          )
-          if (!payload?.sub) return false
-          if (payload.exp && payload.exp < Math.floor(Date.now() / 1000))
-            return false
-          return true
-        } catch {
-          return false
-        }
       }
 
       if (!isTokenValid(token)) {
         localStorage.removeItem("access_token")
         localStorage.removeItem("user")
         setUser(null)
+        setLoading(false)
         return
       }
 
@@ -210,43 +165,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (parsed?.username) {
             setUser(parsed)
             setNeedBootstrap(false)
+            setLoading(false)
             return
           }
-        } catch {
-        }
+        } catch {}
       }
 
       try {
-        const res = await fetch(`/api/proxy/auth/check`, {
-          credentials: "include",
+        const res = await fetch(`/api/auth/check`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (res.ok) {
-          const data = await res.json().catch(() => ({}))
+          const data = await res.json()
           if (data?.success && data?.data?.user) {
-            const incomingUser = data.data.user
-            const normalized = Array.isArray(incomingUser)
-              ? incomingUser[0]
-              : incomingUser
-            setUser(normalized)
+            const userData = data.data.user
+            const userToStore = { ...userData, token }
+            setUser(userToStore)
+            localStorage.setItem("user", JSON.stringify(userToStore))
             setNeedBootstrap(false)
-            try {
-              localStorage.setItem("user", JSON.stringify(normalized))
-            } catch {}
+            setLoading(false)
             return
           }
         }
       } catch (err) {
-        console.warn("Error en /check:", err)
+        console.warn("Error en check:", err)
       }
 
+      localStorage.removeItem("access_token")
+      localStorage.removeItem("user")
       setUser(null)
     } catch {
       setUser(null)
     } finally {
       setLoading(false)
     }
-  }, [checkSetupStatus])
+  }, [checkSetupStatus, getToken, isTokenValid])
 
   useEffect(() => {
     if (!sessionCheckCompleted.current) {
@@ -257,72 +210,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (pathname === "/login" && needBootstrap && !loading) {
-      const verifySetup = async () => {
-        await checkSetupStatus()
-      }
-      verifySetup()
+      checkSetupStatus()
     }
   }, [pathname, needBootstrap, loading, checkSetupStatus])
 
   useEffect(() => {
     if (!loading) {
-      if (!pathname) {
-        return
-      }
-
       const publicRoutes = [
         "/login",
-        "/register",
         "/bootstrap",
         "/login/recuperacion",
         "/login/recuperacion/reset_pass",
       ]
-
       const isPublicRoute = publicRoutes.some((route) =>
         pathname.startsWith(route)
       )
-
-      if (isPublicRoute) {
-        return
-      }
+      if (isPublicRoute) return
 
       if (needBootstrap && pathname !== "/bootstrap") {
         router.push("/bootstrap")
         return
       }
-
-      if (!user && pathname !== "/") {
+      if (!user) {
         router.push("/login")
+        return
       }
-
-      if (user && (pathname === "/login" || pathname === "/register")) {
+      if (user && (pathname === "/login")) {
         router.push("/")
       }
     }
   }, [user, loading, needBootstrap, pathname, router])
 
   useEffect(() => {
-    const syncUserState = () => {
-      if (user) {
-        setEmail(user.email ?? null)
-        setUsername(user.username ?? null)
-        setNombre(user.nombre ?? null)
-        setApellido(user.apellido ?? null)
-        setRol(user.rol ?? null)
-        setHabilitado(!!user.habilitado)
-        setReporte(!!user.reporte)
-      } else {
-        setEmail(null)
-        setUsername(null)
-        setNombre(null)
-        setApellido(null)
-        setRol(null)
-        setHabilitado(null)
-        setReporte(null)
-      }
+    if (user) {
+      setEmail(user.email ?? null)
+      setUsername(user.username ?? null)
+      setNombre(user.nombre ?? null)
+      setApellido(user.apellido ?? null)
+      setRol(user.rol ?? null)
+      setHabilitado(!!user.habilitado)
+      setReporte(!!user.reporte)
+    } else {
+      setEmail(null)
+      setUsername(null)
+      setNombre(null)
+      setApellido(null)
+      setRol(null)
+      setHabilitado(null)
+      setReporte(null)
     }
-
-    syncUserState()
   }, [user])
 
   const login = async (
@@ -330,124 +266,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string
   ): Promise<ApiResponse> => {
     try {
-      const body = { username, password }
-
-      const response = await fetch(`/api/proxy/auth/login`, {
+      const response = await fetch(`/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        credentials: "include",
+        body: JSON.stringify({ username, password }),
       })
 
-      let data: {
-        access_token?: string
-        token?: string
-        data?: { token?: string; access_token?: string; user?: unknown }
-        user?: unknown
-        error?: string
-        message?: string
-      } = {}
-      try {
-        data = await response.json()
-      } catch {
-        if (!response.ok) {
-          return {
-            success: false,
-            error: response.statusText || "Error en el login",
-          }
-        }
-        return { success: false, error: "Respuesta inesperada del servidor" }
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        return { success: false, error: data.message || "Error en el login" }
       }
 
-      const token =
-        data.access_token ??
-        data.token ??
-        data.data?.token ??
-        data.data?.access_token
+      const { token, user } = data.data
 
-      if (token) {
-        try {
-          localStorage.setItem("access_token", token)
-        } catch (e) {
-          console.warn("Could not store access_token", e)
-        }
+      localStorage.setItem("access_token", token)
+      const isSecure = process.env.NODE_ENV === "production"
+      document.cookie = `access_token=${token}; path=/; SameSite=Lax${isSecure ? "; Secure" : ""}`
+      const userToStore = { ...user, token }
+      localStorage.setItem("user", JSON.stringify(userToStore))
+      setUser(userToStore)
+      setNeedBootstrap(false)
 
-        const incomingUser = data.data?.user ?? data.user
-        if (incomingUser) {
-          const u = Array.isArray(incomingUser) ? incomingUser[0] : incomingUser
-          const userToStore = { ...(u || {}), token }
-          setUser(userToStore)
-          try {
-            localStorage.setItem("user", JSON.stringify(userToStore))
-          } catch (e) {
-            console.warn("Could not store user in localStorage", e)
-          }
-        }
+      window.location.href = "/"
 
-        setNeedBootstrap(false)
-        window.location.href = "/"
-
-        return { success: true, data }
-      }
-
-      return {
-        success: false,
-        error: data?.error ?? data?.message ?? "Login fallido",
-      }
+      return { success: true, data }
     } catch {
       return { success: false, error: "Error de conexión" }
     }
   }
 
-  const register = async (): Promise<ApiResponse> => {
-    return {
-      success: false,
-      error: "Registro no disponible. Contacte al administrador.",
-    }
-  }
-
-  const clearAuthStorage = () => {
-    if (typeof window === "undefined") return
-
-    try {
-      localStorage.removeItem("access_token")
-      localStorage.removeItem("token")
-      localStorage.removeItem("user")
-      localStorage.removeItem(SETUP_CACHE_KEY)
-      Cookies.remove("access_token")
-      Cookies.remove("auth_token")
-      Cookies.remove("accessToken")
-    } catch (e) {
-      console.warn("Could not remove tokens from storage", e)
-    }
-  }
-
   const logout = async (): Promise<boolean> => {
     try {
-      const res = await fetch(`/api/proxy/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-      })
-
-      let data: { success?: boolean } = {}
-      try {
-        data = await res.json()
-      } catch {
-        data = {}
-      }
-
-      setUser(null)
-      clearAuthStorage()
-
-      router.push("/login")
-
-      return res.ok && (data.success ?? true)
-    } catch {
-      setUser(null)
-      clearAuthStorage()
-      router.push("/login")
-      return false
-    }
+      await fetch(`/api/auth/logout`, { method: "POST" })
+    } catch {}
+    localStorage.removeItem("access_token")
+    localStorage.removeItem("user")
+    document.cookie =
+      "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+    setUser(null)
+    router.push("/login")
+    return true
   }
 
   return (
@@ -463,7 +322,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         reporte,
         loading,
         login,
-        register,
         logout,
       }}
     >
