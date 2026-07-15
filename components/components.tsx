@@ -134,3 +134,29 @@ export function Inputs({ extraClassName, className, ...props }: InputsProps) {
     />
   )
 }
+
+//---------------------------------------TABS---------------------------------------//
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+type TabData = {
+  id: number
+  nombre: string
+}
+
+export function TabsComp({ data, extraClass }: { data: TabData[]; extraClass?:string }) {
+  return (
+    <Tabs defaultValue={data[0]?.nombre}>
+      <TabsList variant="line">
+        {data.map((item) => (
+          <TabsTrigger
+            className={`${extraClass}`}
+            key={item.id}
+            value={item.nombre}
+          >
+            {item.nombre}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
+  )
+}

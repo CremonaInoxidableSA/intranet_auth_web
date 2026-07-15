@@ -1,15 +1,13 @@
-let cachedResult: boolean | null = null
+let cached: boolean | null = null
 
 export function getSetupCache(): boolean | null {
-  return cachedResult
+  return cached
 }
 
-export function setSetupCache(needsSetup: boolean): void {
-  if (!needsSetup) {
-    cachedResult = false
-  }
+export function setSetupCache(value: boolean): void {
+  cached = value
 }
 
 export function invalidateSetupCache(): void {
-  cachedResult = null
+  cached = null
 }

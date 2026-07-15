@@ -23,12 +23,14 @@ interface DataTableProps<TData> {
   columns: DataTableColumn<TData>[]
   data: TData[]
   pageSize?: number
+  extraClass?:string
 }
 
 export function DataTable<TData extends Record<string, unknown>>({
   columns,
   data,
   pageSize = 10,
+  extraClass
 }: DataTableProps<TData>) {
   const [pageIndex, setPageIndex] = useState(0)
 
@@ -43,7 +45,7 @@ export function DataTable<TData extends Record<string, unknown>>({
   const canNextPage = pageIndex < pageCount - 1
 
   return (
-    <div>
+    <div className={`flex flex-col ${extraClass}`}>
       <div className="overflow-hidden rounded border">
         <Table>
           <TableHeader className="bg-background5">

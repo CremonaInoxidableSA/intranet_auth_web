@@ -1,27 +1,14 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { verifyToken } from "./lib/auth"
-import { middlewarePaths } from "./lib/config"
-
-const publicRoutes = [
-  middlewarePaths.login,
-  middlewarePaths.recuperacion,
-  middlewarePaths.resetPassword,
-]
-
-const adminRoutes = [middlewarePaths.gestion]
-const routesWithOwnToken = [middlewarePaths.resetPassword]
 
 async function getBootstrapStatus(request: NextRequest): Promise<boolean> {
   try {
-    const url = new URL("/api/needs-setup", request.url)
+    const url = new URL("/api/bootstrap/needs-setup", request.url)
     const response = await fetch(url.toString(), {
       method: "GET",
       cache: "no-store",
     })
-
     if (!response.ok) return false
-
     const data = await response.json()
     return data.needs_setup === true
   } catch {
@@ -29,122 +16,27 @@ async function getBootstrapStatus(request: NextRequest): Promise<boolean> {
   }
 }
 
-function getToken(request: NextRequest): string | null {
-  return (
-    request.cookies.get("auth_token")?.value ||
-    request.cookies.get("access_token")?.value ||
-    request.cookies.get("accessToken")?.value ||
-    null
-  )
-}
-
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const token = getToken(request)
 
-  // ── Proteger endpoints /api/ ──────────────────────────────────────────────
-  if (pathname.startsWith("/api/")) {
-    // Endpoints públicos: no requieren token.
-    // needs-setup es de solo lectura (no expone datos sensibles) y debe
-    // poder consultarse ANTES de tener sesión: tanto /login como /bootstrap
-    // lo necesitan para decidir qué pantalla mostrar.
-    const publicApiRoutes = [
-      "/api/proxy/auth/login",
-      "/api/proxy/auth/register",
-      "/api/proxy/auth/recuperacion",
-      "/api/proxy/auth/reset-password",
-      "/api/proxy/auth/create-superadmin",
-      "/api/needs-setup",
-    ]
-    const isPublicApi = publicApiRoutes.some((route) =>
-      pathname.startsWith(route)
-    )
-    if (isPublicApi) return NextResponse.next()
+  if (pathname.startsWith("/api/bootstrap/")) {
+    return NextResponse.next()
+  }
 
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  if (pathname === "/login") {
+    const needsSetup = await getBootstrapStatus(request)
+    if (needsSetup) {
+      return NextResponse.redirect(new URL("/bootstrap", request.url))
     }
     return NextResponse.next()
   }
 
-  // ── Token en query string ─────────────────────────────────────────────────
-  const usesOwnToken = routesWithOwnToken.some((route) =>
-    pathname.startsWith(route)
-  )
-  const tokenFromQuery = request.nextUrl.searchParams.get("token")
-
-  if (tokenFromQuery && !usesOwnToken) {
-    const verified = await verifyToken(tokenFromQuery)
-    if (verified) {
-      const cleanUrl = new URL(request.nextUrl.pathname, request.url)
-      const response = NextResponse.redirect(cleanUrl)
-      response.cookies.set("access_token", tokenFromQuery, { path: "/" })
-      return response
-    } else {
-      return NextResponse.redirect(new URL("/login", request.url))
-    }
-  }
-
-  // ── Bootstrap ─────────────────────────────────────────────────────────────
   if (pathname.startsWith("/bootstrap")) {
     const needsSetup = await getBootstrapStatus(request)
     if (!needsSetup) {
       return NextResponse.redirect(new URL("/login", request.url))
     }
     return NextResponse.next()
-  }
-
-  // ── Rutas públicas ────────────────────────────────────────────────────────
-  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
-
-  if (isPublicRoute) {
-    // Si el sistema todavía no tiene usuarios, no dejamos ver /login:
-    // forzamos el flujo de bootstrap.
-    if (pathname.startsWith("/login")) {
-      const needsSetup = await getBootstrapStatus(request)
-      if (needsSetup) {
-        return NextResponse.redirect(new URL("/bootstrap", request.url))
-      }
-    }
-
-    if (token) {
-      const user = await verifyToken(token)
-      if (!user) {
-        // Token inválido: limpiar cookies y dejar pasar
-        const response = NextResponse.next()
-        response.cookies.delete("auth_token")
-        response.cookies.delete("access_token")
-        response.cookies.delete("accessToken")
-        return response
-      }
-
-      // Ya autenticado: redirigir al inicio
-      if (pathname.startsWith("/login") || pathname.startsWith("/register")) {
-        return NextResponse.redirect(new URL("/", request.url))
-      }
-    }
-
-    return NextResponse.next()
-  }
-
-  // ── Rutas protegidas ──────────────────────────────────────────────────────
-  if (!token) {
-    return NextResponse.redirect(new URL("/login", request.url))
-  }
-
-  const user = await verifyToken(token)
-  if (!user) {
-    const response = NextResponse.redirect(new URL("/login", request.url))
-    response.cookies.delete("auth_token")
-    response.cookies.delete("access_token")
-    response.cookies.delete("accessToken")
-    return response
-  }
-
-  // ── Rutas de admin ────────────────────────────────────────────────────────
-  const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route))
-  if (isAdminRoute && user.rol !== "admin" && user.rol !== "superadmin") {
-    return NextResponse.redirect(new URL("/", request.url))
   }
 
   return NextResponse.next()

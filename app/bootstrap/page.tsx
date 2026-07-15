@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { Boton, Inputs } from "@/components/components";
-import { Spinner } from "@/components/ui/spinner";
+import { Boton, Inputs } from "@/components/components"
+import { Spinner } from "@/components/ui/spinner"
 
 const BootstrapPage = () => {
   const router = useRouter()
@@ -22,7 +22,7 @@ const BootstrapPage = () => {
   useEffect(() => {
     const checkSetup = async () => {
       try {
-        const res = await fetch(`/api/needs-setup`)
+        const res = await fetch(`/api/bootstrap/needs-setup`)
         const data = await res.json()
 
         if (data.needs_setup) {
@@ -55,7 +55,7 @@ const BootstrapPage = () => {
     setLoading(true)
 
     try {
-      const res = await fetch(`/api/proxy/auth/create-superadmin`, {
+      const res = await fetch(`/api/bootstrap/create-superadmin`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -77,7 +77,16 @@ const BootstrapPage = () => {
         return
       }
 
-      await fetch("/api/needs-setup/invalidate", { method: "POST" })
+      const invalidateRes = await fetch(
+        "/api/bootstrap/needs-setup/invalidate",
+        {
+          method: "POST",
+        }
+      )
+      if (!invalidateRes.ok) {
+        console.warn("No se pudo invalidar la caché, pero continuamos")
+      }
+
       if (typeof window !== "undefined") {
         localStorage.removeItem("setup_check_cache")
       }
@@ -89,7 +98,7 @@ const BootstrapPage = () => {
       setLoading(false)
 
       timerRef.current = setTimeout(() => {
-        router.push("/login")
+        window.location.href = "/login"
       }, 2000)
     } catch (err) {
       setError(`Error al conectarse con el servidor: ${err}`)

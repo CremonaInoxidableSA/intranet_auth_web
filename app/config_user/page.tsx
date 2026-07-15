@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { authFetch } from "@/app/api/api"
-
 import { Spinner } from "@/components/ui/spinner"
 import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import { UserAvatar } from "@/components/userIcon/userAvatar"
@@ -17,7 +16,26 @@ import { DataTable } from "./(table)/data-table"
 
 import { useAuth } from "@/context/AuthProvider"
 
-import { Boton } from "@/components/components"
+import { Boton, TabsComp } from "@/components/components"
+
+const tablas = [
+  {
+    id: 1,
+    nombre: "Lista de Usuarios",
+  },
+  {
+    id: 2,
+    nombre: "Lista de Roles",
+  },
+  {
+    id: 3,
+    nombre: "Lista de Modulos",
+  },
+  {
+    id: 4,
+    nombre: "Lista de Submodulos",
+  },
+]
 
 export default function ConfiguracionUsuario() {
   const normalizeUsers = (users: unknown): User[] => {
@@ -118,7 +136,6 @@ export default function ConfiguracionUsuario() {
     refetchUsuarios()
   }
 
-  const { nombre, apellido, email, rol } = useAuth()
   const [data, setData] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [userToEdit, setUserToEdit] = useState<string | null>(null)
@@ -141,52 +158,13 @@ export default function ConfiguracionUsuario() {
     }
   }, [])
 
-  const getRoleName = (role?: string) => {
-    const roleMap: Record<string, string> = {
-      superadmin: "Superadmin",
-      admin: "Admin",
-      user: "Usuario",
-    }
-    return (role && roleMap[role]) || role || "-"
-  }
-
-  const fullname = `${nombre ?? ""}${nombre || apellido ? " " : ""}${
-    apellido ?? ""
-  }`.trim()
-
   return (
-    <section className="flex-1 gap-5 p-5">
-      <section className="grid grid-cols-2 gap-5 bg-background2 p-5 items-center">
-        <div className="flex flex-row gap-5">
-          <UserAvatar
-            nombre={nombre}
-            apellido={apellido}
-            rol={rol}
-            sizeClass="h-10 aspect-square"
-            textClass="text-2xl"
-          />
-          <div className="flex gap-5 w-full items-center">
-            <span className="text-lg font-semibold">
-              Nombre
-              <p className="text-md font-normal">{fullname || "-"}</p>
-            </span>
-
-            <span className="text-lg font-semibold">
-              Email
-              <p>{email || "-"}</p>
-            </span>
-
-            <span className="text-lg font-semibold">
-              Rol
-              <p>{rol ? getRoleName(rol) : "-"}</p>
-            </span>
-          </div>
-        </div>
-
-        <div>
+    <section className="flex flex-1 flex-col gap-5 p-5">
+      <section className="grid grid-cols-2 items-center gap-5 rounded bg-background2 p-5">
+        <div className="flex h-full flex-row items-center justify-end gap-5">
           <Dialog>
             <DialogTrigger asChild>
-              <Boton extraClass="border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30">
+              <Boton extraClass="border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30 flex-1 h-full">
                 Crear Usuario
               </Boton>
             </DialogTrigger>
@@ -195,7 +173,7 @@ export default function ConfiguracionUsuario() {
 
           <Dialog>
             <DialogTrigger asChild>
-              <Boton extraClass="border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30">
+              <Boton extraClass="border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30 flex-1 h-full">
                 Crear Rol
               </Boton>
             </DialogTrigger>
@@ -204,8 +182,17 @@ export default function ConfiguracionUsuario() {
 
           <Dialog>
             <DialogTrigger asChild>
-              <Boton extraClass="border-greencremona bg-greencremona/20 text-greencremona hover:bg-greencremona/30">
+              <Boton extraClass="border-greencremona bg-greencremona/20 text-greencremona hover:bg-greencremona/30 flex-1 h-full">
                 Agregar Modulo
+              </Boton>
+            </DialogTrigger>
+            <FormModulo />
+          </Dialog>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Boton extraClass="border-orangecremona bg-orangecremona/20 text-orangecremona hover:bg-orangecremona/30 flex-1 h-full">
+                Agregar Subodulo
               </Boton>
             </DialogTrigger>
             <FormModulo />
@@ -213,41 +200,39 @@ export default function ConfiguracionUsuario() {
         </div>
       </section>
 
-      <div className="flex h-full w-4/5 flex-col gap-5">
-        <div className="flex items-center justify-between">
-          <p className="flex w-full justify-center text-2xl">
-            Lista de Usuarios
-          </p>
-          {isLoading && (
-            <div className="flex items-center gap-2">
-              <Spinner />
-              <span>Cargando...</span>
-            </div>
-          )}
-        </div>
-
-        <DataTable
-          columns={columns(
-            editarUsuario,
-            deshabilitarUsuario,
-            habilitarUsuario,
-            eliminarUsuario
-          )}
-          data={data}
-        />
-
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          {userToEdit && (
-            <EditarUsuario
-              onUserCreated={handleUserUpdated}
-              usernameToEdit={userToEdit}
-              userIdToEdit={userIdToEdit}
+      <div className="flex flex-1 flex-col items-center gap-5">
+        <TabsComp data={tablas} extraClass="text-2xl" />
+        {isLoading && (
+          <div className="flex items-center gap-2">
+            <Spinner />
+            <span>Cargando...</span>
+          </div>
+        )}
+        {tablas.map((tabla) => {
+          return (
+            <DataTable
+              columns={columns(
+                editarUsuario,
+                deshabilitarUsuario,
+                habilitarUsuario,
+                eliminarUsuario
+              )}
+              extraClass="w-full"
+              data={data}
             />
-          )}
-        </Dialog>
-
-        <div className="mt-4"></div>
+          )
+        })}
+        
       </div>
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        {userToEdit && (
+          <EditarUsuario
+            onUserCreated={handleUserUpdated}
+            usernameToEdit={userToEdit}
+            userIdToEdit={userIdToEdit}
+          />
+        )}
+      </Dialog>
     </section>
   )
 }

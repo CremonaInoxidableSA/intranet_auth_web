@@ -120,10 +120,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setupCheckInProgress = true
 
     try {
-      const res = await fetch(`/api/needs-setup`, {
-        headers: {
-          "Cache-Control": "max-age=3600",
-        },
+      const res = await fetch(`/api/bootstrap/needs-setup`, {
+        headers: { "Cache-Control": "max-age=3600" },
       })
       const data = await res.json()
 
@@ -147,7 +145,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkSession = useCallback(async () => {
     try {
-      // 1. Verificar bootstrap
       const setupCache = getStoredSetupCache()
       if (setupCache === true) {
         setNeedBootstrap(true)
@@ -158,7 +155,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await checkSetupStatus()
       }
 
-      // 2. Leer token: primero localStorage, luego cookie como fallback
       let token: string | undefined
       if (typeof window !== "undefined") {
         token =
@@ -168,7 +164,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .find((c) => c.startsWith("access_token="))
             ?.split("=")[1] ??
           undefined
-        // Si vino de cookie pero no estaba en localStorage, sincronizar
         if (token && !localStorage.getItem("access_token")) {
           localStorage.setItem("access_token", token)
         }
@@ -179,7 +174,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      // 3. Verificar que el token no esté expirado
       const isTokenValid = (t: string): boolean => {
         try {
           const b64 = t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")
@@ -203,14 +197,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (!isTokenValid(token)) {
-        // Token expirado o inválido — limpiar y forzar re-login
         localStorage.removeItem("access_token")
         localStorage.removeItem("user")
         setUser(null)
         return
       }
 
-      // 4. Hidratar usuario desde localStorage (evita un fetch innecesario)
       const storedUserRaw = localStorage.getItem("user")
       if (storedUserRaw) {
         try {
@@ -221,11 +213,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return
           }
         } catch {
-          // JSON corrupto, continuar al fetch
         }
       }
 
-      // 5. Fallback: pedir el usuario al backend
       try {
         const res = await fetch(`/api/proxy/auth/check`, {
           credentials: "include",
@@ -250,7 +240,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.warn("Error en /check:", err)
       }
 
-      // Si llegamos acá sin usuario, limpiar
       setUser(null)
     } catch {
       setUser(null)
@@ -377,16 +366,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         data.data?.access_token
 
       if (token) {
-        // Guardar token en localStorage (para authFetch).
-        // La cookie la setea el backend en su respuesta y el proxy route.ts la propaga.
         try {
           localStorage.setItem("access_token", token)
         } catch (e) {
           console.warn("Could not store access_token", e)
         }
 
-        // El backend devuelve { success, data: { token, user } }
-        // Usar el objeto user completo de la respuesta
         const incomingUser = data.data?.user ?? data.user
         if (incomingUser) {
           const u = Array.isArray(incomingUser) ? incomingUser[0] : incomingUser
@@ -400,9 +385,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         setNeedBootstrap(false)
-        // window.location.href fuerza un request HTTP completo al servidor
-        // para que la cookie seteada por el backend (propagada por el proxy)
-        // sea enviada en el siguiente request.
         window.location.href = "/"
 
         return { success: true, data }

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getSetupCache, setSetupCache } from "@/lib/setup-cache"
 
-const API_AUTH_URL = process.env.API_AUTH_URL ?? "http://192.168.20.150:8000"
+const API_AUTH_URL =
+  process.env.NEXT_PUBLIC_API_AUTH_URL ?? "http://192.168.20.151:8000"
 
 async function checkSetupBackend(): Promise<boolean> {
   try {
@@ -9,11 +10,9 @@ async function checkSetupBackend(): Promise<boolean> {
       method: "GET",
       cache: "no-store",
     })
-
     if (!response.ok) {
       throw new Error(`Backend responded with status ${response.status}`)
     }
-
     const data = await response.json()
     return data.needs_setup === true
   } catch (error) {
