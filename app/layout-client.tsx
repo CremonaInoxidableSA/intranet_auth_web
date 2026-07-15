@@ -16,6 +16,7 @@ export default function LayoutClient({
     "/login",
     "/login/recuperacion",
     "/login/recuperacion/reset_pass",
+    "/bootstrap",
   ].includes(pathname)
 
   return (

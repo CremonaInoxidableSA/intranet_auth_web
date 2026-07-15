@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
+import { Boton, Inputs } from "@/components/components";
+import { Spinner } from "@/components/ui/spinner";
 
 const BootstrapPage = () => {
   const router = useRouter()
@@ -120,11 +122,11 @@ const BootstrapPage = () => {
 
   return (
     <div className="flex h-screen w-full flex-col items-center justify-center">
-      <div className="flex h-auto w-[40vw] flex-col rounded-md bg-background2 p-5">
+      <div className="flex h-auto w-[40vw] flex-col gap-5 rounded-md bg-background2 p-5">
         <h1 className="flex w-full justify-center text-4xl font-semibold">
-          Crear Superadmin Inicial
+          Crear superadmin inicial
         </h1>
-        <p className="text-md my-3">
+        <p className="text-md text-redcremona opacity-70">
           No hay usuarios en la base de datos. Por favor, crea el usuario
           administrador.
         </p>
@@ -139,98 +141,98 @@ const BootstrapPage = () => {
           onSubmit={handleSubmit}
           className="flex h-auto w-full flex-col gap-2.5"
         >
-          <div className="flex h-1/3 flex-col gap-1.25">
-            <label
-              htmlFor="username"
-              className="flex text-[17px] font-semibold tracking-[0.5px]"
-            >
-              Usuario
-            </label>
-            <input
+          <label
+            htmlFor="username"
+            className="flex h-1/3 cursor-pointer flex-col gap-1.25"
+          >
+            <span className="flex font-semibold">Usuario</span>
+            <Inputs
+              placeholder="Ingrese su nombre de usuario"
               id="username"
+              name="username"
               type="text"
+              autoComplete="username"
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="flex h-2/3 w-full items-center justify-center rounded-md border-none bg-background3 p-1 px-4"
             />
-          </div>
+          </label>
 
-          <div className="flex h-1/3 flex-col gap-1.25">
-            <label
-              htmlFor="email"
-              className="flex text-[17px] font-semibold tracking-[0.5px]"
-            >
-              Email
-            </label>
-            <input
+          <label
+            htmlFor="email"
+            className="flex h-1/3 cursor-pointer flex-col gap-1.25"
+          >
+            <span className="flex font-semibold">E-mail</span>
+            <Inputs
+              placeholder="Ingrese su email"
               id="email"
+              name="email"
               type="email"
+              autoComplete="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="flex h-2/3 w-full items-center justify-center rounded-md border-none bg-background3 p-1 px-4"
             />
-          </div>
+          </label>
 
-          <div className="flex h-1/3 flex-col gap-1.25">
-            <label
-              htmlFor="nombre"
-              className="flex text-[17px] font-semibold tracking-[0.5px]"
-            >
-              Nombre
-            </label>
-            <input
-              id="nombre"
+          <label
+            htmlFor="name"
+            className="flex h-1/3 cursor-pointer flex-col gap-1.25"
+          >
+            <span className="flex font-semibold">Nombre</span>
+            <Inputs
+              placeholder="Ingrese su nombre"
+              id="name"
+              name="name"
               type="text"
+              autoComplete="name"
               required
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
-              className="flex h-2/3 w-full items-center justify-center rounded-md border-none bg-background3 p-1 px-4"
             />
-          </div>
+          </label>
 
-          <div className="flex h-1/3 flex-col gap-1.25">
-            <label
-              htmlFor="apellido"
-              className="flex text-[17px] font-semibold tracking-[0.5px]"
-            >
-              Apellido
-            </label>
-            <input
-              id="apellido"
+          <label
+            htmlFor="surname"
+            className="flex h-1/3 cursor-pointer flex-col gap-1.25"
+          >
+            <span className="flex font-semibold">Apellido</span>
+            <Inputs
+              placeholder="Ingrese su apellido"
+              id="surname"
+              name="surname"
               type="text"
+              autoComplete="surname"
               required
               value={apellido}
               onChange={(e) => setApellido(e.target.value)}
-              className="flex h-2/3 w-full items-center justify-center rounded-md border-none bg-background3 p-1 px-4"
             />
-          </div>
+          </label>
 
-          <div className="flex h-1/3 flex-col gap-1.25">
-            <label
-              htmlFor="password"
-              className="flex text-[17px] font-semibold tracking-[0.5px]"
-            >
-              Contraseña
-            </label>
-            <input
+          <label
+            htmlFor="password"
+            className="flex h-1/3 cursor-pointer flex-col gap-1.25"
+          >
+            <span className="flex font-semibold">Contraseña</span>
+            <Inputs
+              placeholder="Ingrese su contraseña"
               id="password"
+              name="password"
               type="password"
+              autoComplete="current-password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="flex h-2/3 w-full items-center justify-center rounded-md border-none bg-background3 p-1 px-4"
             />
-          </div>
+          </label>
 
-          <button
+          <Boton
             type="submit"
+            extraClass="items-center justify-center border-redcremona bg-redcremona/50 p-1 text-white hover:bg-redcremona/80"
             disabled={loading || !!successMessage}
-            className="mt-4 flex h-13 w-full cursor-pointer items-center justify-center rounded-md border-none bg-[#e82a31] p-1 font-semibold text-white disabled:cursor-not-allowed disabled:bg-[#a82328]"
           >
-            {loading ? "Creando..." : "Crear Superadmin"}
-          </button>
+            {loading ? <Spinner /> : "Crear Superadmin"}
+          </Boton>
         </form>
       </div>
     </div>

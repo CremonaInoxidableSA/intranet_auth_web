@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import { authFetch } from "@/app/api/api"
 
-import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import { UserAvatar } from "@/components/userIcon/userAvatar"
@@ -17,6 +16,8 @@ import { columns, User } from "./(table)/columns"
 import { DataTable } from "./(table)/data-table"
 
 import { useAuth } from "@/context/AuthProvider"
+
+import { Boton } from "@/components/components"
 
 export default function ConfiguracionUsuario() {
   const normalizeUsers = (users: unknown): User[] => {
@@ -154,63 +155,64 @@ export default function ConfiguracionUsuario() {
   }`.trim()
 
   return (
-    <div className="flex w-full flex-row gap-5 p-5">
-      <div className="flex h-full w-1/5 flex-col justify-start gap-5 self-stretch rounded bg-background2 p-5">
-        <div className="flex w-full items-center justify-center">
+    <section className="flex-1 gap-5 p-5">
+      <section className="grid grid-cols-2 gap-5 bg-background2 p-5 items-center">
+        <div className="flex flex-row gap-5">
           <UserAvatar
             nombre={nombre}
             apellido={apellido}
             rol={rol}
-            sizeClass="w-20 h-20"
+            sizeClass="h-10 aspect-square"
             textClass="text-2xl"
-            imgPx={80}
           />
+          <div className="flex gap-5 w-full items-center">
+            <span className="text-lg font-semibold">
+              Nombre
+              <p className="text-md font-normal">{fullname || "-"}</p>
+            </span>
+
+            <span className="text-lg font-semibold">
+              Email
+              <p>{email || "-"}</p>
+            </span>
+
+            <span className="text-lg font-semibold">
+              Rol
+              <p>{rol ? getRoleName(rol) : "-"}</p>
+            </span>
+          </div>
         </div>
 
-        <div className="flex flex-col gap-5 text-left">
-          <div>
-            <p className="text-xl font-semibold">Nombre</p>
-            <p>{fullname || "-"}</p>
-          </div>
+        <div>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Boton extraClass="border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30">
+                Crear Usuario
+              </Boton>
+            </DialogTrigger>
+            <FormUsuario onUserCreated={refetchUsuarios} />
+          </Dialog>
 
-          <div>
-            <p className="text-lg font-semibold">Email</p>
-            <p>{email || "-"}</p>
-          </div>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Boton extraClass="border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30">
+                Crear Rol
+              </Boton>
+            </DialogTrigger>
+            <FormRol />
+          </Dialog>
 
-          <div>
-            <p className="text-lg font-semibold">Rol</p>
-            <p>{rol ? getRoleName(rol) : "-"}</p>
-          </div>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Boton extraClass="border-greencremona bg-greencremona/20 text-greencremona hover:bg-greencremona/30">
+                Agregar Modulo
+              </Boton>
+            </DialogTrigger>
+            <FormModulo />
+          </Dialog>
         </div>
+      </section>
 
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button className="text-md h-10 w-full cursor-pointer border border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30">
-              Crear Usuario
-            </Button>
-          </DialogTrigger>
-          <FormUsuario onUserCreated={refetchUsuarios} />
-        </Dialog>
-
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button className="text-md h-10 w-full cursor-pointer border border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30">
-              Crear Rol
-            </Button>
-          </DialogTrigger>
-          <FormRol />
-        </Dialog>
-
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button className="text-md h-10 w-full cursor-pointer border border-greencremona bg-greencremona/20 text-greencremona hover:bg-greencremona/30">
-              Agregar Modulo
-            </Button>
-          </DialogTrigger>
-          <FormModulo />
-        </Dialog>
-      </div>
       <div className="flex h-full w-4/5 flex-col gap-5">
         <div className="flex items-center justify-between">
           <p className="flex w-full justify-center text-2xl">
@@ -246,6 +248,6 @@ export default function ConfiguracionUsuario() {
 
         <div className="mt-4"></div>
       </div>
-    </div>
+    </section>
   )
 }

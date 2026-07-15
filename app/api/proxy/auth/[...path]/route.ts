@@ -1,12 +1,4 @@
-/**
- * API Route proxy para endpoints de autenticación
- * Ruta: /api/proxy/auth/[...path]
- * Redirige a: process.env.API_AUTH_URL/[...path]
- *
- * Corre únicamente en el servidor — la URL real de la API nunca se envía al navegador.
- * IMPORTANTE: propaga Set-Cookie del backend al browser para que la cookie
- * httponly quede seteada en el dominio de Next.js (puerto 3000).
- */
+import { invalidateSetupCache } from "@/lib/setup-cache"
 
 type Props = {
   params: Promise<{ path: string[] }>
@@ -72,14 +64,19 @@ async function proxyRequest(
       data = text
     }
 
-    // Construir respuesta y propagar Set-Cookie del backend al browser
+    const isCreateSuperadmin =
+      path.join("/") === "auth/create-superadmin" && method === "POST"
+    if (isCreateSuperadmin && backendResponse.ok) {
+      const result = data as { success?: boolean }
+      if (result?.success) {
+        invalidateSetupCache()
+      }
+    }
+
     const response = Response.json(data, { status: backendResponse.status })
 
     const setCookie = backendResponse.headers.get("set-cookie")
     if (setCookie) {
-      // El backend setea la cookie con httponly en su dominio.
-      // La reemplazamos sin httponly para que el middleware de Next.js
-      // también pueda leerla, manteniendo samesite=lax y path=/.
       const cookieValue = setCookie
         .replace(/;\s*httponly/gi, "")
         .replace(/;\s*secure/gi, "")

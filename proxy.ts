@@ -44,24 +44,24 @@ export async function proxy(request: NextRequest) {
 
   // ── Proteger endpoints /api/ ──────────────────────────────────────────────
   if (pathname.startsWith("/api/")) {
-    // Endpoints públicos: no requieren token
+    // Endpoints públicos: no requieren token.
+    // needs-setup es de solo lectura (no expone datos sensibles) y debe
+    // poder consultarse ANTES de tener sesión: tanto /login como /bootstrap
+    // lo necesitan para decidir qué pantalla mostrar.
     const publicApiRoutes = [
       "/api/proxy/auth/login",
       "/api/proxy/auth/register",
       "/api/proxy/auth/recuperacion",
       "/api/proxy/auth/reset-password",
+      "/api/proxy/auth/create-superadmin",
+      "/api/needs-setup",
     ]
     const isPublicApi = publicApiRoutes.some((route) =>
       pathname.startsWith(route)
     )
     if (isPublicApi) return NextResponse.next()
 
-    if (pathname.startsWith("/api/needs-setup")) {
-      const isBootstrapRequest = pathname.includes("/bootstrap")
-      if (!isBootstrapRequest && !token) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-      }
-    } else if (!token) {
+    if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
     return NextResponse.next()
@@ -98,6 +98,15 @@ export async function proxy(request: NextRequest) {
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
 
   if (isPublicRoute) {
+    // Si el sistema todavía no tiene usuarios, no dejamos ver /login:
+    // forzamos el flujo de bootstrap.
+    if (pathname.startsWith("/login")) {
+      const needsSetup = await getBootstrapStatus(request)
+      if (needsSetup) {
+        return NextResponse.redirect(new URL("/bootstrap", request.url))
+      }
+    }
+
     if (token) {
       const user = await verifyToken(token)
       if (!user) {
