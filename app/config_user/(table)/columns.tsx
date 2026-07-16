@@ -15,6 +15,7 @@ export type ColumnDef<T> = {
   accessorKey?: keyof T
   header?: string
   id?: string
+  className?: string
   cell?: (props: { row: T }) => ReactNode
 }
 
@@ -38,10 +39,12 @@ export const columns = (
   {
     accessorKey: "email",
     header: "Email",
+    className: "hidden xl:table-cell",
   },
   {
     accessorKey: "username",
     header: "Usuario",
+    className: "hidden xl:table-cell",
   },
   {
     accessorKey: "nombre",
@@ -67,6 +70,7 @@ export const columns = (
   {
     accessorKey: "habilitado",
     header: "Habilitado",
+    className: "hidden xl:table-cell",
     cell: ({ row }) => (row.habilitado === 1 ? "Sí" : "No"),
   },
   {

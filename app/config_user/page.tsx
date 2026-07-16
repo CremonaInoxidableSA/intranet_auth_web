@@ -343,14 +343,37 @@ export default function ConfiguracionUsuario() {
 
   return (
     <section className="flex flex-1 flex-col gap-5 p-5">
-      <div className="flex flex-1 flex-col items-center gap-5">
-        <div className="flex w-full flex-col items-center justify-between gap-5 xl:flex-row">
-          <TabsComp
-            data={tablas}
-            extraClass="text-2xl"
-            value={String(selectedTabId)}
-            onValueChange={(value) => setSelectedTabId(Number(value))}
-          />
+      <div className="flex w-full flex-1 flex-col gap-5">
+        <div className="flex w-full flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex w-full flex-col gap-3 xl:w-auto">
+            <div className="hidden xl:block">
+              <TabsComp
+                data={tablas}
+                extraClass="xl:text-xl"
+                value={String(selectedTabId)}
+                onValueChange={(value) => setSelectedTabId(Number(value))}
+              />
+            </div>
+            <div className="block xl:hidden">
+              <label htmlFor="mobile-tab-select" className="sr-only">
+                Seleccionar lista
+              </label>
+              <select
+                id="mobile-tab-select"
+                value={String(selectedTabId)}
+                onChange={(event) =>
+                  setSelectedTabId(Number(event.target.value))
+                }
+                className="w-full rounded border border-background6 bg-background3 px-3 py-2 text-sm text-foreground transition outline-none focus:border-background5"
+              >
+                {tablas.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
           <Dialog>
             <DialogTrigger asChild>
@@ -358,7 +381,7 @@ export default function ConfiguracionUsuario() {
                 extraClass={`${
                   currentCreateButton?.extraClass ??
                   "border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
-                } xl:w-auto w-full`}
+                } w-full xl:w-auto`}
               >
                 {currentCreateButton?.nombre ?? "Crear Usuario"}
               </Boton>
@@ -373,7 +396,7 @@ export default function ConfiguracionUsuario() {
             <span>Cargando...</span>
           </div>
         ) : (
-          <div className="w-full flex flex-col gap-5">
+          <div className="flex w-full flex-col gap-5">
             {error ? (
               <div className="rounded border border-red-500 bg-red-700/10 p-4 text-sm text-red-500">
                 {error}

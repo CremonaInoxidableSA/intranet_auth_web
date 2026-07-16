@@ -16,6 +16,7 @@ export type DataTableColumn<TData> = {
   accessorKey?: keyof TData
   header?: string
   id?: string
+  className?: string
   cell?: (props: { row: TData }) => ReactNode
 }
 
@@ -56,7 +57,7 @@ export function DataTable<TData extends Record<string, unknown>>({
                     column.id ??
                     String(column.accessorKey ?? column.header ?? "")
                   }
-                  className="border border-background6 bg-background6"
+                  className={`border border-background6 bg-background6 ${column.className ?? ""}`}
                 >
                   {column.header ?? ""}
                 </TableHead>
@@ -78,6 +79,7 @@ export function DataTable<TData extends Record<string, unknown>>({
                       key={
                         column.id ?? String(column.accessorKey ?? column.header)
                       }
+                      className={column.className}
                     >
                       {column.cell
                         ? column.cell({ row })

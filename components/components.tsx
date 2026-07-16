@@ -160,10 +160,13 @@ export function TabsComp({
       defaultValue={String(data[0]?.id)}
       onValueChange={onValueChange}
     >
-      <TabsList variant="line">
+      <TabsList
+        className="flex flex-wrap gap-2 overflow-visible px-1"
+        variant="line"
+      >
         {data.map((item) => (
           <TabsTrigger
-            className={`${extraClass}`}
+            className={`min-w-max rounded-full px-4 py-2 text-sm whitespace-nowrap xl:px-5 xl:py-3 ${extraClass ?? ""}`}
             key={item.id}
             value={String(item.id)}
           >
