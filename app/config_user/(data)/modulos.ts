@@ -1,11 +1,10 @@
-export type Role = {
+export type Modulo = {
   id?: number
-  rol?: string
   nombre?: string
   descripcion?: string
 }
 
-function normalizeResponse<T>(response: unknown): T[] {
+const normalizeResponse = <T>(response: unknown): T[] => {
   if (Array.isArray(response)) return response
   if (response && typeof response === "object") {
     const maybeData = (response as { data?: unknown }).data
@@ -14,18 +13,18 @@ function normalizeResponse<T>(response: unknown): T[] {
   return []
 }
 
-export async function fetchRoles(
+export async function fetchModulos(
   headers: Record<string, string> = { Accept: "application/json" }
-): Promise<Role[]> {
-  const res = await fetch("/api/roles/lista-roles", {
+): Promise<Modulo[]> {
+  const res = await fetch("/api/modulos/lista-modulos", {
     method: "GET",
     headers,
   })
 
   if (!res.ok) {
-    throw new Error("Error al cargar roles")
+    throw new Error("Error al cargar módulos")
   }
 
   const data = await res.json()
-  return normalizeResponse<Role>(data)
+  return normalizeResponse<Modulo>(data)
 }

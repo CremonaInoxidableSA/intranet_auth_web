@@ -23,14 +23,14 @@ interface DataTableProps<TData> {
   columns: DataTableColumn<TData>[]
   data: TData[]
   pageSize?: number
-  extraClass?:string
+  extraClass?: string
 }
 
 export function DataTable<TData extends Record<string, unknown>>({
   columns,
   data,
   pageSize = 10,
-  extraClass
+  extraClass,
 }: DataTableProps<TData>) {
   const [pageIndex, setPageIndex] = useState(0)
 
@@ -94,7 +94,7 @@ export function DataTable<TData extends Record<string, unknown>>({
                   colSpan={columns.length}
                   className="h-24 bg-background3 text-center"
                 >
-                  No results.
+                  No hay datos.
                 </TableCell>
               </TableRow>
             )}

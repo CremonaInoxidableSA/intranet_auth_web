@@ -5,9 +5,10 @@ const API_AUTH_URL =
 
 export async function POST(request: NextRequest) {
   try {
-    const { id } = await request.json()
+    const { current_user_id, id } = await request.json()
+    const userId = typeof current_user_id === "number" ? current_user_id : id
 
-    if (typeof id !== "number") {
+    if (typeof userId !== "number") {
       return NextResponse.json(
         {
           success: false,
@@ -17,13 +18,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const response = await fetch(`${API_AUTH_URL}/tu_endpoint`, {
+    const response = await fetch(`${API_AUTH_URL}/usuarios`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        current_user_id: id,
+        current_user_id: userId,
       }),
     })
 

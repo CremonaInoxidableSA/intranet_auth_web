@@ -143,15 +143,29 @@ type TabData = {
   nombre: string
 }
 
-export function TabsComp({ data, extraClass }: { data: TabData[]; extraClass?:string }) {
+export function TabsComp({
+  data,
+  extraClass,
+  value,
+  onValueChange,
+}: {
+  data: TabData[]
+  extraClass?: string
+  value?: string
+  onValueChange?: (value: string) => void
+}) {
   return (
-    <Tabs defaultValue={data[0]?.nombre}>
+    <Tabs
+      value={value}
+      defaultValue={String(data[0]?.id)}
+      onValueChange={onValueChange}
+    >
       <TabsList variant="line">
         {data.map((item) => (
           <TabsTrigger
             className={`${extraClass}`}
             key={item.id}
-            value={item.nombre}
+            value={String(item.id)}
           >
             {item.nombre}
           </TabsTrigger>

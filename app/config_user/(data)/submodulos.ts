@@ -1,11 +1,11 @@
-export type Role = {
+export type Submodulo = {
   id?: number
-  rol?: string
   nombre?: string
+  modulo?: string
   descripcion?: string
 }
 
-function normalizeResponse<T>(response: unknown): T[] {
+const normalizeResponse = <T>(response: unknown): T[] => {
   if (Array.isArray(response)) return response
   if (response && typeof response === "object") {
     const maybeData = (response as { data?: unknown }).data
@@ -14,18 +14,18 @@ function normalizeResponse<T>(response: unknown): T[] {
   return []
 }
 
-export async function fetchRoles(
+export async function fetchSubmodulos(
   headers: Record<string, string> = { Accept: "application/json" }
-): Promise<Role[]> {
-  const res = await fetch("/api/roles/lista-roles", {
+): Promise<Submodulo[]> {
+  const res = await fetch("/api/submodulos/lista-submodulos", {
     method: "GET",
     headers,
   })
 
   if (!res.ok) {
-    throw new Error("Error al cargar roles")
+    throw new Error("Error al cargar submódulos")
   }
 
   const data = await res.json()
-  return normalizeResponse<Role>(data)
+  return normalizeResponse<Submodulo>(data)
 }
