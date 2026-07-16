@@ -31,9 +31,9 @@ export type User = {
 
 export const columns = (
   onEditUser: (id: number | undefined, username: string) => void,
-  onDisableUser: (username: string) => void,
-  onEnableUser: (username: string) => void,
-  onDeleteUser: (username: string) => void
+  onDisableUser: (usuario_id: number) => void,
+  onEnableUser: (usuario_id: number) => void,
+  onDeleteUser: (usuario_id: number) => void
 ): ColumnDef<User>[] => [
   {
     accessorKey: "email",
@@ -90,18 +90,22 @@ export const columns = (
               <PencilLine className="mr-2 h-4 w-4" /> Editar
             </DropdownMenuItem>
             {user.habilitado === 1 ? (
-              <DropdownMenuItem onClick={() => onDisableUser(user.username)}>
+              <DropdownMenuItem
+                onClick={() => user.id !== undefined && onDisableUser(user.id)}
+              >
                 <CircleMinus className="mr-2 h-4 w-4" />
                 Deshabilitar
               </DropdownMenuItem>
             ) : (
-              <DropdownMenuItem onClick={() => onEnableUser(user.username)}>
+              <DropdownMenuItem
+                onClick={() => user.id !== undefined && onEnableUser(user.id)}
+              >
                 <CircleMinus className="mr-2 h-4 w-4" />
                 Habilitar
               </DropdownMenuItem>
             )}
             <DropdownMenuItem
-              onClick={() => onDeleteUser(user.username)}
+              onClick={() => user.id !== undefined && onDeleteUser(user.id)}
               className="text-redcremona focus:text-redcremona"
             >
               <Trash2 className="mr-2 h-4 w-4" />

@@ -82,15 +82,14 @@ export interface User {
   reporte: boolean
 }
 
-// username es el único campo garantizado al construir desde un JWT.
-// El resto se completa cuando el backend devuelve el objeto user completo.
 export interface UserSession {
   id?: number
   email?: string
   username: string
-  nombre?: string
-  apellido?: string
+  nombre: string
+  apellido: string
   rol?: "superadmin" | "admin" | "user"
-  habilitado?: boolean
+  habilitado: boolean
   reporte?: boolean
+  token?: string
 }

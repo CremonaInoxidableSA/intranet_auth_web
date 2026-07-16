@@ -1,20 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Spinner } from "@/components/ui/spinner"
-import { Dialog, DialogTrigger } from "@/components/ui/dialog"
-
-import FormUsuario from "./(formulario)/formUsuario"
-import FormRol from "./(formulario)/formRol"
-import FormModulo from "./(formulario)/formModulo"
-import EditarUsuario from "./(table)/editarUsuario"
-
-import { columns, User } from "./(table)/columns"
-import { DataTable } from "./(table)/data-table"
-
+import { User } from "../(table)/columns"
 import { useAuth } from "@/context/AuthProvider"
-
-import { Boton, TabsComp } from "@/components/components"
 
 const tablas = [
   {
@@ -35,7 +23,7 @@ const tablas = [
   },
 ]
 
-export default function ConfiguracionUsuario() {
+export default function DataUsuarios() {
   const { user } = useAuth()
 
   useEffect(() => {
@@ -189,81 +177,4 @@ export default function ConfiguracionUsuario() {
     undefined
   )
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-
-  return (
-    <section className="flex flex-1 flex-col gap-5 p-5">
-      <section className="grid grid-cols-2 items-center gap-5 rounded bg-background2 p-5">
-        <div className="flex h-full flex-row items-center justify-end gap-5">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Boton extraClass="border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30 flex-1 h-full">
-                Crear Usuario
-              </Boton>
-            </DialogTrigger>
-            <FormUsuario onUserCreated={refetchUsuarios} />
-          </Dialog>
-
-          <Dialog>
-            <DialogTrigger asChild>
-              <Boton extraClass="border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30 flex-1 h-full">
-                Crear Rol
-              </Boton>
-            </DialogTrigger>
-            <FormRol />
-          </Dialog>
-
-          <Dialog>
-            <DialogTrigger asChild>
-              <Boton extraClass="border-greencremona bg-greencremona/20 text-greencremona hover:bg-greencremona/30 flex-1 h-full">
-                Agregar Modulo
-              </Boton>
-            </DialogTrigger>
-            <FormModulo />
-          </Dialog>
-
-          <Dialog>
-            <DialogTrigger asChild>
-              <Boton extraClass="border-orangecremona bg-orangecremona/20 text-orangecremona hover:bg-orangecremona/30 flex-1 h-full">
-                Agregar Submodulo
-              </Boton>
-            </DialogTrigger>
-            <FormModulo />
-          </Dialog>
-        </div>
-      </section>
-
-      <div className="flex flex-1 flex-col items-center gap-5">
-        <TabsComp data={tablas} extraClass="text-2xl" />
-        {isLoading && (
-          <div className="flex items-center gap-2">
-            <Spinner />
-            <span>Cargando...</span>
-          </div>
-        )}
-        {tablas.map((tabla) => {
-          return (
-            <DataTable
-              columns={columns(
-                editarUsuario,
-                deshabilitarUsuario,
-                habilitarUsuario,
-                eliminarUsuario
-              )}
-              extraClass="w-full"
-              data={data}
-            />
-          )
-        })}
-      </div>
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        {userToEdit && (
-          <EditarUsuario
-            onUserCreated={handleUserUpdated}
-            usernameToEdit={userToEdit}
-            userIdToEdit={userIdToEdit}
-          />
-        )}
-      </Dialog>
-    </section>
-  )
 }

@@ -22,7 +22,6 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 
 import { useState } from "react"
-import { authFetch } from "@/app/api/api"
 import { useAuth } from "@/context/AuthProvider"
 import { toast } from "sonner"
 
@@ -56,7 +55,7 @@ export default function GenerarReclamo() {
     }
 
     try {
-      const response = await authFetch(`/api/proxy/mail/reclamos/crear`, {
+      const response = await fetch(`/api/proxy/mail/reclamos/crear`, {
         method: "POST",
         body: JSON.stringify({
           nombre: form.nombre,

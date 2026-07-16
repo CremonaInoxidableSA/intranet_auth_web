@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { authFetch } from "@/app/api/api"
 import { Button } from "@/components/ui/button"
 import {
   DialogClose,
@@ -51,7 +50,7 @@ export default function FormUsuario({ onUserCreated }: Props) {
 
     const payload = { ...form, habilitado: form.habilitado ? 1 : 0 }
 
-    const res = await authFetch(`/api/proxy/auth/crear_usuario`, {
+    const res = await fetch(`/api/proxy/auth/crear_usuario`, {
       method: "POST",
       body: JSON.stringify(payload),
     })

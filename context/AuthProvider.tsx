@@ -1,4 +1,3 @@
-// context/AuthProvider.tsx
 "use client"
 
 import {
@@ -15,6 +14,7 @@ import { UserSession } from "@/lib/types"
 
 interface AuthContextType {
   user: UserSession | null
+  id: number | null
   email: string | null
   username: string | null
   nombre: string | null
@@ -65,6 +65,7 @@ function setStoredSetupCache(value: boolean): void {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const [id, setId] = useState<number | null>(null)
   const [user, setUser] = useState<UserSession | null>(null)
   const [email, setEmail] = useState<string | null>(null)
   const [username, setUsername] = useState<string | null>(null)
@@ -243,6 +244,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (user) {
+      setId(user.id ?? null)
       setEmail(user.email ?? null)
       setUsername(user.username ?? null)
       setNombre(user.nombre ?? null)
@@ -251,6 +253,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setHabilitado(!!user.habilitado)
       setReporte(!!user.reporte)
     } else {
+      setId(null)
       setEmail(null)
       setUsername(null)
       setNombre(null)
@@ -313,6 +316,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        id,
         email,
         username,
         nombre,

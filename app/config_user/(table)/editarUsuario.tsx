@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { authFetch } from "@/app/api/api"
 import { Button } from "@/components/ui/button"
 import {
   DialogClose,
@@ -54,7 +53,7 @@ export default function FormUsuario({
 
     const fetchUserData = async () => {
       try {
-        const res = await authFetch(
+        const res = await fetch(
           `/api/proxy/auth/data_usuario/${usernameToEdit}`,
           { method: "GET" }
         )
@@ -107,7 +106,7 @@ export default function FormUsuario({
     }
 
     const endpoint = isEditing ? "/editar_usuario" : "/crear_usuario"
-    const res = await authFetch(`/api/proxy/auth${endpoint}`, {
+    const res = await fetch(`/api/proxy/auth${endpoint}`, {
       method: "POST",
       body: JSON.stringify(payload),
     })
