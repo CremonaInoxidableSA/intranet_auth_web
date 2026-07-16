@@ -12,13 +12,13 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-export default function FormModulo() {
+export default function FormSubmodulo() {
   return (
     <DialogContent className="z-800 bg-background2 sm:max-w-150">
       <DialogHeader>
-        <DialogTitle>Crear Módulo</DialogTitle>
+        <DialogTitle>Crear Submódulo</DialogTitle>
         <DialogDescription>
-          Complete los datos para crear un nuevo módulo.
+          Complete los datos para crear un nuevo submódulo.
         </DialogDescription>
       </DialogHeader>
 
@@ -68,7 +68,7 @@ export default function FormModulo() {
         <DialogClose asChild>
           <Button variant="outline">Cancelar</Button>
         </DialogClose>
-        <Button>Crear Módulo</Button>
+        <Button>Crear Submódulo</Button>
       </DialogFooter>
     </DialogContent>
   )

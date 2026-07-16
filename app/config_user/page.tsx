@@ -7,6 +7,7 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import FormUsuario from "./(formulario)/formUsuario"
 import FormRol from "./(formulario)/formRol"
 import FormModulo from "./(formulario)/formModulo"
+import FormSubmodulo from "./(formulario)/formSubmodulo"
 import EditarUsuario from "./(table)/editarUsuario"
 
 import { columns as userColumns, User } from "./(table)/columns"
@@ -133,6 +134,7 @@ export default function ConfiguracionUsuario() {
     undefined
   )
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
 
   const createHeaders = (tabId: number): Record<string, string> => {
     if (tabId === TAB_USUARIOS) {
@@ -204,6 +206,11 @@ export default function ConfiguracionUsuario() {
     if (selectedTabId !== TAB_USUARIOS) return
     const users = await fetchUsuarios(user?.id, currentHeaders)
     setData(users)
+  }
+
+  const handleUserCreated = async () => {
+    await refetchUsuarios()
+    setIsCreateDialogOpen(false)
   }
 
   const deshabilitarUsuario = async (usuario_id: number) => {
@@ -329,13 +336,13 @@ export default function ConfiguracionUsuario() {
   const renderCreateForm = () => {
     switch (selectedTabId) {
       case TAB_USUARIOS:
-        return <FormUsuario onUserCreated={refetchUsuarios} />
+        return <FormUsuario onUserCreated={handleUserCreated} />
       case TAB_ROLES:
         return <FormRol />
       case TAB_MODULOS:
         return <FormModulo />
       case TAB_SUBMODULOS:
-        return <FormModulo />
+        return <FormSubmodulo />
       default:
         return null
     }
@@ -375,7 +382,10 @@ export default function ConfiguracionUsuario() {
             </div>
           </div>
 
-          <Dialog>
+          <Dialog
+            open={isCreateDialogOpen}
+            onOpenChange={setIsCreateDialogOpen}
+          >
             <DialogTrigger asChild>
               <Boton
                 extraClass={`${

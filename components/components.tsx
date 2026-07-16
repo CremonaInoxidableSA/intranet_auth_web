@@ -53,25 +53,20 @@ export function EditarButton({
   )
 }
 
-export function Boton({
-  extraClass,
-  placeholder,
-  children,
-  type = "button",
-  disabled,
-}: {
+type BotonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   extraClass?: string
   placeholder?: string
-  children?: React.ReactNode
-  type?: "button" | "submit" | "reset"
-  disabled?: boolean
-}) {
-  return (
-    <Button type={type} disabled={disabled} className={extraClass}>
+}
+
+export const Boton = React.forwardRef<HTMLButtonElement, BotonProps>(
+  ({ extraClass, placeholder, children, type = "button", ...props }, ref) => (
+    <Button ref={ref} type={type} className={extraClass} {...props}>
       {children ?? placeholder}
     </Button>
   )
-}
+)
+
+Boton.displayName = "Boton"
 
 //---------------------------------------SELECTORES---------------------------------------//
 export function Selector({ placeholder }: { placeholder: string }) {

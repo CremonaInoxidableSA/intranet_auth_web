@@ -28,10 +28,13 @@ type Props = {
 
 export default function FormUsuario({ onUserCreated }: Props) {
   const [form, setForm] = useState({
+    id: 0,
     email: "",
     username: "",
     nombre: "",
     apellido: "",
+    legajo: "",
+    dni: "",
     rol: "",
     password: "",
     reporte: true,
@@ -44,14 +47,47 @@ export default function FormUsuario({ onUserCreated }: Props) {
 
   const handleSubmit = async () => {
     if (!form.email.includes("@")) {
-      alert("Email inválido")
+      alert("Correo electrónico inválido")
       return
     }
 
-    const payload = { ...form, habilitado: form.habilitado ? 1 : 0 }
+    if (!form.legajo) {
+      alert("Legajo es obligatorio")
+      return
+    }
 
-    const res = await fetch(`/api/proxy/auth/crear_usuario`, {
+    if (!form.dni) {
+      alert("DNI es obligatorio")
+      return
+    }
+
+    if (!form.rol) {
+      alert("Seleccione un rol")
+      return
+    }
+
+    if (!form.password) {
+      alert("Contraseña es obligatoria")
+      return
+    }
+
+    const payload = {
+      id_usuario: 0,
+      nombre: form.nombre,
+      apellido: form.apellido,
+      legajo: Number(form.legajo),
+      dni: Number(form.dni),
+      email: form.email,
+      rol_ids: [Number(form.rol)],
+      username: form.username,
+      password: form.password,
+    }
+
+    const res = await fetch(`/api/usuarios/crear_o_editar_usuario`, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(payload),
     })
 
@@ -73,7 +109,7 @@ export default function FormUsuario({ onUserCreated }: Props) {
         </DialogDescription>
       </DialogHeader>
 
-      <div className="grid gap-4 py-4">
+      <div className="grid gap-4">
         <div className="grid gap-2">
           <Label htmlFor="email">Correo electrónico</Label>
           <Input
@@ -99,28 +135,58 @@ export default function FormUsuario({ onUserCreated }: Props) {
           />
         </div>
 
-        <div className="grid gap-2">
-          <Label htmlFor="name">Nombre</Label>
-          <Input
-            id="name"
-            value={form.nombre}
-            onChange={(e) => handleChange("nombre", e.target.value)}
-            placeholder="Ingrese el nombre del usuario"
-            required
-            className="border border-background6 bg-background3"
-          />
+        <div className="grid gap-2 xl:grid-cols-2 xl:gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="name">Nombre</Label>
+            <Input
+              id="name"
+              value={form.nombre}
+              onChange={(e) => handleChange("nombre", e.target.value)}
+              placeholder="Ingrese el nombre del usuario"
+              required
+              className="border border-background6 bg-background3"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="surname">Apellido</Label>
+            <Input
+              id="surname"
+              value={form.apellido}
+              onChange={(e) => handleChange("apellido", e.target.value)}
+              placeholder="Ingrese el apellido del usuario"
+              required
+              className="border border-background6 bg-background3"
+            />
+          </div>
         </div>
 
-        <div className="grid gap-2">
-          <Label htmlFor="surname">Apellido</Label>
-          <Input
-            id="surname"
-            value={form.apellido}
-            onChange={(e) => handleChange("apellido", e.target.value)}
-            placeholder="Ingrese el apellido del usuario"
-            required
-            className="border border-background6 bg-background3"
-          />
+        <div className="grid gap-2 xl:grid-cols-2 xl:gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="legajo">Legajo</Label>
+            <Input
+              id="legajo"
+              type="number"
+              value={form.legajo}
+              onChange={(e) => handleChange("legajo", e.target.value)}
+              placeholder="Ingrese el legajo"
+              required
+              className="border border-background6 bg-background3"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="dni">DNI</Label>
+            <Input
+              id="dni"
+              type="number"
+              value={form.dni}
+              onChange={(e) => handleChange("dni", e.target.value)}
+              placeholder="Ingrese el DNI"
+              required
+              className="border border-background6 bg-background3"
+            />
+          </div>
         </div>
 
         <div className="grid gap-2">
@@ -132,8 +198,8 @@ export default function FormUsuario({ onUserCreated }: Props) {
             <SelectContent position="popper" className="z-900">
               <SelectGroup>
                 <SelectLabel>Rol</SelectLabel>
-                <SelectItem value="admin">Administrador</SelectItem>
-                <SelectItem value="user">Usuario</SelectItem>
+                <SelectItem value="1">Administrador</SelectItem>
+                <SelectItem value="2">Usuario</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
