@@ -45,6 +45,33 @@ const tablas = [
   },
 ]
 
+const botonesCreacion = [
+  {
+    id: TAB_USUARIOS,
+    nombre: "Crear Usuario",
+    extraClass:
+      "border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30",
+  },
+  {
+    id: TAB_ROLES,
+    nombre: "Crear Rol",
+    extraClass:
+      "border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30",
+  },
+  {
+    id: TAB_MODULOS,
+    nombre: "Agregar Modulo",
+    extraClass:
+      "border-greencremona bg-greencremona/20 text-greencremona hover:bg-greencremona/30",
+  },
+  {
+    id: TAB_SUBMODULOS,
+    nombre: "Agregar Submodulo",
+    extraClass:
+      "border-orangecremona bg-orangecremona/20 text-orangecremona hover:bg-orangecremona/30",
+  },
+]
+
 const roleColumns: DataTableColumn<Role>[] = [
   {
     accessorKey: "id",
@@ -295,55 +322,50 @@ export default function ConfiguracionUsuario() {
     refetchUsuarios()
   }
 
+  const currentCreateButton = botonesCreacion.find(
+    (boton) => boton.id === selectedTabId
+  )
+
+  const renderCreateForm = () => {
+    switch (selectedTabId) {
+      case TAB_USUARIOS:
+        return <FormUsuario onUserCreated={refetchUsuarios} />
+      case TAB_ROLES:
+        return <FormRol />
+      case TAB_MODULOS:
+        return <FormModulo />
+      case TAB_SUBMODULOS:
+        return <FormModulo />
+      default:
+        return null
+    }
+  }
+
   return (
     <section className="flex flex-1 flex-col gap-5 p-5">
-      <section className="grid grid-cols-2 items-center gap-5 rounded bg-background2 p-5">
-        <div className="flex h-full flex-row items-center justify-end gap-5">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Boton extraClass="border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30 flex-1 h-full">
-                Crear Usuario
-              </Boton>
-            </DialogTrigger>
-            <FormUsuario onUserCreated={refetchUsuarios} />
-          </Dialog>
+      <div className="flex flex-1 flex-col items-center gap-5">
+        <div className="flex w-full flex-col items-center justify-between gap-5 xl:flex-row">
+          <TabsComp
+            data={tablas}
+            extraClass="text-2xl"
+            value={String(selectedTabId)}
+            onValueChange={(value) => setSelectedTabId(Number(value))}
+          />
 
           <Dialog>
             <DialogTrigger asChild>
-              <Boton extraClass="border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30 flex-1 h-full">
-                Crear Rol
+              <Boton
+                extraClass={`${
+                  currentCreateButton?.extraClass ??
+                  "border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
+                } xl:w-auto w-full`}
+              >
+                {currentCreateButton?.nombre ?? "Crear Usuario"}
               </Boton>
             </DialogTrigger>
-            <FormRol />
-          </Dialog>
-
-          <Dialog>
-            <DialogTrigger asChild>
-              <Boton extraClass="border-greencremona bg-greencremona/20 text-greencremona hover:bg-greencremona/30 flex-1 h-full">
-                Agregar Modulo
-              </Boton>
-            </DialogTrigger>
-            <FormModulo />
-          </Dialog>
-
-          <Dialog>
-            <DialogTrigger asChild>
-              <Boton extraClass="border-orangecremona bg-orangecremona/20 text-orangecremona hover:bg-orangecremona/30 flex-1 h-full">
-                Agregar Submodulo
-              </Boton>
-            </DialogTrigger>
-            <FormModulo />
+            {renderCreateForm()}
           </Dialog>
         </div>
-      </section>
-
-      <div className="flex flex-1 flex-col items-center gap-5">
-        <TabsComp
-          data={tablas}
-          extraClass="text-2xl"
-          value={String(selectedTabId)}
-          onValueChange={(value) => setSelectedTabId(Number(value))}
-        />
 
         {isLoading ? (
           <div className="flex items-center gap-2">
@@ -351,9 +373,9 @@ export default function ConfiguracionUsuario() {
             <span>Cargando...</span>
           </div>
         ) : (
-          <div className="w-full">
+          <div className="w-full flex flex-col gap-5">
             {error ? (
-              <div className="rounded border border-red-500 bg-red-100 p-4 text-sm text-red-700">
+              <div className="rounded border border-red-500 bg-red-700/10 p-4 text-sm text-red-500">
                 {error}
               </div>
             ) : null}
