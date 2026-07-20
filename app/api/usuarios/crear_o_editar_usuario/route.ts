@@ -7,6 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const {
+      current_user_id,
       id_usuario,
       nombre,
       apellido,
@@ -27,15 +28,41 @@ export async function POST(request: NextRequest) {
       !Array.isArray(rol_ids) ||
       rol_ids.length === 0 ||
       username == null ||
-      password == null
+      id_usuario == null
     ) {
       return NextResponse.json(
         {
           success: false,
-          message: "Todos los campos son obligatorios",
+          message: "Todos los campos obligatorios deben estar completos",
         },
         { status: 400 }
       )
+    }
+
+    if (id_usuario === 0 && (password == null || password === "")) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "La contraseña es obligatoria para crear un usuario",
+        },
+        { status: 400 }
+      )
+    }
+
+    const payload: Record<string, unknown> = {
+      current_user_id,
+      id_usuario,
+      nombre,
+      apellido,
+      legajo,
+      dni,
+      email,
+      rol_ids,
+      username,
+    }
+
+    if (password != null && password !== "") {
+      payload.password = password
     }
 
     const response = await fetch(`${API_AUTH_URL}/crear_o_editar_usuario`, {
@@ -43,17 +70,7 @@ export async function POST(request: NextRequest) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        id_usuario,
-        nombre,
-        apellido,
-        legajo,
-        dni,
-        email,
-        rol_ids,
-        username,
-        password,
-      }),
+      body: JSON.stringify(payload),
     })
 
     const data = await response.json()

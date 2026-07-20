@@ -28,25 +28,29 @@ export async function fetchUsuarios(
   const data = await res.json()
   const users = normalizeResponse<User>(data)
 
-  return users.map((user) => ({
-    ...user,
-    id:
-      user.id ??
-      (user as unknown as { user_id?: number }).user_id ??
-      (user as unknown as { usuario_id?: number }).usuario_id,
-    rol:
-      user.rol ??
-      (Array.isArray((user as unknown as { roles?: unknown }).roles)
-        ? String((user as unknown as { roles: unknown[] }).roles[0] ?? "")
-        : undefined) ??
-      "",
-    habilitado:
-      typeof user.habilitado === "boolean"
-        ? user.habilitado
-          ? 1
-          : 0
-        : typeof user.habilitado === "number"
+  return users.map((user) => {
+    const rawRoles = (user as unknown as { roles?: unknown }).roles
+    const roles = Array.isArray(rawRoles)
+      ? rawRoles.filter((item): item is string => typeof item === "string")
+      : typeof (user as unknown as { rol?: unknown }).rol === "string"
+        ? [(user as unknown as { rol: string }).rol]
+        : undefined
+
+    return {
+      ...user,
+      id:
+        user.id ??
+        (user as unknown as { user_id?: number }).user_id ??
+        (user as unknown as { usuario_id?: number }).usuario_id,
+      roles,
+      habilitado:
+        typeof user.habilitado === "boolean"
           ? user.habilitado
-          : 0,
-  }))
+            ? 1
+            : 0
+          : typeof user.habilitado === "number"
+            ? user.habilitado
+            : 0,
+    }
+  })
 }

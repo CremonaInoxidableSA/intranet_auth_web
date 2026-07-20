@@ -32,14 +32,13 @@ export default function Page() {
       {items.map((sistema) => {
         const Icon = sistema.Icon
         return (
-          <Link
-            key={sistema.url}
-            href={sistema.url}
-            className="flex h-[15vw] max-h-55 min-h-35 w-[15vw] max-w-55 min-w-35 flex-col items-center justify-center gap-3 rounded border-none bg-background2 p-4 font-semibold text-[#5d5d5d] transition-colors duration-200 ease-in-out hover:text-[#e82a31]"
+          <div 
+            key={sistema.titulo}
+            className="flex h-[15vw] max-h-55 min-h-35 w-[15vw] max-w-55 min-w-35 flex-col items-center justify-center gap-3 rounded border-none bg-background2 p-4 font-semibold text-[#5d5d5d] transition-colors cursor-pointer duration-200 ease-in-out hover:text-[#e82a31]"
           >
             <Icon className="flex h-full w-full items-center justify-center text-[#5d5d5d]" />
             <span className="text-sm">{sistema.titulo}</span>
-          </Link>
+          </div>
         )
       })}
     </div>

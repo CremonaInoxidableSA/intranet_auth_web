@@ -25,13 +25,13 @@ export type User = {
   username: string
   nombre: string
   apellido: string
-  rol: string
+  roles?: string[]
   habilitado: number
   reporte: number
 }
 
 export const columns = (
-  onEditUser: (id: number | undefined, username: string) => void,
+  onEditUser: (id: number | undefined) => void,
   onDisableUser: (usuario_id: number) => void,
   onEnableUser: (usuario_id: number) => void,
   onDeleteUser: (usuario_id: number) => void
@@ -55,16 +55,19 @@ export const columns = (
     header: "Apellido",
   },
   {
-    accessorKey: "rol",
-    header: "Rol",
+    accessorKey: "roles",
+    header: "Roles",
     cell: ({ row }) => {
-      const role = row.rol
-      const roleMap: Record<string, string> = {
-        superadmin: "Superadmin",
-        admin: "Admin",
-        user: "Usuario",
+      const roles = row.roles
+      if (Array.isArray(roles) && roles.length > 0) {
+        const roleMap: Record<string, string> = {
+          superadmin: "Superadmin",
+          admin: "Admin",
+          user: "Usuario",
+        }
+        return roles.map((role) => roleMap[role] ?? role ?? "—").join(", ")
       }
-      return roleMap[role] ?? role ?? "—"
+      return "—"
     },
   },
   {
@@ -88,9 +91,7 @@ export const columns = (
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => onEditUser(user.id, user.username)}
-            >
+            <DropdownMenuItem onClick={() => onEditUser(user.id)}>
               <PencilLine className="mr-2 h-4 w-4" /> Editar
             </DropdownMenuItem>
             {user.habilitado === 1 ? (

@@ -129,7 +129,6 @@ export default function ConfiguracionUsuario() {
   const [data, setData] = useState<Record<string, unknown>[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [userToEdit, setUserToEdit] = useState<string | null>(null)
   const [userIdToEdit, setUserIdToEdit] = useState<number | undefined>(
     undefined
   )
@@ -296,9 +295,8 @@ export default function ConfiguracionUsuario() {
     }
   }
 
-  const editarUsuario = (id: number | undefined, username: string) => {
+  const editarUsuario = (id: number | undefined) => {
     setUserIdToEdit(id)
-    setUserToEdit(username)
     setIsEditDialogOpen(true)
   }
 
@@ -324,7 +322,6 @@ export default function ConfiguracionUsuario() {
 
   const handleUserUpdated = () => {
     setIsEditDialogOpen(false)
-    setUserToEdit(null)
     setUserIdToEdit(undefined)
     refetchUsuarios()
   }
@@ -423,10 +420,10 @@ export default function ConfiguracionUsuario() {
       </div>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        {userToEdit && (
+        {typeof userIdToEdit === "number" && user?.id !== undefined && (
           <EditarUsuario
             onUserCreated={handleUserUpdated}
-            usernameToEdit={userToEdit}
+            currentUserId={user.id}
             userIdToEdit={userIdToEdit}
           />
         )}

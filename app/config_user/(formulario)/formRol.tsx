@@ -34,6 +34,16 @@ export default function FormRol() {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
+  const toggleAcceso = (access: string) => {
+    setForm((prev) => {
+      const accesos = prev.accesos.includes(access)
+        ? prev.accesos.filter((item) => item !== access)
+        : [...prev.accesos, access]
+
+      return { ...prev, accesos }
+    })
+  }
+
   const accesosText =
     form.accesos.length > 0
       ? form.accesos.join(", ")
@@ -81,26 +91,38 @@ export default function FormRol() {
               <DropdownMenuLabel>Modulos</DropdownMenuLabel>
               <DropdownMenuCheckboxItem
                 checked={form.accesos.includes("RRHH")}
-                onSelect={(event) => event.preventDefault()}
+                onSelect={(event) => {
+                  event.preventDefault()
+                  toggleAcceso("RRHH")
+                }}
               >
                 RRHH
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={form.accesos.includes("Produccion")}
-                onSelect={(event) => event.preventDefault()}
+                onSelect={(event) => {
+                  event.preventDefault()
+                  toggleAcceso("Produccion")
+                }}
               >
                 Produccion
               </DropdownMenuCheckboxItem>
               <DropdownMenuLabel>Sub-Modulos</DropdownMenuLabel>
               <DropdownMenuCheckboxItem
                 checked={form.accesos.includes("Ordenes_Produccion")}
-                onSelect={(event) => event.preventDefault()}
+                onSelect={(event) => {
+                  event.preventDefault()
+                  toggleAcceso("Ordenes_Produccion")
+                }}
               >
                 Ordenes Produccion
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={form.accesos.includes("Personal")}
-                onSelect={(event) => event.preventDefault()}
+                onSelect={(event) => {
+                  event.preventDefault()
+                  toggleAcceso("Personal")
+                }}
               >
                 Personal
               </DropdownMenuCheckboxItem>

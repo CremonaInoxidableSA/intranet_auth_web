@@ -1,11 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -13,9 +12,7 @@ import {
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
@@ -24,103 +21,160 @@ import { Label } from "@/components/ui/label"
 
 type Props = {
   onUserCreated: () => void
-  usernameToEdit?: string
+  currentUserId?: number
   userIdToEdit?: number
 }
 
-export default function FormUsuario({
+type UserForm = {
+  id_usuario: number
+  email: string
+  username: string
+  nombre: string
+  apellido: string
+  legajo: string
+  dni: string
+  rol: string
+  password: string
+}
+
+const roleNameToRolId: Record<string, string> = {
+  superadmin: "1",
+  admin: "1",
+  user: "2",
+}
+
+const normalizeRoleValue = (role: unknown): string => {
+  if (typeof role === "number") return String(role)
+  if (typeof role === "string") {
+    if (/^\d+$/.test(role)) return role
+    return roleNameToRolId[role] ?? ""
+  }
+  return ""
+}
+
+export default function EditarUsuario({
   onUserCreated,
-  usernameToEdit,
+  currentUserId,
   userIdToEdit,
 }: Props) {
-  const [loading, setLoading] = useState(!!usernameToEdit)
-  const [form, setForm] = useState({
-    id: userIdToEdit || undefined,
+  const [loading, setLoading] = useState(userIdToEdit !== undefined)
+  const [form, setForm] = useState<UserForm>({
+    id_usuario: userIdToEdit ?? 0,
     email: "",
     username: "",
     nombre: "",
     apellido: "",
+    legajo: "",
+    dni: "",
     rol: "",
     password: "",
-    reporte: true,
-    habilitado: 1,
   })
 
-  const isEditing = !!usernameToEdit
-
   useEffect(() => {
-    if (!usernameToEdit) return
-
     const fetchUserData = async () => {
-      try {
-        const res = await fetch(
-          `/api/proxy/auth/data_usuario/${usernameToEdit}`,
-          { method: "GET" }
-        )
+      if (userIdToEdit === undefined || currentUserId === undefined) return
 
-        if (!res.ok) {
-          throw new Error("Error al cargar datos del usuario")
-        }
+      setLoading(true)
+
+      try {
+        const res = await fetch("/api/usuarios/data_usuario", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            current_user_id: currentUserId,
+            id: userIdToEdit,
+          }),
+        })
 
         const data = await res.json()
+        if (!res.ok) {
+          alert(data.detail || "Error al cargar datos de usuario")
+          return
+        }
+
         setForm({
-          id: data.id || userIdToEdit,
-          email: data.email,
-          username: data.username,
-          nombre: data.nombre,
-          apellido: data.apellido,
-          rol: data.rol,
+          id_usuario: data.id ?? userIdToEdit,
+          email: data.email ?? "",
+          username: data.username ?? "",
+          nombre: data.nombre ?? "",
+          apellido: data.apellido ?? "",
+          legajo: String(data.legajo ?? ""),
+          dni: String(data.dni ?? ""),
+          rol:
+            Array.isArray(data.roles) && data.roles.length > 0
+              ? normalizeRoleValue(data.roles[0])
+              : "",
           password: "",
-          reporte: data.reporte,
-          habilitado: data.habilitado,
         })
-      } catch {
-        alert("Error al cargar usuario")
+      } catch (error) {
+        console.error(error)
+        alert("Error de conexión con la API")
       } finally {
         setLoading(false)
       }
     }
 
     fetchUserData()
-  }, [usernameToEdit, userIdToEdit])
+  }, [currentUserId, userIdToEdit])
 
-  const handleChange = (key: string, value: string | boolean | number) => {
+  const handleChange = (key: keyof UserForm, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
   const handleSubmit = async () => {
+    if (currentUserId === undefined || userIdToEdit === undefined) {
+      alert("No se pudo editar el usuario")
+      return
+    }
+
     if (!form.email.includes("@")) {
       alert("Correo electrónico inválido")
       return
     }
 
-    if (!isEditing && !form.password) {
-      alert("Contraseña requerida")
+    if (!form.rol) {
+      alert("Seleccione un rol")
       return
     }
 
-    const payload = {
-      ...form,
-      habilitado: form.habilitado ? 1 : 0,
-      password: isEditing && !form.password ? undefined : form.password,
+    const payload: Record<string, unknown> = {
+      current_user_id: currentUserId,
+      id_usuario: form.id_usuario,
+      nombre: form.nombre,
+      apellido: form.apellido,
+      legajo: Number(form.legajo),
+      dni: Number(form.dni),
+      email: form.email,
+      username: form.username,
+      rol_ids: [Number(form.rol)],
     }
 
-    const endpoint = isEditing ? "/editar_usuario" : "/crear_usuario"
-    const res = await fetch(`/api/proxy/auth${endpoint}`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    })
-
-    if (!res.ok) {
-      const err = await res.json()
-      alert(
-        err.detail ||
-          (isEditing ? "Error al editar usuario" : "Error al crear usuario")
-      )
-      return
+    if (form.password.trim() !== "") {
+      payload.password = form.password
     }
 
-    onUserCreated()
+    try {
+      const res = await fetch("/api/usuarios/crear_o_editar_usuario", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data.detail || "Error al editar usuario")
+        return
+      }
+
+      onUserCreated()
+    } catch (error) {
+      console.error(error)
+      alert("Error de conexión con la API")
+    }
   }
 
   if (loading) {
@@ -139,14 +193,7 @@ export default function FormUsuario({
   return (
     <DialogContent className="z-800 bg-background2 sm:max-w-150">
       <DialogHeader>
-        <DialogTitle>
-          {isEditing ? "Editar Usuario" : "Crear Usuario"}
-        </DialogTitle>
-        <DialogDescription>
-          {isEditing
-            ? "Modifique los datos del usuario"
-            : "Complete los datos para crear un nuevo usuario"}
-        </DialogDescription>
+        <DialogTitle>Editar Usuario</DialogTitle>
       </DialogHeader>
 
       <div className="grid gap-4 py-4">
@@ -175,76 +222,92 @@ export default function FormUsuario({
           />
         </div>
 
-        <div className="grid gap-2">
-          <Label htmlFor="name">Nombre</Label>
-          <Input
-            id="name"
-            value={form.nombre}
-            onChange={(e) => handleChange("nombre", e.target.value)}
-            placeholder="Ingrese el nombre del usuario"
-            required
-            className="border border-background6 bg-background3"
-          />
+        <div className="grid gap-2 xl:grid-cols-2 xl:gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="name">Nombre</Label>
+            <Input
+              id="name"
+              value={form.nombre}
+              onChange={(e) => handleChange("nombre", e.target.value)}
+              placeholder="Ingrese el nombre del usuario"
+              required
+              className="border border-background6 bg-background3"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="surname">Apellido</Label>
+            <Input
+              id="surname"
+              value={form.apellido}
+              onChange={(e) => handleChange("apellido", e.target.value)}
+              placeholder="Ingrese el apellido del usuario"
+              required
+              className="border border-background6 bg-background3"
+            />
+          </div>
         </div>
 
-        <div className="grid gap-2">
-          <Label htmlFor="surname">Apellido</Label>
-          <Input
-            id="surname"
-            value={form.apellido}
-            onChange={(e) => handleChange("apellido", e.target.value)}
-            placeholder="Ingrese el apellido del usuario"
-            required
-            className="border border-background6 bg-background3"
-          />
+        <div className="grid gap-2 xl:grid-cols-2 xl:gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="legajo">Legajo</Label>
+            <Input
+              id="legajo"
+              type="number"
+              value={form.legajo}
+              onChange={(e) => handleChange("legajo", e.target.value)}
+              placeholder="Ingrese el legajo"
+              className="border border-background6 bg-background3"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="dni">DNI</Label>
+            <Input
+              id="dni"
+              type="number"
+              value={form.dni}
+              onChange={(e) => handleChange("dni", e.target.value)}
+              placeholder="Ingrese el DNI"
+              className="border border-background6 bg-background3"
+            />
+          </div>
         </div>
 
         <div className="grid gap-2">
           <Label>Rol</Label>
           <Select
             value={form.rol}
-            onValueChange={(v) => handleChange("rol", v)}
+            onValueChange={(value) => handleChange("rol", value)}
           >
             <SelectTrigger className="w-full border border-background6 bg-background3">
               <SelectValue placeholder="Seleccione un rol" />
             </SelectTrigger>
             <SelectContent position="popper" className="z-900">
-              <SelectGroup>
-                <SelectLabel>Rol</SelectLabel>
-                <SelectItem value="admin">Administrador</SelectItem>
-                <SelectItem value="user">Usuario</SelectItem>
-              </SelectGroup>
+              <SelectItem value="1">Administrador</SelectItem>
+              <SelectItem value="2">Usuario</SelectItem>
             </SelectContent>
           </Select>
         </div>
-      </div>
 
-      <div className="grid gap-2">
-        <Label htmlFor="password">
-          Contraseña{" "}
-          {isEditing && `(Opcional, dejar vacío para mantener la actual)`}
-        </Label>
-        <Input
-          id="password"
-          type="password"
-          value={form.password}
-          onChange={(e) => handleChange("password", e.target.value)}
-          className="border border-background6 bg-background3"
-          placeholder={
-            isEditing
-              ? "Dejar vacío para mantener la contraseña actual"
-              : "Ingrese la contraseña del usuario"
-          }
-        />
+        <div className="grid gap-2">
+          <Label htmlFor="password">Contraseña</Label>
+          <Input
+            id="password"
+            type="password"
+            value={form.password}
+            onChange={(e) => handleChange("password", e.target.value)}
+            className="border border-background6 bg-background3"
+            placeholder="Dejar vacío para mantener la contraseña actual"
+          />
+        </div>
       </div>
 
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="outline">Cancelar</Button>
         </DialogClose>
-        <Button onClick={handleSubmit}>
-          {isEditing ? "Guardar cambios" : "Crear usuario"}
-        </Button>
+        <Button onClick={handleSubmit}>Guardar cambios</Button>
       </DialogFooter>
     </DialogContent>
   )

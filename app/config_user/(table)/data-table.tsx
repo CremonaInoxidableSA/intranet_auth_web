@@ -49,7 +49,7 @@ export function DataTable<TData extends Record<string, unknown>>({
     <div className={`flex flex-col ${extraClass}`}>
       <div className="overflow-hidden rounded border">
         <Table>
-          <TableHeader className="bg-background5">
+          <TableHeader className="bg-background2">
             <TableRow>
               {columns.map((column) => (
                 <TableHead
@@ -57,7 +57,7 @@ export function DataTable<TData extends Record<string, unknown>>({
                     column.id ??
                     String(column.accessorKey ?? column.header ?? "")
                   }
-                  className={`border border-background6 bg-background6 ${column.className ?? ""}`}
+                  className={`border border-background2 bg-background2 ${column.className ?? ""}`}
                 >
                   {column.header ?? ""}
                 </TableHead>
@@ -72,7 +72,7 @@ export function DataTable<TData extends Record<string, unknown>>({
                     (row as { id?: string | number }).id ??
                     `row-${pageIndex * pageSize + rowIndex}`
                   }
-                  className="odd:bg-background3 even:bg-background4 hover:bg-background6"
+                  className="odd:bg-background3 even:bg-background4 hover:bg-background5"
                 >
                   {columns.map((column) => (
                     <TableCell
