@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { fetchWithKeycloak } from "@/lib/keycloak-fetch"
 
 type Props = {
   onUserCreated: () => void
@@ -77,7 +78,7 @@ export default function EditarUsuario({
       setLoading(true)
 
       try {
-        const res = await fetch("/api/usuarios/data_usuario", {
+        const res = await fetchWithKeycloak("/api/usuarios/data_usuario", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -156,13 +157,16 @@ export default function EditarUsuario({
     }
 
     try {
-      const res = await fetch("/api/usuarios/crear_o_editar_usuario", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      })
+      const res = await fetchWithKeycloak(
+        "/api/usuarios/crear_o_editar_usuario",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      )
 
       const data = await res.json()
       if (!res.ok) {

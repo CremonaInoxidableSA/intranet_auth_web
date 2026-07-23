@@ -1,4 +1,5 @@
 import { User } from "../(table)/columns"
+import { fetchWithKeycloak } from "@/lib/keycloak-fetch"
 
 function normalizeResponse<T>(response: unknown): T[] {
   if (Array.isArray(response)) return response
@@ -15,7 +16,7 @@ export async function fetchUsuarios(
 ): Promise<User[]> {
   if (typeof userId !== "number") return []
 
-  const res = await fetch("/api/usuarios/usuarios", {
+  const res = await fetchWithKeycloak("/api/usuarios/usuarios", {
     method: "POST",
     headers,
     body: JSON.stringify({ current_user_id: userId }),

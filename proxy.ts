@@ -26,75 +26,24 @@ function isTokenValid(token: string): boolean {
   }
 }
 
-async function getBootstrapStatus(request: NextRequest): Promise<boolean> {
-  try {
-    const url = new URL("/api/bootstrap/needs-setup", request.url)
-    const response = await fetch(url.toString(), {
-      method: "GET",
-      cache: "no-store",
-    })
-    if (!response.ok) return false
-    const data = await response.json()
-    return data.needs_setup === true
-  } catch {
-    return false
-  }
-}
-
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const token = getToken(request)
-
-  // 1. Rutas API públicas (auth y bootstrap)
+  // Keycloak handles page authentication in the browser. API requests carry
+  // the in-memory access token in the Authorization header.
   if (
-    pathname.startsWith("/api/auth/") ||
-    pathname.startsWith("/api/bootstrap/")
+    pathname === "/login" ||
+    pathname.startsWith("/login/") ||
+    pathname.startsWith("/api/auth/")
   ) {
     return NextResponse.next()
   }
 
-  // 2. Rutas API protegidas (resto de /api/)
   if (pathname.startsWith("/api/")) {
+    const token = getToken(request)
     if (!token || !isTokenValid(token)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
     return NextResponse.next()
-  }
-
-  // 3. Páginas públicas (sin autenticación)
-  const publicPages = [
-    "/login",
-    "/login/recuperacion",
-    "/reset-password",
-    "/bootstrap",
-  ]
-  const isPublicPage = publicPages.some(
-    (route) => pathname === route || pathname.startsWith(route + "/")
-  )
-
-  if (isPublicPage) {
-    // Si es /login, verificar si necesita bootstrap
-    if (pathname === "/login") {
-      const needsSetup = await getBootstrapStatus(request)
-      if (needsSetup) {
-        return NextResponse.redirect(new URL("/bootstrap", request.url))
-      }
-    }
-
-    // Si es /bootstrap, verificar que realmente se necesite
-    if (pathname.startsWith("/bootstrap")) {
-      const needsSetup = await getBootstrapStatus(request)
-      if (!needsSetup) {
-        return NextResponse.redirect(new URL("/login", request.url))
-      }
-    }
-
-    return NextResponse.next()
-  }
-
-  // 4. Páginas protegidas (requieren autenticación)
-  if (!token || !isTokenValid(token)) {
-    return NextResponse.redirect(new URL("/login", request.url))
   }
 
   return NextResponse.next()

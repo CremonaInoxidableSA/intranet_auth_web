@@ -11,6 +11,7 @@ import {
 } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { UserSession } from "@/lib/types"
+import keycloak, { initKeycloakOnce } from "@/lib/keycloak"
 
 interface AuthContextType {
   user: UserSession | null
@@ -23,7 +24,7 @@ interface AuthContextType {
   habilitado: boolean | null
   reporte: boolean | null
   loading: boolean
-  login: (username: string, password: string) => Promise<ApiResponse>
+  login: () => Promise<ApiResponse>
   logout: () => Promise<boolean>
 }
 
@@ -34,281 +35,166 @@ interface ApiResponse {
   message?: string
 }
 
+const publicRoutes = [
+  "/login",
+  "/login/recuperacion",
+  "/login/recuperacion/reset_pass",
+  "/bootstrap",
+]
+
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-let setupCheckInProgress = false
-const SETUP_CACHE_KEY = "setup_check_cache"
-const SETUP_CACHE_DURATION = 3600000
-
-function getStoredSetupCache(): boolean | null {
-  if (typeof window === "undefined") return null
-  try {
-    const cached = localStorage.getItem(SETUP_CACHE_KEY)
-    if (!cached) return null
-    const { value, timestamp } = JSON.parse(cached)
-    if (Date.now() - timestamp > SETUP_CACHE_DURATION) {
-      localStorage.removeItem(SETUP_CACHE_KEY)
-      return null
-    }
-    return value
-  } catch {
-    return null
-  }
-}
-
-function setStoredSetupCache(value: boolean): void {
-  if (typeof window === "undefined") return
-  localStorage.setItem(
-    SETUP_CACHE_KEY,
-    JSON.stringify({ value, timestamp: Date.now() })
-  )
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [id, setId] = useState<number | null>(null)
   const [user, setUser] = useState<UserSession | null>(null)
-  const [email, setEmail] = useState<string | null>(null)
-  const [username, setUsername] = useState<string | null>(null)
-  const [nombre, setNombre] = useState<string | null>(null)
-  const [apellido, setApellido] = useState<string | null>(null)
-  const [rol, setRol] = useState<string | null>(null)
-  const [habilitado, setHabilitado] = useState<boolean | null>(null)
-  const [reporte, setReporte] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const pathname = usePathname()
 
-  const [needBootstrap, setNeedBootstrap] = useState(false)
-  const sessionCheckCompleted = useRef(false)
+  const [keycloakReady, setKeycloakReady] = useState(false)
+  // Solo evita que ESTE componente dispare el efecto de init más de una vez.
+  // La protección real contra doble-init vive en initKeycloakOnce (a nivel
+  // de módulo), así que aunque este ref se resetee por un remount, no vamos
+  // a volver a llamar a keycloak.init() sobre la misma instancia.
+  const initTriggered = useRef(false)
 
-  const checkSetupStatus = useCallback(async () => {
-    const storedCache = getStoredSetupCache()
-    if (storedCache !== null) {
-      setNeedBootstrap(storedCache)
+  const isPublicRoute = useCallback(
+    (route: string) =>
+      publicRoutes.some(
+        (publicRoute) =>
+          route === publicRoute || route.startsWith(publicRoute + "/")
+      ),
+    []
+  )
+
+  const syncKeycloakSession = useCallback(async () => {
+    if (!keycloak.authenticated) {
+      setUser(null)
       return
     }
-    if (setupCheckInProgress) return
-    setupCheckInProgress = true
+
+    let profile:
+      | Awaited<ReturnType<typeof keycloak.loadUserProfile>>
+      | undefined
     try {
-      const res = await fetch(`/api/bootstrap/needs-setup`)
-      const data = await res.json()
-      const needsSetup = data.needs_setup === true
-      setStoredSetupCache(needsSetup)
-      setNeedBootstrap(needsSetup)
-    } catch {
-      setStoredSetupCache(false)
-      setNeedBootstrap(false)
-    } finally {
-      setupCheckInProgress = false
+      profile = await keycloak.loadUserProfile()
+    } catch (error) {
+      console.warn(
+        "No se pudo cargar el perfil de Keycloak; se usaran los claims del token",
+        error
+      )
     }
+    const tokenParsed = keycloak.tokenParsed as
+      | Record<string, unknown>
+      | undefined
+    const roles =
+      (tokenParsed?.realm_access as { roles?: string[] } | undefined)?.roles ??
+      []
+
+    const userToStore: UserSession = {
+      id: tokenParsed?.sub ? Number(tokenParsed.sub) : undefined,
+      email: profile?.email ?? (tokenParsed?.email as string | undefined),
+      username:
+        (profile?.username as string | undefined) ??
+        (tokenParsed?.preferred_username as string | undefined) ??
+        (tokenParsed?.email as string | undefined) ??
+        "",
+      nombre:
+        (profile?.firstName as string | undefined) ??
+        (tokenParsed?.given_name as string | undefined) ??
+        "",
+      apellido:
+        (profile?.lastName as string | undefined) ??
+        (tokenParsed?.family_name as string | undefined) ??
+        "",
+      rol: roles.includes("superadmin")
+        ? "superadmin"
+        : roles.includes("admin")
+          ? "admin"
+          : "user",
+      habilitado: true,
+      reporte: false,
+      token: keycloak.token,
+    }
+
+    setUser(userToStore)
   }, [])
 
-  const getToken = useCallback((): string | null => {
-    if (typeof window === "undefined") return null
-    let token = localStorage.getItem("access_token")
-    if (!token) {
-      token =
-        document.cookie
-          .split("; ")
-          .find((c) => c.startsWith("access_token="))
-          ?.split("=")[1] ?? null
-      if (token) localStorage.setItem("access_token", token)
-    }
-    return token
-  }, [])
-
-  const isTokenValid = useCallback((token: string): boolean => {
+  const initKeycloak = useCallback(async () => {
+    setLoading(true)
     try {
-      const parts = token.split(".")
-      if (parts.length !== 3) return false
-      const payload = JSON.parse(atob(parts[1]))
-      if (!payload.sub) return false
-      if (payload.exp && payload.exp < Math.floor(Date.now() / 1000))
-        return false
-      return true
-    } catch {
-      return false
-    }
-  }, [])
+      await initKeycloakOnce({
+        onLoad: "check-sso",
+        checkLoginIframe: false,
+        pkceMethod:
+          typeof window !== "undefined" && window.isSecureContext
+            ? "S256"
+            : undefined,
+      })
+      setKeycloakReady(true)
 
-  const checkSession = useCallback(async () => {
-    try {
-      const setupCache = getStoredSetupCache()
-      if (setupCache === true) {
-        setNeedBootstrap(true)
-        setUser(null)
-        setLoading(false)
-        return
+      if (keycloak.authenticated) {
+        await syncKeycloakSession()
       }
-      if (setupCache === null) {
-        await checkSetupStatus()
-      }
-
-      const token = getToken()
-      if (!token) {
-        setUser(null)
-        setLoading(false)
-        return
-      }
-
-      if (!isTokenValid(token)) {
-        localStorage.removeItem("access_token")
-        localStorage.removeItem("user")
-        setUser(null)
-        setLoading(false)
-        return
-      }
-
-      const storedUserRaw = localStorage.getItem("user")
-      if (storedUserRaw) {
-        try {
-          const parsed = JSON.parse(storedUserRaw)
-          if (parsed?.username) {
-            setUser(parsed)
-            setNeedBootstrap(false)
-            setLoading(false)
-            return
-          }
-        } catch {}
-      }
-
-      try {
-        const res = await fetch(`/api/auth/check`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (res.ok) {
-          const data = await res.json()
-          if (data?.success && data?.data?.user) {
-            const userData = data.data.user
-            const userToStore = { ...userData, token }
-            setUser(userToStore)
-            localStorage.setItem("user", JSON.stringify(userToStore))
-            setNeedBootstrap(false)
-            setLoading(false)
-            return
-          }
-        }
-      } catch (err) {
-        console.warn("Error en check:", err)
-      }
-
-      localStorage.removeItem("access_token")
-      localStorage.removeItem("user")
-      setUser(null)
-    } catch {
+    } catch (error) {
+      console.error("Keycloak init error", error)
+      setKeycloakReady(false)
       setUser(null)
     } finally {
       setLoading(false)
     }
-  }, [checkSetupStatus, getToken, isTokenValid])
+  }, [syncKeycloakSession])
+
+  // Redirige al login de Keycloak (no simplemente a /login) cuando no hay
+  // sesión y la ruta no es pública. Usamos un ref para no disparar login()
+  // más de una vez mientras el navegador está redirigiendo.
+  const redirecting = useRef(false)
 
   useEffect(() => {
-    if (!sessionCheckCompleted.current) {
-      sessionCheckCompleted.current = true
-      checkSession()
-    }
-  }, [checkSession])
+    if (loading || !keycloakReady) return
 
-  useEffect(() => {
-    if (pathname === "/login" && needBootstrap && !loading) {
-      checkSetupStatus()
-    }
-  }, [pathname, needBootstrap, loading, checkSetupStatus])
-
-  useEffect(() => {
-    if (!loading) {
-      const publicRoutes = [
-        "/login",
-        "/bootstrap",
-        "/login/recuperacion",
-        "/login/recuperacion/reset_pass",
-      ]
-      const isPublicRoute = publicRoutes.some((route) =>
-        pathname.startsWith(route)
-      )
-      if (isPublicRoute) return
-
-      if (needBootstrap && pathname !== "/bootstrap") {
-        router.push("/bootstrap")
-        return
-      }
-      if (!user) {
-        router.push("/login")
-        return
-      }
-      if (user && (pathname === "/login")) {
+    if (isPublicRoute(pathname)) {
+      if (user && pathname === "/login") {
         router.push("/")
       }
+      return
     }
-  }, [user, loading, needBootstrap, pathname, router])
+
+    if (!user && !keycloak.authenticated && !redirecting.current) {
+      redirecting.current = true
+      keycloak.login().catch((error) => {
+        console.error("Error redirigiendo a Keycloak login", error)
+        redirecting.current = false
+      })
+    }
+  }, [user, loading, keycloakReady, pathname, router, isPublicRoute])
 
   useEffect(() => {
-    if (user) {
-      setId(user.id ?? null)
-      setEmail(user.email ?? null)
-      setUsername(user.username ?? null)
-      setNombre(user.nombre ?? null)
-      setApellido(user.apellido ?? null)
-      setRol(user.rol ?? null)
-      setHabilitado(!!user.habilitado)
-      setReporte(!!user.reporte)
-    } else {
-      setId(null)
-      setEmail(null)
-      setUsername(null)
-      setNombre(null)
-      setApellido(null)
-      setRol(null)
-      setHabilitado(null)
-      setReporte(null)
+    if (!initTriggered.current) {
+      initTriggered.current = true
+      void initKeycloak()
     }
-  }, [user])
+  }, [initKeycloak])
 
-  const login = async (
-    username: string,
-    password: string
-  ): Promise<ApiResponse> => {
+  const login = async (): Promise<ApiResponse> => {
     try {
-      const response = await fetch(`/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok || !data.success) {
-        return { success: false, error: data.message || "Error en el login" }
-      }
-
-      const { token, user } = data.data
-
-      localStorage.setItem("access_token", token)
-      const isSecure = process.env.NODE_ENV === "production"
-      document.cookie = `access_token=${token}; path=/; SameSite=Lax${isSecure ? "; Secure" : ""}`
-      const userToStore = { ...user, token }
-      localStorage.setItem("user", JSON.stringify(userToStore))
-      setUser(userToStore)
-      setNeedBootstrap(false)
-
-      window.location.href = "/"
-
-      return { success: true, data }
-    } catch {
-      return { success: false, error: "Error de conexión" }
+      await keycloak.login()
+      return { success: true }
+    } catch (error) {
+      console.error("Keycloak login error", error)
+      return { success: false, error: "Error al iniciar sesión con Keycloak" }
     }
   }
 
   const logout = async (): Promise<boolean> => {
     try {
-      await fetch(`/api/auth/logout`, { method: "POST" })
-    } catch {}
-    localStorage.removeItem("access_token")
-    localStorage.removeItem("user")
-    document.cookie =
-      "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+      await keycloak.logout({
+        redirectUri: `${window.location.origin}/login`,
+      })
+    } catch (error) {
+      console.error("Keycloak logout error", error)
+    }
+
     setUser(null)
-    router.push("/login")
     return true
   }
 
@@ -316,14 +202,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        id,
-        email,
-        username,
-        nombre,
-        apellido,
-        habilitado,
-        rol,
-        reporte,
+        id: user?.id ?? null,
+        email: user?.email ?? null,
+        username: user?.username ?? null,
+        nombre: user?.nombre ?? null,
+        apellido: user?.apellido ?? null,
+        habilitado: user ? !!user.habilitado : null,
+        rol: user?.rol ?? null,
+        reporte: user ? !!user.reporte : null,
         loading,
         login,
         logout,

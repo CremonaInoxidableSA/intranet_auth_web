@@ -24,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useState } from "react"
 import { useAuth } from "@/context/AuthProvider"
 import { toast } from "sonner"
+import { fetchWithKeycloak } from "@/lib/keycloak-fetch"
 
 export default function GenerarReclamo() {
   const { email } = useAuth()
@@ -55,16 +56,19 @@ export default function GenerarReclamo() {
     }
 
     try {
-      const response = await fetch(`/api/proxy/mail/reclamos/crear`, {
-        method: "POST",
-        body: JSON.stringify({
-          nombre: form.nombre,
-          apellido: form.apellido,
-          area: form.area,
-          reporte: form.reporte,
-          email: email,
-        }),
-      })
+      const response = await fetchWithKeycloak(
+        `/api/proxy/mail/reclamos/crear`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            nombre: form.nombre,
+            apellido: form.apellido,
+            area: form.area,
+            reporte: form.reporte,
+            email: email,
+          }),
+        }
+      )
 
       if (response.ok) {
         const data = await response.json()

@@ -5,6 +5,8 @@ export type Submodulo = {
   descripcion?: string
 }
 
+import { fetchWithKeycloak } from "@/lib/keycloak-fetch"
+
 const normalizeResponse = <T>(response: unknown): T[] => {
   if (Array.isArray(response)) return response
   if (response && typeof response === "object") {
@@ -17,7 +19,7 @@ const normalizeResponse = <T>(response: unknown): T[] => {
 export async function fetchSubmodulos(
   headers: Record<string, string> = { Accept: "application/json" }
 ): Promise<Submodulo[]> {
-  const res = await fetch("/api/submodulos/lista-submodulos", {
+  const res = await fetchWithKeycloak("/api/submodulos/lista-submodulos", {
     method: "GET",
     headers,
   })

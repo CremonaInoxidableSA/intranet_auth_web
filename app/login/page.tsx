@@ -13,8 +13,6 @@ const Spinner = () => (
 )
 
 const Login = () => {
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
@@ -27,14 +25,12 @@ const Login = () => {
     }
   }, [error])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleLogin = async () => {
     setError("")
     setLoading(true)
 
     try {
-      const result = await login(username, password)
-
+      const result = await login()
       if (!result.success) {
         setError(result.error || "Error")
       }
@@ -50,61 +46,27 @@ const Login = () => {
       className="flex flex-1 items-center justify-center p-5"
       aria-labelledby="login-title"
     >
-      <div className="flex xl:w-1/2 flex-col items-center justify-center gap-5 rounded">
+      <div className="flex flex-col items-center justify-center gap-5 rounded xl:w-1/2">
         <Logo extraClass="xl:h-1/2" />
 
         <h1 id="login-title" className="sr-only">
           Iniciar Sesión
         </h1>
 
-        <form
-          className="flex h-[60%] w-full flex-col justify-between gap-5"
-          onSubmit={handleSubmit}
-        >
-          <label
-            htmlFor="username"
-            className="flex h-1/3 cursor-pointer flex-col gap-1.25"
-          >
-            <span className="flex font-semibold">Introduzca su usuario</span>
-            <Inputs
-              placeholder="Ingrese su nombre de usuario"
-              id="username"
-              name="username"
-              type="text"
-              autoComplete="username"
-              required
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </label>
-
-          <label
-            htmlFor="password"
-            className="flex h-1/3 cursor-pointer flex-col gap-1.25"
-          >
-            <span className="flex font-semibold tracking-[0.5px]">
-              Introduzca su contraseña
-            </span>
-            <Inputs
-              placeholder="Ingrese su contraseña"
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </label>
-
+        <div className="flex h-[60%] w-full flex-col justify-center gap-5">
+          <p className="text-center text-sm leading-6 text-slate-500">
+            Serás redirigido al proveedor de identidad Keycloak para iniciar
+            sesión.
+          </p>
           <Boton
-            type="submit"
+            type="button"
             extraClass="items-center justify-center border-redcremona bg-redcremona/50 p-1 text-white hover:bg-redcremona/80"
+            onClick={handleLogin}
             disabled={loading}
           >
-            {loading ? <Spinner /> : "Ingresar"}
+            {loading ? <Spinner /> : "Ingresar con Keycloak"}
           </Boton>
-        </form>
+        </div>
 
         <Link
           className="text-sm font-semibold opacity-40 ease-in-out hover:text-redcremona hover:opacity-100"

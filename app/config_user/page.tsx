@@ -14,6 +14,7 @@ import { columns as userColumns, User } from "./(table)/columns"
 import { DataTable, type DataTableColumn } from "./(table)/data-table"
 
 import { useAuth } from "@/context/AuthProvider"
+import { fetchWithKeycloak } from "@/lib/keycloak-fetch"
 
 import { Boton, TabsComp } from "@/components/components"
 
@@ -214,16 +215,19 @@ export default function ConfiguracionUsuario() {
 
   const deshabilitarUsuario = async (usuario_id: number) => {
     try {
-      const res = await fetch("/api/usuarios/deshabilitar_usuario", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          current_user_id: user?.id,
-          usuario_id,
-        }),
-      })
+      const res = await fetchWithKeycloak(
+        "/api/usuarios/deshabilitar_usuario",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            current_user_id: user?.id,
+            usuario_id,
+          }),
+        }
+      )
 
       const result = await res.json()
 
@@ -243,7 +247,7 @@ export default function ConfiguracionUsuario() {
   }
 
   const habilitarUsuario = async (usuario_id: number) => {
-    const res = await fetch("/api/usuarios/habilitar_usuario", {
+    const res = await fetchWithKeycloak("/api/usuarios/habilitar_usuario", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -271,7 +275,7 @@ export default function ConfiguracionUsuario() {
     if (!confirmar) return
 
     try {
-      const res = await fetch("/api/proxy/auth/eliminar_usuario", {
+      const res = await fetchWithKeycloak("/api/proxy/auth/eliminar_usuario", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

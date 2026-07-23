@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { fetchWithKeycloak } from "@/lib/keycloak-fetch"
 
 type Props = {
   onUserCreated: () => void
@@ -83,13 +84,16 @@ export default function FormUsuario({ onUserCreated }: Props) {
       password: form.password,
     }
 
-    const res = await fetch(`/api/usuarios/crear_o_editar_usuario`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    })
+    const res = await fetchWithKeycloak(
+      `/api/usuarios/crear_o_editar_usuario`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    )
 
     if (!res.ok) {
       const err = await res.json()
