@@ -127,14 +127,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        id: user?.id ?? null,
+        id: user?.id ? String(user.id) : null,
         email: user?.email ?? null,
         username: user?.username ?? null,
         nombre: user?.nombre ?? null,
         apellido: user?.apellido ?? null,
-        habilitado: user ? !!user.habilitado : null,
-        rol: user?.rol ?? null,
-        reporte: user ? !!user.reporte : null,
+        roles: user ? [user?.rol ?? "user"] : [],
         loading,
         login,
         logout,

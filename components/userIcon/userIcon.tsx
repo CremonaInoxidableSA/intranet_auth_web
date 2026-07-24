@@ -18,7 +18,7 @@ import { useState } from "react"
 
 const UserIcon = () => {
   const router = useRouter()
-  const { logout, nombre, apellido, rol, loading } = useAuth()
+  const { logout, nombre, apellido, roles, loading } = useAuth()
   const [open, setOpen] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
 
@@ -46,7 +46,7 @@ const UserIcon = () => {
             <UserAvatar
               nombre={nombre}
               apellido={apellido}
-              rol={rol}
+              rol={roles[0] ?? "user"}
               loading={loading}
             />
           </div>
@@ -61,9 +61,9 @@ const UserIcon = () => {
         ) : (
           <div className="flex flex-col items-start gap-1">
             <p className="text-lg">{displayName}</p>
-            <p className="text-xs">{rol}</p>
+            <p className="text-xs">{roles[0] ?? "user"}</p>
 
-            {rol === "admin" || rol === "superadmin" ? (
+            {roles.includes("admin") || roles.includes("superadmin") ? (
               <Button
                 className="hover:bg-bluecremonahover mt-2 w-full cursor-pointer border border-bluecremona bg-bluecremona/10"
                 onClick={() => {

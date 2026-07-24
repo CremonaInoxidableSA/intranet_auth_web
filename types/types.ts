@@ -96,14 +96,12 @@ export interface UserSession {
 
 export interface AuthContextType {
   user: UserSession | null
-  id: number | null
+  id: string | null
   email: string | null
   username: string | null
   nombre: string | null
   apellido: string | null
-  rol: string | null
-  habilitado: boolean | null
-  reporte: boolean | null
+  roles: string[]
   loading: boolean
   login: () => Promise<ApiResponse>
   logout: () => Promise<boolean>
