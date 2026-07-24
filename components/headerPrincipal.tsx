@@ -18,7 +18,7 @@ export default function HeaderPrincipal() {
       href: urlConfig.homeUrl,
       className: "text-base opacity-70 transition-opacity hover:opacity-100",
       onClick: () => setDrawerOpen(false),
-    }
+    },
   ]
 
   return (

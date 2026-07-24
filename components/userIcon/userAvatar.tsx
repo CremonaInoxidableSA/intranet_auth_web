@@ -40,7 +40,6 @@ export const getAvatarColor = (
   return AVATAR_COLORS[hash]
 }
 
-
 export const UserAvatar = ({
   nombre,
   apellido,
