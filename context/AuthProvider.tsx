@@ -9,62 +9,16 @@ import {
   useRef,
   useCallback,
 } from "react"
-import { useRouter, usePathname } from "next/navigation"
-import { UserSession } from "@/lib/types"
+import { UserSession } from "@/types/types"
 import keycloak, { initKeycloakOnce } from "@/lib/keycloak"
-
-interface AuthContextType {
-  user: UserSession | null
-  id: number | null
-  email: string | null
-  username: string | null
-  nombre: string | null
-  apellido: string | null
-  rol: string | null
-  habilitado: boolean | null
-  reporte: boolean | null
-  loading: boolean
-  login: () => Promise<ApiResponse>
-  logout: () => Promise<boolean>
-}
-
-interface ApiResponse {
-  success: boolean
-  data?: unknown
-  error?: string
-  message?: string
-}
-
-const publicRoutes = [
-  "/login",
-  "/login/recuperacion",
-  "/login/recuperacion/reset_pass",
-  "/bootstrap",
-]
+import { AuthContextType, ApiResponse } from "@/types/types"
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserSession | null>(null)
   const [loading, setLoading] = useState(true)
-  const router = useRouter()
-  const pathname = usePathname()
-
-  const [keycloakReady, setKeycloakReady] = useState(false)
-  // Solo evita que ESTE componente dispare el efecto de init más de una vez.
-  // La protección real contra doble-init vive en initKeycloakOnce (a nivel
-  // de módulo), así que aunque este ref se resetee por un remount, no vamos
-  // a volver a llamar a keycloak.init() sobre la misma instancia.
   const initTriggered = useRef(false)
-
-  const isPublicRoute = useCallback(
-    (route: string) =>
-      publicRoutes.some(
-        (publicRoute) =>
-          route === publicRoute || route.startsWith(publicRoute + "/")
-      ),
-    []
-  )
 
   const syncKeycloakSession = useCallback(async () => {
     if (!keycloak.authenticated) {
@@ -123,50 +77,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true)
     try {
       await initKeycloakOnce({
-        onLoad: "check-sso",
+        onLoad: "login-required",
         checkLoginIframe: false,
         pkceMethod:
           typeof window !== "undefined" && window.isSecureContext
             ? "S256"
             : undefined,
       })
-      setKeycloakReady(true)
-
-      if (keycloak.authenticated) {
-        await syncKeycloakSession()
-      }
+      await syncKeycloakSession()
     } catch (error) {
       console.error("Keycloak init error", error)
-      setKeycloakReady(false)
       setUser(null)
     } finally {
       setLoading(false)
     }
   }, [syncKeycloakSession])
-
-  // Redirige al login de Keycloak (no simplemente a /login) cuando no hay
-  // sesión y la ruta no es pública. Usamos un ref para no disparar login()
-  // más de una vez mientras el navegador está redirigiendo.
-  const redirecting = useRef(false)
-
-  useEffect(() => {
-    if (loading || !keycloakReady) return
-
-    if (isPublicRoute(pathname)) {
-      if (user && pathname === "/login") {
-        router.push("/")
-      }
-      return
-    }
-
-    if (!user && !keycloak.authenticated && !redirecting.current) {
-      redirecting.current = true
-      keycloak.login().catch((error) => {
-        console.error("Error redirigiendo a Keycloak login", error)
-        redirecting.current = false
-      })
-    }
-  }, [user, loading, keycloakReady, pathname, router, isPublicRoute])
 
   useEffect(() => {
     if (!initTriggered.current) {
@@ -188,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async (): Promise<boolean> => {
     try {
       await keycloak.logout({
-        redirectUri: `${window.location.origin}/login`,
+        redirectUri: window.location.origin,
       })
     } catch (error) {
       console.error("Keycloak logout error", error)

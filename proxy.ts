@@ -31,8 +31,6 @@ export async function proxy(request: NextRequest) {
   // Keycloak handles page authentication in the browser. API requests carry
   // the in-memory access token in the Authorization header.
   if (
-    pathname === "/login" ||
-    pathname.startsWith("/login/") ||
     pathname.startsWith("/api/auth/")
   ) {
     return NextResponse.next()

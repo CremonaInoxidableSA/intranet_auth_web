@@ -27,9 +27,7 @@ export function getErrorMessage(error: unknown): string {
     if ("message" in error && typeof error.message === "string")
       return error.message
     if ("detail" in error) return getErrorMessage(error.detail)
-    // Si tiene un campo error
     if ("error" in error) return getErrorMessage(error.error)
-    // Si tiene un array de errores
     if ("errors" in error && Array.isArray(error.errors)) {
       return getErrorMessage(error.errors)
     }

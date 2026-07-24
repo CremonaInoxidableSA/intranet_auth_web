@@ -1,6 +1,6 @@
 import { Geist_Mono, Roboto } from "next/font/google"
-
 import "./globals.css"
+
 import { ThemeProvider } from "@/components/theme/themeProvider"
 import LayoutClient from "./layout-client"
 import { AuthProvider } from "@/context/AuthProvider"

@@ -1,5 +1,3 @@
-// Este archivo no usa React, por lo que puede importarse desde cualquier lugar
-
 export type ApiConnectionSource = "produccion" | "auth" | "unknown"
 
 export interface ConnectionErrorState {
@@ -113,11 +111,7 @@ export function resetConnectionError(apiSource?: ApiConnectionSource) {
   setConnectionError(false, apiSource ?? "unknown")
 }
 
-/**
- * Detecta si hay error de conexión en una respuesta
- */
 function isConnectionError(data: unknown, statusCode: number): boolean {
-  // Status 500 o mayor generalmente indica problema con el servidor
   if (statusCode >= 500) {
     if (typeof data === "string") {
       return (
@@ -136,26 +130,18 @@ function isConnectionError(data: unknown, statusCode: number): boolean {
         )
       }
     }
-
-    // Si es un 500 sin mensaje específico, asumimos que es problema de conexión
     return true
   }
 
   return false
 }
 
-/**
- * Wrapper de fetch que detecta automáticamente errores de conexión
- * y los reporta al sistema de monitoreo
- */
 export async function fetchWithConnectionCheck(
   input: RequestInfo | URL,
   init?: RequestInit
 ): Promise<Response> {
   try {
     const response = await fetch(input, init)
-
-    // Verificar si es un error de conexión
     if (!response.ok) {
       try {
         const contentType = response.headers.get("content-type")
@@ -175,19 +161,16 @@ export async function fetchWithConnectionCheck(
           setConnectionError(true, getApiSourceFromUrl(input))
         }
       } catch {
-        // Si no podemos parsear la respuesta, asumimos que es un error de conexión
         if (response.status >= 500) {
           setConnectionError(true, getApiSourceFromUrl(input))
         }
       }
     } else {
-      // Respuesta exitosa - resetear error de conexión
       resetConnectionError()
     }
 
     return response
   } catch (error) {
-    // Error de red (TypeError, NetworkError, etc.)
     if (
       error instanceof TypeError ||
       (error instanceof Error &&

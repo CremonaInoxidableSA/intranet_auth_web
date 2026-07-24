@@ -93,3 +93,34 @@ export interface UserSession {
   reporte?: boolean
   token?: string
 }
+
+export interface AuthContextType {
+  user: UserSession | null
+  id: number | null
+  email: string | null
+  username: string | null
+  nombre: string | null
+  apellido: string | null
+  rol: string | null
+  habilitado: boolean | null
+  reporte: boolean | null
+  loading: boolean
+  login: () => Promise<ApiResponse>
+  logout: () => Promise<boolean>
+}
+
+export interface ApiResponse {
+  success: boolean
+  data?: unknown
+  error?: string
+  message?: string
+}
+
+export interface UserAvatarProps {
+  nombre?: string | null
+  apellido?: string | null
+  rol?: string | null
+  loading?: boolean
+  sizeClass?: string
+  textClass?: string
+}

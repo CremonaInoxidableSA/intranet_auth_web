@@ -186,7 +186,7 @@ export default function ConfiguracionUsuario() {
             if (!mounted) return
             setData([])
         }
-      } catch (error) {
+      } catch {
         if (!mounted) return
         setError("Error al cargar los datos")
         setData([])
