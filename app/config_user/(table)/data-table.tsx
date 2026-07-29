@@ -25,6 +25,7 @@ interface DataTableProps<TData> {
   data: TData[]
   pageSize?: number
   extraClass?: string
+  disableClientPagination?: boolean
 }
 
 export function DataTable<TData extends Record<string, unknown>>({
@@ -32,14 +33,20 @@ export function DataTable<TData extends Record<string, unknown>>({
   data,
   pageSize = 10,
   extraClass,
+  disableClientPagination = false,
 }: DataTableProps<TData>) {
   const [pageIndex, setPageIndex] = useState(0)
 
   const safeData = useMemo(() => (Array.isArray(data) ? data : []), [data])
-  const pageCount = Math.max(1, Math.ceil(safeData.length / pageSize))
+  const pageCount = disableClientPagination
+    ? 1
+    : Math.max(1, Math.ceil(safeData.length / pageSize))
   const currentPageData = useMemo(
-    () => safeData.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize),
-    [safeData, pageIndex, pageSize]
+    () =>
+      disableClientPagination
+        ? safeData
+        : safeData.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize),
+    [disableClientPagination, safeData, pageIndex, pageSize]
   )
 
   const canPreviousPage = pageIndex > 0
@@ -103,26 +110,28 @@ export function DataTable<TData extends Record<string, unknown>>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))}
-          disabled={!canPreviousPage}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            setPageIndex((prev) => Math.min(prev + 1, pageCount - 1))
-          }
-          disabled={!canNextPage}
-        >
-          Next
-        </Button>
-      </div>
+      {!disableClientPagination && (
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))}
+            disabled={!canPreviousPage}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setPageIndex((prev) => Math.min(prev + 1, pageCount - 1))
+            }
+            disabled={!canNextPage}
+          >
+            Next
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

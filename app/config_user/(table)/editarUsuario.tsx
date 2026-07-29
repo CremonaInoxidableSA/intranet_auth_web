@@ -23,11 +23,11 @@ import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 type Props = {
   onUserCreated: () => void
   currentUserId?: number
-  userIdToEdit?: number
+  userIdToEdit?: string | number
 }
 
 type UserForm = {
-  id_usuario: number
+  id_usuario: string | number
   email: string
   username: string
   nombre: string
@@ -60,7 +60,7 @@ export default function EditarUsuario({
 }: Props) {
   const [loading, setLoading] = useState(userIdToEdit !== undefined)
   const [form, setForm] = useState<UserForm>({
-    id_usuario: userIdToEdit ?? 0,
+    id_usuario: userIdToEdit ?? "",
     email: "",
     username: "",
     nombre: "",

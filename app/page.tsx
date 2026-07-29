@@ -1,4 +1,3 @@
-import Link from "next/link"
 import { SiAutodesk } from "react-icons/si"
 import { IoIosCloudDone } from "react-icons/io"
 import { MdOutlineFactory } from "react-icons/md"

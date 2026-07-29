@@ -20,19 +20,19 @@ export type ColumnDef<T> = {
 }
 
 export type User = {
-  id?: number
+  id?: string | number
   email: string
   apellidoNombre: string
   grupos?: string[]
   habilitado: number
-  reporte: number
+  reporte?: number
 }
 
 export const columns = (
-  onEditUser: (id: number | undefined) => void,
-  onDisableUser: (usuario_id: number) => void,
-  onEnableUser: (usuario_id: number) => void,
-  onDeleteUser: (usuario_id: number) => void
+  onEditUser: (id: string | number | undefined) => void,
+  onDisableUser: (usuario_id: string | number) => void,
+  onEnableUser: (usuario_id: string | number) => void,
+  onDeleteUser: (usuario_id: string | number) => void
 ): ColumnDef<User>[] => [
   {
     accessorKey: "email",

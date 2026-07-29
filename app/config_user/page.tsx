@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react"
 import { Spinner } from "@/components/ui/spinner"
 import { Dialog, DialogTrigger } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 import FormUsuario from "./(formulario)/formUsuario"
 import FormRol from "./(formulario)/formRol"
@@ -130,11 +132,16 @@ export default function ConfiguracionUsuario() {
   const [data, setData] = useState<Record<string, unknown>[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [userIdToEdit, setUserIdToEdit] = useState<number | undefined>(
+  const [userIdToEdit, setUserIdToEdit] = useState<string | number | undefined>(
     undefined
   )
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [userPage, setUserPage] = useState(1)
+  const [userFilterInput, setUserFilterInput] = useState("")
+  const [userFilter, setUserFilter] = useState<string | null>(null)
+  const [userTotalPages, setUserTotalPages] = useState(1)
+  const [userTotalUsers, setUserTotalUsers] = useState(0)
 
   const createHeaders = (tabId: number): Record<string, string> => {
     if (tabId === TAB_USUARIOS) {
@@ -159,37 +166,56 @@ export default function ConfiguracionUsuario() {
       try {
         switch (selectedTabId) {
           case TAB_USUARIOS: {
-            const users = await fetchUsuarios(user?.id, currentHeaders)
+            const usersResponse = await fetchUsuarios(
+              user?.id,
+              {
+                numeroPagina: userPage,
+                filtro: userFilter,
+              },
+              currentHeaders
+            )
             if (!mounted) return
-            setData(users)
+            setData(usersResponse.users)
+            setUserTotalPages(usersResponse.paginacion.total_paginas)
+            setUserTotalUsers(usersResponse.paginacion.total_usuarios)
             break
           }
           case TAB_GRUPOS: {
             const grupos = await fetchGrupos(currentHeaders)
             if (!mounted) return
             setData(grupos)
+            setUserTotalPages(1)
+            setUserTotalUsers(0)
             break
           }
           case TAB_MODULOS: {
             const modulos = await fetchModulos(currentHeaders)
             if (!mounted) return
             setData(modulos)
+            setUserTotalPages(1)
+            setUserTotalUsers(0)
             break
           }
           case TAB_SUBMODULOS: {
             const submodulos = await fetchSubmodulos(currentHeaders)
             if (!mounted) return
             setData(submodulos)
+            setUserTotalPages(1)
+            setUserTotalUsers(0)
             break
           }
           default:
             if (!mounted) return
             setData([])
+            setUserTotalPages(1)
+            setUserTotalUsers(0)
         }
       } catch {
         if (!mounted) return
         setError("Error al cargar los datos")
         setData([])
+        setUserTotalPages(1)
+        setUserTotalUsers(0)
       } finally {
         if (!mounted) return
         setIsLoading(false)
@@ -200,12 +226,21 @@ export default function ConfiguracionUsuario() {
     return () => {
       mounted = false
     }
-  }, [selectedTabId, user?.id, currentHeaders])
+  }, [selectedTabId, user?.id, currentHeaders, userPage, userFilter])
 
   const refetchUsuarios = async () => {
     if (selectedTabId !== TAB_USUARIOS) return
-    const users = await fetchUsuarios(user?.id, currentHeaders)
-    setData(users)
+    const usersResponse = await fetchUsuarios(
+      user?.id,
+      {
+        numeroPagina: userPage,
+        filtro: userFilter,
+      },
+      currentHeaders
+    )
+    setData(usersResponse.users)
+    setUserTotalPages(usersResponse.paginacion.total_paginas)
+    setUserTotalUsers(usersResponse.paginacion.total_usuarios)
   }
 
   const handleUserCreated = async () => {
@@ -213,7 +248,7 @@ export default function ConfiguracionUsuario() {
     setIsCreateDialogOpen(false)
   }
 
-  const deshabilitarUsuario = async (usuario_id: number) => {
+  const deshabilitarUsuario = async (usuario_id: string | number) => {
     try {
       const res = await fetchWithKeycloak(
         "/api/usuarios/deshabilitar_usuario",
@@ -246,7 +281,7 @@ export default function ConfiguracionUsuario() {
     }
   }
 
-  const habilitarUsuario = async (usuario_id: number) => {
+  const habilitarUsuario = async (usuario_id: string | number) => {
     const res = await fetchWithKeycloak("/api/usuarios/habilitar_usuario", {
       method: "POST",
       headers: {
@@ -267,7 +302,7 @@ export default function ConfiguracionUsuario() {
     )
   }
 
-  const eliminarUsuario = async (usuario_id: number) => {
+  const eliminarUsuario = async (usuario_id: string | number) => {
     const confirmar = confirm(
       "¿Estás seguro de que querés eliminar este usuario? Esta acción no se puede deshacer."
     )
@@ -299,9 +334,21 @@ export default function ConfiguracionUsuario() {
     }
   }
 
-  const editarUsuario = (id: number | undefined) => {
+  const editarUsuario = (id: string | number | undefined) => {
     setUserIdToEdit(id)
     setIsEditDialogOpen(true)
+  }
+
+  const aplicarFiltroUsuarios = () => {
+    setUserPage(1)
+    const parsedFiltro = userFilterInput.trim()
+    setUserFilter(parsedFiltro === "" ? null : parsedFiltro)
+  }
+
+  const limpiarFiltroUsuarios = () => {
+    setUserFilterInput("")
+    setUserFilter(null)
+    setUserPage(1)
   }
 
   const currentColumns = useMemo<
@@ -408,18 +455,87 @@ export default function ConfiguracionUsuario() {
           </div>
         ) : (
           <div className="flex w-full flex-col gap-5">
+            {selectedTabId === TAB_USUARIOS && (
+              <div className="flex w-full flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
+                <div className="flex w-full flex-col gap-2 xl:max-w-xl xl:flex-row">
+                  <Input
+                    value={userFilterInput}
+                    onChange={(event) => setUserFilterInput(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        aplicarFiltroUsuarios()
+                      }
+                    }}
+                    placeholder="Filtrar por nombre, apellido o email"
+                    className="border border-background6 bg-background3"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      onClick={aplicarFiltroUsuarios}
+                      className="border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
+                      variant="outline"
+                    >
+                      Filtrar
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={limpiarFiltroUsuarios}
+                      variant="outline"
+                    >
+                      Limpiar
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
             <DataTable
               key={selectedTabId}
               columns={currentColumns}
               extraClass="w-full"
               data={data}
+              disableClientPagination={selectedTabId === TAB_USUARIOS}
             />
+            {selectedTabId === TAB_USUARIOS && (
+              <div className="flex w-full flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Total usuarios: {userTotalUsers}
+                </span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={userPage <= 1}
+                    onClick={() => setUserPage((prev) => Math.max(prev - 1, 1))}
+                  >
+                    Anterior
+                  </Button>
+                  <span className="min-w-28 text-center text-sm">
+                    Página {userPage} de {Math.max(userTotalPages, 1)}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={userPage >= Math.max(userTotalPages, 1)}
+                    onClick={() =>
+                      setUserPage((prev) =>
+                        Math.min(prev + 1, Math.max(userTotalPages, 1))
+                      )
+                    }
+                  >
+                    Siguiente
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        {typeof userIdToEdit === "number" && user?.id !== undefined && (
+        {userIdToEdit !== undefined && user?.id !== undefined && (
           <EditarUsuario
             onUserCreated={handleUserUpdated}
             currentUserId={user.id}

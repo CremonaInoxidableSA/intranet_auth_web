@@ -8,6 +8,7 @@ export function LogoCreminox({ extraClass }: { extraClass?: string }) {
       width={200}
       height={48}
       className={`w-auto ${extraClass || ""}`}
+      loading="eager"
     />
   )
 }

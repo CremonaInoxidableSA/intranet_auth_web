@@ -6,8 +6,15 @@ const EXTERNAL_API_URL =
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization")
-  const numero_pagina = request.headers.get("numero_pagina")
-  const filtro = request.headers.get("filtro")
+  const numeroPaginaParam = request.nextUrl.searchParams.get("numero_pagina")
+  const filtroParam = request.nextUrl.searchParams.get("filtro")
+
+  const numero_pagina =
+    Number.isInteger(Number(numeroPaginaParam)) && Number(numeroPaginaParam) > 0
+      ? String(Number(numeroPaginaParam))
+      : "1"
+
+  const filtro = filtroParam && filtroParam.trim() !== "" ? filtroParam : "0"
 
   const token = authHeader?.startsWith("Bearer ")
     ? authHeader.substring(7)
@@ -20,12 +27,16 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  const externalResponse = await fetch(`${EXTERNAL_API_URL}?numero_pagina=${numero_pagina}&filtro=${filtro}`, {
+  const externalUrl = new URL(EXTERNAL_API_URL)
+  externalUrl.searchParams.set("numero_pagina", numero_pagina)
+  externalUrl.searchParams.set("filtro", filtro)
+
+  const externalResponse = await fetch(externalUrl.toString(), {
     method: "GET",
     headers: {
       Accept: "application/json",
       Authorization: `Bearer ${token}`,
-    }
+    },
   })
 
   const data = await externalResponse.json().catch(() => null)
@@ -34,7 +45,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error:
-          data?.detail ?? data?.message ?? "Error al obtener la lista de usuarios",
+          data?.detail ??
+          data?.message ??
+          "Error al obtener la lista de usuarios",
       },
       { status: externalResponse.status }
     )
