@@ -19,7 +19,7 @@ import { useAuth } from "@/context/AuthProvider"
 
 const UserIcon = () => {
   const router = useRouter()
-  const { logout, nombre, apellido, roles, loading } = useAuth()
+  const { logout, nombre, apellido, grupos, loading } = useAuth()
 
   const [open, setOpen] = useState(false)
   const [changePassOpen, setChangePassOpen] = useState(false)
@@ -49,7 +49,7 @@ const UserIcon = () => {
               <UserAvatar
                 nombre={nombre}
                 apellido={apellido}
-                rol={roles[0] ?? "user"}
+                rol={grupos[0] ?? "user"}
                 loading={loading}
               />
             </div>
@@ -65,9 +65,9 @@ const UserIcon = () => {
           ) : (
             <div className="flex flex-col items-start gap-1">
               <p className="text-lg">{displayName}</p>
-              <p className="text-xs">{roles[0] ?? "user"}</p>
+              <p className="text-xs">{grupos[0] ?? "user"}</p>
 
-              {roles.includes("admin") || roles.includes("superadmin") ? (
+              {grupos.includes("admin") || grupos.includes("superadmin") ? (
                 <Button
                   className="w-full cursor-pointer border border-bluecremona bg-bluecremona/10 hover:bg-bluecremona/30"
                   onClick={() => {

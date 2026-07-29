@@ -38,17 +38,17 @@ type UserForm = {
   password: string
 }
 
-const roleNameToRolId: Record<string, string> = {
+const grupoNameToRolId: Record<string, string> = {
   superadmin: "1",
   admin: "1",
   user: "2",
 }
 
-const normalizeRoleValue = (role: unknown): string => {
-  if (typeof role === "number") return String(role)
-  if (typeof role === "string") {
-    if (/^\d+$/.test(role)) return role
-    return roleNameToRolId[role] ?? ""
+const normalizeGrupoValue = (grupo: unknown): string => {
+  if (typeof grupo === "number") return String(grupo)
+  if (typeof grupo === "string") {
+    if (/^\d+$/.test(grupo)) return grupo
+    return grupoNameToRolId[grupo] ?? ""
   }
   return ""
 }
@@ -104,8 +104,8 @@ export default function EditarUsuario({
           legajo: String(data.legajo ?? ""),
           dni: String(data.dni ?? ""),
           rol:
-            Array.isArray(data.roles) && data.roles.length > 0
-              ? normalizeRoleValue(data.roles[0])
+            Array.isArray(data.grupos) && data.grupos.length > 0
+              ? normalizeGrupoValue(data.grupos[0])
               : "",
           password: "",
         })

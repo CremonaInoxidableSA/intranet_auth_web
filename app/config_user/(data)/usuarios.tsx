@@ -30,9 +30,9 @@ export async function fetchUsuarios(
   const users = normalizeResponse<User>(data)
 
   return users.map((user) => {
-    const rawRoles = (user as unknown as { roles?: unknown }).roles
-    const roles = Array.isArray(rawRoles)
-      ? rawRoles.filter((item): item is string => typeof item === "string")
+    const rawGrupos = (user as unknown as { grupos?: unknown }).grupos
+    const grupos = Array.isArray(rawGrupos)
+      ? rawGrupos.filter((item): item is string => typeof item === "string")
       : typeof (user as unknown as { rol?: unknown }).rol === "string"
         ? [(user as unknown as { rol: string }).rol]
         : undefined
@@ -43,7 +43,7 @@ export async function fetchUsuarios(
         user.id ??
         (user as unknown as { user_id?: number }).user_id ??
         (user as unknown as { usuario_id?: number }).usuario_id,
-      roles,
+      grupos,
       habilitado:
         typeof user.habilitado === "boolean"
           ? user.habilitado

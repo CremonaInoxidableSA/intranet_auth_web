@@ -191,7 +191,7 @@
   }
 
   button:not(:disabled),
-  [role="button"]:not(:disabled) {
+  [grupo="button"]:not(:disabled) {
     cursor: pointer;
   }
 

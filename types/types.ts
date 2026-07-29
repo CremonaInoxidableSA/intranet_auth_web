@@ -84,24 +84,32 @@ export interface User {
 
 export interface UserSession {
   id?: number
-  email?: string
-  username: string
+  username?: string
+  email: string
   nombre: string
   apellido: string
-  rol?: "superadmin" | "admin" | "user"
-  habilitado: boolean
-  reporte?: boolean
-  token?: string
+  legajo: number
+  dni: number
+
+  grupos: string[]
+  modulos: string[]
+  submodulos: string[]
+  permisos: string[]
 }
 
 export interface AuthContextType {
   user: UserSession | null
-  id: string | null
+  id: number | null
   email: string | null
   username: string | null
   nombre: string | null
   apellido: string | null
-  roles: string[]
+  grupos: string[]
+  modulos: string[]
+  submodulos: string[]
+  permisos: string[]
+  legajo: number | null
+  dni: number | null
   loading: boolean
   login: () => Promise<ApiResponse>
   logout: () => Promise<boolean>

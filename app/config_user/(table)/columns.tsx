@@ -22,10 +22,8 @@ export type ColumnDef<T> = {
 export type User = {
   id?: number
   email: string
-  username: string
-  nombre: string
-  apellido: string
-  roles?: string[]
+  apellidoNombre: string
+  grupos?: string[]
   habilitado: number
   reporte: number
 }
@@ -42,30 +40,21 @@ export const columns = (
     className: "hidden xl:table-cell",
   },
   {
-    accessorKey: "username",
-    header: "Usuario",
-    className: "hidden xl:table-cell",
+    accessorKey: "apellidoNombre",
+    header: "Apellido y Nombre",
   },
   {
-    accessorKey: "nombre",
-    header: "Nombre",
-  },
-  {
-    accessorKey: "apellido",
-    header: "Apellido",
-  },
-  {
-    accessorKey: "roles",
-    header: "Roles",
+    accessorKey: "grupos",
+    header: "Grupos",
     cell: ({ row }) => {
-      const roles = row.roles
-      if (Array.isArray(roles) && roles.length > 0) {
-        const roleMap: Record<string, string> = {
+      const grupos = row.grupos
+      if (Array.isArray(grupos) && grupos.length > 0) {
+        const grupoMap: Record<string, string> = {
           superadmin: "Superadmin",
           admin: "Admin",
           user: "Usuario",
         }
-        return roles.map((role) => roleMap[role] ?? role ?? "—").join(", ")
+        return grupos.map((grupo) => grupoMap[grupo] ?? grupo ?? "—").join(", ")
       }
       return "—"
     },

@@ -19,12 +19,12 @@ import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 import { Boton, TabsComp } from "@/components/components"
 
 import { fetchUsuarios } from "./(data)/usuarios"
-import { fetchRoles, type Role } from "./(data)/roles"
+import { fetchGrupos, type Grupo } from "./(data)/grupos"
 import { fetchModulos, type Modulo } from "./(data)/modulos"
 import { fetchSubmodulos, type Submodulo } from "./(data)/submodulos"
 
 const TAB_USUARIOS = 1
-const TAB_ROLES = 2
+const TAB_GRUPOS = 2
 const TAB_MODULOS = 3
 const TAB_SUBMODULOS = 4
 
@@ -34,8 +34,8 @@ const tablas = [
     nombre: "Lista de Usuarios",
   },
   {
-    id: TAB_ROLES,
-    nombre: "Lista de Roles",
+    id: TAB_GRUPOS,
+    nombre: "Lista de Grupos",
   },
   {
     id: TAB_MODULOS,
@@ -55,8 +55,8 @@ const botonesCreacion = [
       "border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30",
   },
   {
-    id: TAB_ROLES,
-    nombre: "Crear Rol",
+    id: TAB_GRUPOS,
+    nombre: "Crear Grupo",
     extraClass:
       "border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30",
   },
@@ -74,7 +74,7 @@ const botonesCreacion = [
   },
 ]
 
-const roleColumns: DataTableColumn<Role>[] = [
+const grupoColumns: DataTableColumn<Grupo>[] = [
   {
     accessorKey: "id",
     header: "ID",
@@ -164,10 +164,10 @@ export default function ConfiguracionUsuario() {
             setData(users)
             break
           }
-          case TAB_ROLES: {
-            const roles = await fetchRoles(currentHeaders)
+          case TAB_GRUPOS: {
+            const grupos = await fetchGrupos(currentHeaders)
             if (!mounted) return
-            setData(roles)
+            setData(grupos)
             break
           }
           case TAB_MODULOS: {
@@ -308,8 +308,8 @@ export default function ConfiguracionUsuario() {
     DataTableColumn<Record<string, unknown>>[]
   >(() => {
     switch (selectedTabId) {
-      case TAB_ROLES:
-        return roleColumns as DataTableColumn<Record<string, unknown>>[]
+      case TAB_GRUPOS:
+        return grupoColumns as DataTableColumn<Record<string, unknown>>[]
       case TAB_MODULOS:
         return moduloColumns as DataTableColumn<Record<string, unknown>>[]
       case TAB_SUBMODULOS:
@@ -338,7 +338,7 @@ export default function ConfiguracionUsuario() {
     switch (selectedTabId) {
       case TAB_USUARIOS:
         return <FormUsuario onUserCreated={handleUserCreated} />
-      case TAB_ROLES:
+      case TAB_GRUPOS:
         return <FormRol />
       case TAB_MODULOS:
         return <FormModulo />
@@ -408,11 +408,6 @@ export default function ConfiguracionUsuario() {
           </div>
         ) : (
           <div className="flex w-full flex-col gap-5">
-            {error ? (
-              <div className="rounded border border-red-500 bg-red-700/10 p-4 text-sm text-red-500">
-                {error}
-              </div>
-            ) : null}
             <DataTable
               key={selectedTabId}
               columns={currentColumns}

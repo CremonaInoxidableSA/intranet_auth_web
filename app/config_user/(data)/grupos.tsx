@@ -1,4 +1,4 @@
-export type Role = {
+export type Grupo = {
   id?: number
   rol?: string
   nombre?: string
@@ -16,18 +16,18 @@ function normalizeResponse<T>(response: unknown): T[] {
   return []
 }
 
-export async function fetchRoles(
+export async function fetchGrupos(
   headers: Record<string, string> = { Accept: "application/json" }
-): Promise<Role[]> {
-  const res = await fetchWithKeycloak("/api/roles/lista-roles", {
+): Promise<Grupo[]> {
+  const res = await fetchWithKeycloak("/api/grupos/lista-grupos", {
     method: "GET",
     headers,
   })
 
   if (!res.ok) {
-    throw new Error("Error al cargar roles")
+    throw new Error("Error al cargar grupos")
   }
 
   const data = await res.json()
-  return normalizeResponse<Role>(data)
+  return normalizeResponse<Grupo>(data)
 }

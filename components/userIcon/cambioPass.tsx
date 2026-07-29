@@ -63,7 +63,7 @@ const CambioPass = ({ open, onOpenChange }: CambioPassProps) => {
     setLoading(true)
 
     try {
-      const response = await fetch("/api/changePersonalPassword", {
+      const response = await fetch("/api/personal/change-password", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
