@@ -29,12 +29,10 @@ type Props = {
 type UserForm = {
   id_usuario: string | number
   email: string
-  username: string
   nombre: string
   apellido: string
   legajo: string
   dni: string
-  rol: string
   password: string
 }
 
@@ -62,12 +60,10 @@ export default function EditarUsuario({
   const [form, setForm] = useState<UserForm>({
     id_usuario: userIdToEdit ?? "",
     email: "",
-    username: "",
     nombre: "",
     apellido: "",
     legajo: "",
     dni: "",
-    rol: "",
     password: "",
   })
 
@@ -98,15 +94,10 @@ export default function EditarUsuario({
         setForm({
           id_usuario: data.id ?? userIdToEdit,
           email: data.email ?? "",
-          username: data.username ?? "",
           nombre: data.nombre ?? "",
           apellido: data.apellido ?? "",
           legajo: String(data.legajo ?? ""),
           dni: String(data.dni ?? ""),
-          rol:
-            Array.isArray(data.grupos) && data.grupos.length > 0
-              ? normalizeGrupoValue(data.grupos[0])
-              : "",
           password: "",
         })
       } catch (error) {
@@ -135,11 +126,6 @@ export default function EditarUsuario({
       return
     }
 
-    if (!form.rol) {
-      alert("Seleccione un rol")
-      return
-    }
-
     const payload: Record<string, unknown> = {
       current_user_id: currentUserId,
       id_usuario: form.id_usuario,
@@ -148,8 +134,6 @@ export default function EditarUsuario({
       legajo: Number(form.legajo),
       dni: Number(form.dni),
       email: form.email,
-      username: form.username,
-      rol_ids: [Number(form.rol)],
     }
 
     if (form.password.trim() !== "") {
@@ -214,18 +198,6 @@ export default function EditarUsuario({
           />
         </div>
 
-        <div className="grid gap-2">
-          <Label htmlFor="username">Usuario</Label>
-          <Input
-            id="username"
-            value={form.username}
-            onChange={(e) => handleChange("username", e.target.value)}
-            placeholder="Asigne un usuario único"
-            required
-            className="border border-background6 bg-background3"
-          />
-        </div>
-
         <div className="grid gap-2 xl:grid-cols-2 xl:gap-4">
           <div className="grid gap-2">
             <Label htmlFor="name">Nombre</Label>
@@ -276,22 +248,6 @@ export default function EditarUsuario({
               className="border border-background6 bg-background3"
             />
           </div>
-        </div>
-
-        <div className="grid gap-2">
-          <Label>Rol</Label>
-          <Select
-            value={form.rol}
-            onValueChange={(value) => handleChange("rol", value)}
-          >
-            <SelectTrigger className="w-full border border-background6 bg-background3">
-              <SelectValue placeholder="Seleccione un rol" />
-            </SelectTrigger>
-            <SelectContent position="popper" className="z-900">
-              <SelectItem value="1">Administrador</SelectItem>
-              <SelectItem value="2">Usuario</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
 
         <div className="grid gap-2">

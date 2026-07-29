@@ -49,7 +49,6 @@ const UserIcon = () => {
               <UserAvatar
                 nombre={nombre}
                 apellido={apellido}
-                rol={submodulos[0] ?? "user"}
                 loading={loading}
               />
             </div>

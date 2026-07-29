@@ -58,7 +58,7 @@ function normalizeUsers(response: unknown): User[] {
       nombre?: unknown
       apellido?: unknown
       enabled?: unknown
-      rol?: unknown
+      grupos?: unknown
       user_id?: unknown
       usuario_id?: unknown
     }
@@ -69,8 +69,8 @@ function normalizeUsers(response: unknown): User[] {
     const rawGrupos = user.grupos
     const grupos = Array.isArray(rawGrupos)
       ? rawGrupos.filter((item): item is string => typeof item === "string")
-      : typeof user.rol === "string"
-        ? [user.rol]
+      : typeof user.grupos === "string"
+        ? [user.grupos]
         : undefined
 
     const habilitadoRaw =

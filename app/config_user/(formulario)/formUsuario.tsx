@@ -11,15 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
@@ -31,14 +22,12 @@ type Props = {
 export default function FormUsuario({ onUserCreated }: Props) {
   const [form, setForm] = useState({
     email: "",
-    username: "",
     nombre: "",
     apellido: "",
     legajo: "",
     dni: "",
     password: "",
-    reporte: true,
-    habilitado: 1,
+    habilitado: true,
   })
 
   const handleChange = (key: string, value: string | boolean | number) => {
@@ -72,8 +61,8 @@ export default function FormUsuario({ onUserCreated }: Props) {
       legajo: Number(form.legajo),
       dni: Number(form.dni),
       email: form.email,
-      username: form.username,
       password: form.password,
+      habilitado: true,
     }
 
     const res = await fetchWithKeycloak(
@@ -114,18 +103,6 @@ export default function FormUsuario({ onUserCreated }: Props) {
             value={form.email}
             onChange={(e) => handleChange("email", e.target.value)}
             placeholder="Ingrese el correo electrónico del usuario"
-            required
-            className="border border-background6 bg-background3"
-          />
-        </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor="username">Usuario</Label>
-          <Input
-            id="username"
-            value={form.username}
-            onChange={(e) => handleChange("username", e.target.value)}
-            placeholder="Asigne un usuario único"
             required
             className="border border-background6 bg-background3"
           />

@@ -43,19 +43,10 @@ export const getAvatarColor = (
 export const UserAvatar = ({
   nombre,
   apellido,
-  rol,
   loading,
   sizeClass = "w-6.25 h-6.25",
   textClass = "text-[11px]",
 }: UserAvatarProps) => {
-  if (rol === "superadmin") {
-    return (
-      <div className={`${sizeClass} shrink-0 overflow-hidden rounded-full`}>
-        <Logo extraClass="h-full w-full object-cover" />
-      </div>
-    )
-  }
-
   if (!loading && getInitials(nombre, apellido)) {
     return (
       <div

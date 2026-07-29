@@ -72,19 +72,19 @@ export interface SoftwareData {
 }
 
 export interface User {
-  id: number
+  user_id: number
   email: string
-  username: string
   nombre: string
   apellido: string
-  rol: "superadmin" | "admin" | "user"
   habilitado: boolean
-  reporte: boolean
+  dni?: number
+  legajo?: number
+  grupos?: string[]
+  apellidoNombre?: string
 }
 
 export interface UserSession {
   id?: number
-  username?: string
   email: string
   nombre: string
   apellido: string
@@ -101,7 +101,6 @@ export interface AuthContextType {
   user: UserSession | null
   id: number | null
   email: string | null
-  username: string | null
   nombre: string | null
   apellido: string | null
   grupos: string[]
@@ -125,7 +124,6 @@ export interface ApiResponse {
 export interface UserAvatarProps {
   nombre?: string | null
   apellido?: string | null
-  rol?: string | null
   loading?: boolean
   sizeClass?: string
   textClass?: string
