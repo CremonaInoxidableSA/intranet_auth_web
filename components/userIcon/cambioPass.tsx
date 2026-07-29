@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { toast } from "sonner"
 import keycloak from "@/lib/keycloak/keycloak"
+import { useAuth } from "@/context/AuthProvider"
 
 type CambioPassProps = {
   open: boolean
@@ -26,14 +27,15 @@ type CambioPassProps = {
 
 const CambioPass = ({ open, onOpenChange }: CambioPassProps) => {
   const [form, setForm] = useState({
-    current_password: "",
     new_password: "",
+    new_password_confirmation: "",
   })
 
   const [loading, setLoading] = useState(false)
+  const { logout} = useAuth()
 
   const handleChange = (
-    key: "current_password" | "new_password",
+    key: "new_password" | "new_password_confirmation",
     value: string
   ) => {
     setForm((prev) => ({
@@ -46,10 +48,9 @@ const CambioPass = ({ open, onOpenChange }: CambioPassProps) => {
     if (loading) return
 
     setForm({
-      current_password: "",
       new_password: "",
+      new_password_confirmation: "",
     })
-
     onOpenChange(false)
   }
 
@@ -70,7 +71,7 @@ const CambioPass = ({ open, onOpenChange }: CambioPassProps) => {
         },
         body: JSON.stringify({
           password: form.new_password,
-          password_confirmation: form.new_password,
+          password_confirmation: form.new_password_confirmation,
         }),
       })
 
@@ -88,6 +89,7 @@ const CambioPass = ({ open, onOpenChange }: CambioPassProps) => {
       toast.error("Error de comunicación con el servidor")
     } finally {
       setLoading(false)
+      await logout()
     }
   }
 
@@ -97,26 +99,18 @@ const CambioPass = ({ open, onOpenChange }: CambioPassProps) => {
         <DialogHeader>
           <DialogTitle>Cambiar contraseña</DialogTitle>
           <DialogDescription>
-            Complete los datos para cambiar la contraseña.
+            Complete los datos para cambiar la contraseña. Esta debe
+            tener al menos 8 caracteres.
+            <br />
+            <br />
+            Al cambiar la contraseña se cerrará la sesión actual y deberá
+            iniciar sesión nuevamente con la nueva contraseña.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-5 py-4">
+        <div className="grid gap-5">
           <div className="grid gap-2">
-            <Label htmlFor="current_password">Contraseña Actual</Label>
-
-            <Input
-              id="current_password"
-              type="password"
-              value={form.current_password}
-              onChange={(e) => handleChange("current_password", e.target.value)}
-              placeholder="Ingrese su contraseña actual"
-              disabled={loading}
-            />
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="new_password">Nueva Contraseña</Label>
+            <Label htmlFor="new_password">Nueva contraseña</Label>
 
             <Input
               id="new_password"
@@ -124,6 +118,23 @@ const CambioPass = ({ open, onOpenChange }: CambioPassProps) => {
               value={form.new_password}
               onChange={(e) => handleChange("new_password", e.target.value)}
               placeholder="Ingrese su nueva contraseña"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="new_password_confirmation">
+              Confirmar nueva contraseña
+            </Label>
+
+            <Input
+              id="new_password_confirmation"
+              type="password"
+              value={form.new_password_confirmation}
+              onChange={(e) =>
+                handleChange("new_password_confirmation", e.target.value)
+              }
+              placeholder="Confirme su nueva contraseña"
               disabled={loading}
             />
           </div>
