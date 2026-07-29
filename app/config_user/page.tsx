@@ -471,17 +471,14 @@ export default function ConfiguracionUsuario() {
                   />
                   <div className="flex gap-2">
                     <Button
-                      type="button"
                       onClick={aplicarFiltroUsuarios}
-                      className="border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
-                      variant="outline"
+                      className="border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30"
                     >
                       Filtrar
                     </Button>
                     <Button
-                      type="button"
                       onClick={limpiarFiltroUsuarios}
-                      variant="outline"
+                      className="border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
                     >
                       Limpiar
                     </Button>
