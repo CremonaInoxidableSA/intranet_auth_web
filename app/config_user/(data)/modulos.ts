@@ -4,7 +4,7 @@ export type Modulo = {
   descripcion?: string
 }
 
-import { fetchWithKeycloak } from "@/lib/keycloak-fetch"
+import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 
 const normalizeResponse = <T>(response: unknown): T[] => {
   if (Array.isArray(response)) return response

@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useState } from "react"
 import { useAuth } from "@/context/AuthProvider"
 import { toast } from "sonner"
-import { fetchWithKeycloak } from "@/lib/keycloak-fetch"
+import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 
 export default function GenerarReclamo() {
   const { email } = useAuth()

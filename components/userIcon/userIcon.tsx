@@ -1,5 +1,8 @@
 "use client"
 
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+
 import {
   Popover,
   PopoverContent,
@@ -7,19 +10,19 @@ import {
 } from "@/components/ui/popover"
 
 import { Button } from "@/components/ui/button"
-import CambioPass from "@/components/userIcon/cambioPass"
-import { UserAvatar } from "@/components/userIcon/userAvatar"
-
-import { useRouter } from "next/navigation"
 import { Spinner } from "@/components/ui/spinner"
 
+import { UserAvatar } from "@/components/userIcon/userAvatar"
+import CambioPass from "@/components/userIcon/cambioPass"
+
 import { useAuth } from "@/context/AuthProvider"
-import { useState } from "react"
 
 const UserIcon = () => {
   const router = useRouter()
   const { logout, nombre, apellido, roles, loading } = useAuth()
+
   const [open, setOpen] = useState(false)
+  const [changePassOpen, setChangePassOpen] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
 
   const displayName =
@@ -31,71 +34,86 @@ const UserIcon = () => {
       setLoggingOut(true)
       await logout()
       setOpen(false)
-    } catch {
     } finally {
       setLoggingOut(false)
     }
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger className="cursor-pointer">
-        <div className="group relative flex h-6.25 w-6.25 items-center justify-center ease-in-out">
-          <div className="absolute inset-0 rounded-full bg-gray-400/0 ease-in-out group-hover:scale-150 group-hover:bg-gray-400/20" />
-          <div className="transition-transform ease-in-out group-hover:scale-110">
-            <UserAvatar
-              nombre={nombre}
-              apellido={apellido}
-              rol={roles[0] ?? "user"}
-              loading={loading}
-            />
+    <>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger className="cursor-pointer">
+          <div className="group relative flex h-6.25 w-6.25 items-center justify-center ease-in-out">
+            <div className="absolute inset-0 rounded-full bg-gray-400/0 transition-all group-hover:scale-150 group-hover:bg-gray-400/20" />
+            <div className="transition-transform group-hover:scale-110">
+              <UserAvatar
+                nombre={nombre}
+                apellido={apellido}
+                rol={roles[0] ?? "user"}
+                loading={loading}
+              />
+            </div>
           </div>
-        </div>
-      </PopoverTrigger>
-      <PopoverContent className="z-901">
-        {loading ? (
-          <div className="flex items-center gap-2">
-            <Spinner />
-            <span>Verificando...</span>
-          </div>
-        ) : (
-          <div className="flex flex-col items-start gap-1">
-            <p className="text-lg">{displayName}</p>
-            <p className="text-xs">{roles[0] ?? "user"}</p>
+        </PopoverTrigger>
 
-            {roles.includes("admin") || roles.includes("superadmin") ? (
-              <Button
-                className="hover:bg-bluecremonahover mt-2 w-full cursor-pointer border border-bluecremona bg-bluecremona/10"
-                onClick={() => {
-                  router.push("/config_user")
-                  setOpen(false)
-                }}
-              >
-                <p className="font-medium text-bluecremona">
-                  Configurar usuarios
-                </p>
-              </Button>
-            ) : (
-              <CambioPass />
-            )}
-            <Button
-              className="mt-2 w-full cursor-pointer bg-redcremona hover:bg-redcremona"
-              onClick={closeSession}
-              disabled={loggingOut}
-            >
-              {loggingOut ? (
-                <div className="flex items-center gap-2">
-                  <Spinner />
-                  <span>Cargando...</span>
-                </div>
+        <PopoverContent className="z-901">
+          {loading ? (
+            <div className="flex items-center gap-2">
+              <Spinner />
+              <span>Verificando...</span>
+            </div>
+          ) : (
+            <div className="flex flex-col items-start gap-1">
+              <p className="text-lg">{displayName}</p>
+              <p className="text-xs">{roles[0] ?? "user"}</p>
+
+              {roles.includes("admin") || roles.includes("superadmin") ? (
+                <Button
+                  className="w-full cursor-pointer border border-bluecremona bg-bluecremona/10 hover:bg-bluecremona/30"
+                  onClick={() => {
+                    router.push("/config_user")
+                    setOpen(false)
+                  }}
+                >
+                  <p className="font-medium text-bluecremona">
+                    Configurar usuarios
+                  </p>
+                </Button>
               ) : (
-                <p className="font-medium text-white">Cerrar sesión</p>
+                <Button
+                  className="w-full cursor-pointer border border-bluecremona bg-bluecremona/10 hover:bg-bluecremona/30"
+                  onClick={() => {
+                    setOpen(false)
+                    setTimeout(() => setChangePassOpen(true), 150)
+                  }}
+                >
+                  <p className="font-medium text-bluecremona">
+                    Cambiar contraseña
+                  </p>
+                </Button>
               )}
-            </Button>
-          </div>
-        )}
-      </PopoverContent>
-    </Popover>
+
+              <Button
+                className="w-full cursor-pointer bg-redcremona hover:bg-redcremona/70"
+                onClick={closeSession}
+                disabled={loggingOut}
+              >
+                {loggingOut ? (
+                  <div className="flex items-center gap-2">
+                    <Spinner />
+                    <span>Cargando...</span>
+                  </div>
+                ) : (
+                  <p className="font-medium text-white">Cerrar sesión</p>
+                )}
+              </Button>
+            </div>
+          )}
+        </PopoverContent>
+      </Popover>
+
+      <CambioPass open={changePassOpen} onOpenChange={setChangePassOpen} />
+    </>
   )
 }
 

@@ -14,7 +14,7 @@ import { columns as userColumns, User } from "./(table)/columns"
 import { DataTable, type DataTableColumn } from "./(table)/data-table"
 
 import { useAuth } from "@/context/AuthProvider"
-import { fetchWithKeycloak } from "@/lib/keycloak-fetch"
+import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 
 import { Boton, TabsComp } from "@/components/components"
 

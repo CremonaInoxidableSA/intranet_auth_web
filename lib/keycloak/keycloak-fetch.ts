@@ -1,4 +1,4 @@
-import keycloak from "@/lib/keycloak"
+import keycloak from "@/lib/keycloak/keycloak"
 
 export async function fetchWithKeycloak(
   input: RequestInfo | URL,

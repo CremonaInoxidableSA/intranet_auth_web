@@ -10,8 +10,14 @@ import {
   useCallback,
 } from "react"
 import { UserSession } from "@/types/types"
-import keycloak, { initKeycloakOnce } from "@/lib/keycloak"
 import { AuthContextType, ApiResponse } from "@/types/types"
+import {
+  buildUserSession,
+  initKeycloakSession,
+  keycloakLogin,
+  keycloakLogout,
+  keycloakChangePassword,
+} from "@/lib/keycloak/keycloakService"
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -21,77 +27,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const initTriggered = useRef(false)
 
   const syncKeycloakSession = useCallback(async () => {
-    if (!keycloak.authenticated) {
-      setUser(null)
-      return
-    }
-
-    let profile:
-      | Awaited<ReturnType<typeof keycloak.loadUserProfile>>
-      | undefined
-    try {
-      profile = await keycloak.loadUserProfile()
-    } catch (error) {
-      console.warn(
-        "No se pudo cargar el perfil de Keycloak; se usaran los claims del token",
-        error
-      )
-    }
-    const tokenParsed = keycloak.tokenParsed as
-      | Record<string, unknown>
-      | undefined
-    const roles =
-      (tokenParsed?.realm_access as { roles?: string[] } | undefined)?.roles ??
-      []
-
-    const userToStore: UserSession = {
-      id: tokenParsed?.sub ? Number(tokenParsed.sub) : undefined,
-      email: profile?.email ?? (tokenParsed?.email as string | undefined),
-      username:
-        (profile?.username as string | undefined) ??
-        (tokenParsed?.preferred_username as string | undefined) ??
-        (tokenParsed?.email as string | undefined) ??
-        "",
-      nombre:
-        (profile?.firstName as string | undefined) ??
-        (tokenParsed?.given_name as string | undefined) ??
-        "",
-      apellido:
-        (profile?.lastName as string | undefined) ??
-        (tokenParsed?.family_name as string | undefined) ??
-        "",
-      rol: roles.includes("superadmin")
-        ? "superadmin"
-        : roles.includes("admin")
-          ? "admin"
-          : "user",
-      habilitado: true,
-      reporte: false,
-      token: keycloak.token,
-    }
-
-    setUser(userToStore)
+    const userSession = await buildUserSession()
+    setUser(userSession)
   }, [])
 
   const initKeycloak = useCallback(async () => {
     setLoading(true)
     try {
-      await initKeycloakOnce({
-        onLoad: "login-required",
-        checkLoginIframe: false,
-        pkceMethod:
-          typeof window !== "undefined" && window.isSecureContext
-            ? "S256"
-            : undefined,
-      })
-      await syncKeycloakSession()
+      const userSession = await initKeycloakSession()
+      setUser(userSession)
     } catch (error) {
       console.error("Keycloak init error", error)
       setUser(null)
     } finally {
       setLoading(false)
     }
-  }, [syncKeycloakSession])
+  }, [])
 
   useEffect(() => {
     if (!initTriggered.current) {
@@ -102,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (): Promise<ApiResponse> => {
     try {
-      await keycloak.login()
+      await keycloakLogin()
       return { success: true }
     } catch (error) {
       console.error("Keycloak login error", error)
@@ -112,9 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async (): Promise<boolean> => {
     try {
-      await keycloak.logout({
-        redirectUri: window.location.origin,
-      })
+      await keycloakLogout()
     } catch (error) {
       console.error("Keycloak logout error", error)
     }

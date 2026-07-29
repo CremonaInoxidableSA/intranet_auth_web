@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react"
+
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -17,99 +17,85 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { toast } from "sonner"
+import keycloak from "@/lib/keycloak/keycloak"
 
-const CambioPass = () => {
-  const [open, setOpen] = useState(false)
-  const [form, setForm] = useState({ current_password: "", new_password: "" })
+type CambioPassProps = {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+const CambioPass = ({ open, onOpenChange }: CambioPassProps) => {
+  const [form, setForm] = useState({
+    current_password: "",
+    new_password: "",
+  })
+
   const [loading, setLoading] = useState(false)
 
   const handleChange = (
     key: "current_password" | "new_password",
     value: string
   ) => {
-    setForm((s) => ({ ...s, [key]: value }))
+    setForm((prev) => ({
+      ...prev,
+      [key]: value,
+    }))
+  }
+
+  const handleClose = () => {
+    if (loading) return
+
+    setForm({
+      current_password: "",
+      new_password: "",
+    })
+
+    onOpenChange(false)
   }
 
   const handleSubmit = async () => {
-    if (!form.current_password || !form.new_password) {
-      toast.error("Por favor, complete todos los campos.", {
-        position: "top-center",
-      })
+    if (!form.new_password) {
+      toast.error("Ingrese la nueva contraseña")
       return
     }
 
     setLoading(true)
 
     try {
-      const token =
-        (typeof window !== "undefined" &&
-          (localStorage.getItem("access_token") ||
-            localStorage.getItem("token"))) ||
-        undefined
-
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      }
-      if (token) headers["Authorization"] = `Bearer ${token}`
-
-      const res = await fetch(`/api/proxy/auth/cambiar_password`, {
-        method: "POST",
-        headers,
+      const response = await fetch("/api/changePersonalPassword", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${keycloak.token}`,
+        },
         body: JSON.stringify({
-          current_password: form.current_password,
-          new_password: form.new_password,
+          password: form.new_password,
+          password_confirmation: form.new_password,
         }),
-        credentials: "include",
       })
 
-      let data: {
-        success?: boolean
-        detail?: string
-        error?: string
-        message?: string
-      } = {}
-      try {
-        data = await res.json()
-      } catch {
-        data = {}
+      const data = await response.json()
+
+      if (!response.ok) {
+        toast.error(data?.error ?? "Error al cambiar la contraseña")
+        return
       }
 
-      if (res.ok && (data.success ?? true)) {
-        toast.success("Contraseña cambiada exitosamente.", {
-          position: "top-center",
-        })
-        setOpen(false)
-        setForm({ current_password: "", new_password: "" })
-      } else {
-        const message =
-          data.detail ??
-          data.error ??
-          data.message ??
-          "Error al cambiar la contraseña."
-        toast.error(message, {
-          position: "top-center",
-        })
-      }
-    } catch {
-      toast.error("Error de conexión.", {
-        position: "top-center",
-      })
+      toast.success("Contraseña actualizada correctamente")
+      handleClose()
+    } catch (error) {
+      console.error("Error al cambiar contraseña:", error)
+      toast.error("Error de comunicación con el servidor")
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="border-botonblueborder bg-botonblue hover:bg-botonbluehover mt-2 w-full cursor-pointer border">
-          <p className="text-botonblueborder font-medium">Cambiar Contraseña</p>
-        </Button>
-      </DialogTrigger>
-
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="z-800 bg-background3 sm:max-w-150">
         <DialogHeader>
-          <DialogTitle>Cambiar Contraseña</DialogTitle>
+          <DialogTitle>Cambiar contraseña</DialogTitle>
           <DialogDescription>
             Complete los datos para cambiar la contraseña.
           </DialogDescription>
@@ -118,32 +104,36 @@ const CambioPass = () => {
         <div className="grid gap-5 py-4">
           <div className="grid gap-2">
             <Label htmlFor="current_password">Contraseña Actual</Label>
+
             <Input
               id="current_password"
               type="password"
               value={form.current_password}
               onChange={(e) => handleChange("current_password", e.target.value)}
               placeholder="Ingrese su contraseña actual"
-              required
+              disabled={loading}
             />
           </div>
 
           <div className="grid gap-2">
             <Label htmlFor="new_password">Nueva Contraseña</Label>
+
             <Input
               id="new_password"
               type="password"
               value={form.new_password}
               onChange={(e) => handleChange("new_password", e.target.value)}
               placeholder="Ingrese su nueva contraseña"
-              required
+              disabled={loading}
             />
           </div>
         </div>
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Cancelar</Button>
+            <Button variant="outline" onClick={handleClose} disabled={loading}>
+              Cancelar
+            </Button>
           </DialogClose>
 
           <Button onClick={handleSubmit} disabled={loading}>
