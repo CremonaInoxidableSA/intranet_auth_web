@@ -167,7 +167,7 @@ export default function ConfiguracionUsuario() {
         switch (selectedTabId) {
           case TAB_USUARIOS: {
             const usersResponse = await fetchUsuarios(
-              user?.id,
+              user?.extra?.id,
               {
                 numeroPagina: userPage,
                 filtro: userFilter,
@@ -226,12 +226,12 @@ export default function ConfiguracionUsuario() {
     return () => {
       mounted = false
     }
-  }, [selectedTabId, user?.id, currentHeaders, userPage, userFilter])
+  }, [selectedTabId, user?.extra?.id, currentHeaders, userPage, userFilter])
 
   const refetchUsuarios = async () => {
     if (selectedTabId !== TAB_USUARIOS) return
     const usersResponse = await fetchUsuarios(
-      user?.id,
+      user?.extra?.id,
       {
         numeroPagina: userPage,
         filtro: userFilter,
@@ -258,7 +258,7 @@ export default function ConfiguracionUsuario() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            current_user_id: user?.id,
+            current_user_id: user?.extra?.id,
             usuario_id,
           }),
         }
@@ -288,7 +288,7 @@ export default function ConfiguracionUsuario() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        current_user_id: user?.id,
+        current_user_id: user?.extra?.id,
         usuario_id,
       }),
     })
@@ -310,13 +310,13 @@ export default function ConfiguracionUsuario() {
     if (!confirmar) return
 
     try {
-      const res = await fetchWithKeycloak("/api/proxy/auth/eliminar_usuario", {
+      const res = await fetchWithKeycloak("/api/usuarios/deshabilitar-usuario", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          current_user_id: user?.id,
+          current_user_id: user?.extra?.id,
           usuario_id,
         }),
       })
@@ -532,10 +532,10 @@ export default function ConfiguracionUsuario() {
       </div>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        {userIdToEdit !== undefined && user?.id !== undefined && (
+        {userIdToEdit !== undefined && user?.extra?.id !== undefined && (
           <EditarUsuario
             onUserCreated={handleUserUpdated}
-            currentUserId={user.id}
+            currentUserId={user?.extra?.id}
             userIdToEdit={userIdToEdit}
           />
         )}

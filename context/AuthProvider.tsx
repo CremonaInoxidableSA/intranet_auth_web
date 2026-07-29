@@ -9,8 +9,9 @@ import {
   useRef,
   useCallback,
 } from "react"
-import { UserSession } from "@/types/types"
-import { AuthContextType, ApiResponse } from "@/types/types"
+
+import { AuthContextType, ApiResponse, UsersData } from "@/types/types"
+
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 
 import {
@@ -22,8 +23,9 @@ import {
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserSession | null>(null)
+  const [user, setUser] = useState<UsersData | null>(null)
   const [loading, setLoading] = useState(true)
+
   const initTriggered = useRef(false)
 
   const parseStringArray = (value: unknown): string[] => {
@@ -31,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return value.filter((item): item is string => typeof item === "string")
   }
 
-  const getUserDetails = useCallback(async (): Promise<UserSession | null> => {
+  const getUserDetails = useCallback(async (): Promise<UsersData> => {
     const response = await fetchWithKeycloak("/api/personal/detalles", {
       method: "GET",
       headers: {
@@ -56,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       throw new Error(
         serverMessage ??
-          `No se pudo obtener la informacion del usuario (HTTP ${response.status})`
+          `No se pudo obtener la información del usuario (HTTP ${response.status})`
       )
     }
 
@@ -66,44 +68,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         : payload
 
     if (!data) {
-      throw new Error("La API de detalles devolvio una respuesta vacia")
+      throw new Error("La API devolvió una respuesta vacía")
     }
 
-    const legajoValue = data.legajo
-    const dniValue = data.dni
-
     const legajo =
-      typeof legajoValue === "number"
-        ? legajoValue
-        : Number(legajoValue ?? Number.NaN)
+      typeof data.legajo === "number"
+        ? data.legajo
+        : Number(data.legajo ?? Number.NaN)
+
     const dni =
-      typeof dniValue === "number" ? dniValue : Number(dniValue ?? Number.NaN)
+      typeof data.dni === "number" ? data.dni : Number(data.dni ?? Number.NaN)
 
     if (!Number.isFinite(legajo) || !Number.isFinite(dni)) {
       throw new Error(
-        "Respuesta invalida en /api/personal/detalles: faltan legajo o dni"
+        "Respuesta inválida en /api/personal/detalles: faltan legajo o dni"
       )
     }
 
-    const email = typeof data.email === "string" ? data.email : ""
-
     return {
-      id: legajo,
-      username:
-        typeof data.username === "string"
-          ? data.username
-          : email.includes("@")
-            ? email.split("@")[0]
-            : undefined,
-      email,
+      email: typeof data.email === "string" ? data.email : "",
       nombre: typeof data.nombre === "string" ? data.nombre : "",
       apellido: typeof data.apellido === "string" ? data.apellido : "",
       legajo,
       dni,
+
       grupos: parseStringArray(data.grupos),
       modulos: parseStringArray(data.modulos),
       submodulos: parseStringArray(data.submodulos),
       permisos: parseStringArray(data.permisos),
+
+      // Si luego necesitás datos internos de la aplicación,
+      // los agregás acá.
+      extra: {
+        id: legajo,
+      },
     }
   }, [])
 
@@ -139,11 +137,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true)
       await keycloakLogin()
+
       return { success: true }
     } catch (error) {
-      setLoading(false)
       console.error("Keycloak login error", error)
-      return { success: false, error: "Error al iniciar sesión con Keycloak" }
+      setLoading(false)
+
+      return {
+        success: false,
+        error: "Error al iniciar sesión con Keycloak",
+      }
     }
   }
 
@@ -155,6 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     setUser(null)
+
     return true
   }
 
@@ -162,19 +166,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        id: user?.id ?? user?.legajo ?? null,
-        email: user?.email ?? null,
-        username: user?.username ?? null,
-        nombre: user?.nombre ?? null,
-        apellido: user?.apellido ?? null,
-        legajo: user?.legajo ?? null,
-        dni: user?.dni ?? null,
-
-        grupos: user?.grupos ?? [],
-        modulos: user?.modulos ?? [],
-        submodulos: user?.submodulos ?? [],
-        permisos: user?.permisos ?? [],
-
         loading,
         login,
         logout,
@@ -187,8 +178,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
-  if (context === undefined) {
+
+  if (!context) {
     throw new Error("useAuth must be used within an AuthProvider")
   }
+
   return context
 }

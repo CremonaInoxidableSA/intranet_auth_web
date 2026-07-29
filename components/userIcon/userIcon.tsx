@@ -19,15 +19,15 @@ import { useAuth } from "@/context/AuthProvider"
 
 const UserIcon = () => {
   const router = useRouter()
-  const { logout, nombre, apellido, submodulos, loading } = useAuth()
+  const { user, logout, loading } = useAuth()
 
   const [open, setOpen] = useState(false)
   const [changePassOpen, setChangePassOpen] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
 
   const displayName =
-    `${nombre ?? ""}${nombre || apellido ? " " : ""}${apellido ?? ""}`.trim() ||
-    "Usuario"
+  `${user?.nombre ?? ""}${user?.nombre || user?.apellido ? " " : ""}${user?.apellido ?? ""}`.trim() ||
+  "Usuario"
 
   const closeSession = async () => {
     try {
@@ -47,8 +47,8 @@ const UserIcon = () => {
             <div className="absolute inset-0 rounded-full bg-gray-400/0 transition-all group-hover:scale-150 group-hover:bg-gray-400/20" />
             <div className="transition-transform group-hover:scale-110">
               <UserAvatar
-                nombre={nombre}
-                apellido={apellido}
+                nombre={user?.nombre ?? ""}
+                apellido={user?.apellido ?? ""}
                 loading={loading}
               />
             </div>
@@ -64,9 +64,9 @@ const UserIcon = () => {
           ) : (
             <div className="flex flex-col items-start gap-1">
               <p className="text-lg">{displayName}</p>
-              <p className="text-xs">{submodulos ?? "user"}</p>
+              <p className="text-xs">{user?.submodulos ?? "user"}</p>
 
-              {submodulos.includes("SUBMODULO_CONFIG_USER") ? (
+              {user?.submodulos?.includes("SUBMODULO_CONFIG_USER") ? (
                 <Button
                   className="w-full cursor-pointer border border-bluecremona bg-bluecremona/10 hover:bg-bluecremona/30"
                   onClick={() => {
