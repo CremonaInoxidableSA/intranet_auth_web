@@ -32,7 +32,7 @@ const CambioPass = ({ open, onOpenChange }: CambioPassProps) => {
   })
 
   const [loading, setLoading] = useState(false)
-  const { logout} = useAuth()
+  const { logout } = useAuth()
 
   const handleChange = (
     key: "new_password" | "new_password_confirmation",
@@ -95,7 +95,7 @@ const CambioPass = ({ open, onOpenChange }: CambioPassProps) => {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="z-800 bg-background3 sm:max-w-150">
+      <DialogContent className="z-800 bg-background2 sm:max-w-150">
         <DialogHeader>
           <DialogTitle>Cambiar contraseña</DialogTitle>
           <DialogDescription>

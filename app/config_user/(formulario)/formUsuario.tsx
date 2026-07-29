@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
   DialogClose,
@@ -29,14 +30,12 @@ type Props = {
 
 export default function FormUsuario({ onUserCreated }: Props) {
   const [form, setForm] = useState({
-    id: 0,
     email: "",
     username: "",
     nombre: "",
     apellido: "",
     legajo: "",
     dni: "",
-    rol: "",
     password: "",
     reporte: true,
     habilitado: 1,
@@ -48,44 +47,37 @@ export default function FormUsuario({ onUserCreated }: Props) {
 
   const handleSubmit = async () => {
     if (!form.email.includes("@")) {
-      alert("Correo electrónico inválido")
+      toast.error("Correo electrónico inválido")
       return
     }
 
     if (!form.legajo) {
-      alert("Legajo es obligatorio")
+      toast.error("Legajo es obligatorio")
       return
     }
 
     if (!form.dni) {
-      alert("DNI es obligatorio")
-      return
-    }
-
-    if (!form.rol) {
-      alert("Seleccione un rol")
+      toast.error("DNI es obligatorio")
       return
     }
 
     if (!form.password) {
-      alert("Contraseña es obligatoria")
+      toast.error("Contraseña es obligatoria")
       return
     }
 
     const payload = {
-      id_usuario: 0,
       nombre: form.nombre,
       apellido: form.apellido,
       legajo: Number(form.legajo),
       dni: Number(form.dni),
       email: form.email,
-      rol_ids: [Number(form.rol)],
       username: form.username,
       password: form.password,
     }
 
     const res = await fetchWithKeycloak(
-      `/api/usuarios/crear_o_editar_usuario`,
+      `/api/usuarios/crear-usuario`,
       {
         method: "POST",
         headers: {
@@ -97,7 +89,7 @@ export default function FormUsuario({ onUserCreated }: Props) {
 
     if (!res.ok) {
       const err = await res.json()
-      alert(err.detail || "Error al crear usuario")
+      toast.error(err.detail || "Error al crear usuario")
       return
     }
 
@@ -191,22 +183,6 @@ export default function FormUsuario({ onUserCreated }: Props) {
               className="border border-background6 bg-background3"
             />
           </div>
-        </div>
-
-        <div className="grid gap-2">
-          <Label>Rol</Label>
-          <Select onValueChange={(v) => handleChange("rol", v)}>
-            <SelectTrigger className="w-full border border-background6 bg-background3">
-              <SelectValue placeholder="Seleccione un rol" />
-            </SelectTrigger>
-            <SelectContent position="popper" className="z-900">
-              <SelectGroup>
-                <SelectLabel>Rol</SelectLabel>
-                <SelectItem value="1">Administrador</SelectItem>
-                <SelectItem value="2">Usuario</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
