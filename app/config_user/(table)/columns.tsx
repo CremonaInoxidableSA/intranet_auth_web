@@ -61,35 +61,35 @@ export const Columns = (
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 ">
+            <Button variant="ghost" className="h-8 w-8">
               <span className="sr-only">Abrir menú</span>
               <Ellipsis className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => onEditUser(id)}>
-              <PencilLine className="h-4 w-4" /> Editar
+            <DropdownMenuItem
+              onClick={() => onEditUser(id)}
+              className="flex cursor-pointer flex-row items-center justify-start text-bluecremona"
+            >
+              <PencilLine className="h-4 w-4" />
+              <p className="items-center justify-start">Editar</p>
             </DropdownMenuItem>
             {row.extra?.habilitado ? (
               <DropdownMenuItem
                 onClick={() => id && onDisableUser(id)}
-                className="flex flex-row items-center justify-center text-redcremona"
+                className="cursor-pointer flex-row items-center justify-start text-redcremona"
               >
                 <CircleMinus className="h-4 w-4" />
-                <p className="flex flex-row items-center justify-center text-redcremona">
-                  Deshabilitar
-                </p>
+                <p className="items-center justify-start">Deshabilitar</p>
               </DropdownMenuItem>
             ) : (
               <DropdownMenuItem
                 onClick={() => id && onEnableUser(id)}
-                className="flex flex-row items-center justify-center text-bluecremona"
+                className="cursor-pointer flex-row items-center justify-start text-greencremona"
               >
                 <CirclePlus className="h-4 w-4" />
-                <p className="flex flex-row items-center justify-center text-bluecremona">
-                  Habilitar
-                </p>
+                <p className="items-center justify-start">Habilitar</p>
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>

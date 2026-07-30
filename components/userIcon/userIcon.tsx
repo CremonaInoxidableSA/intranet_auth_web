@@ -26,8 +26,8 @@ const UserIcon = () => {
   const [loggingOut, setLoggingOut] = useState(false)
 
   const displayName =
-  `${user?.nombre ?? ""}${user?.nombre || user?.apellido ? " " : ""}${user?.apellido ?? ""}`.trim() ||
-  "Usuario"
+    `${user?.nombre ?? ""}${user?.nombre || user?.apellido ? " " : ""}${user?.apellido ?? ""}`.trim() ||
+    "Usuario"
 
   const closeSession = async () => {
     try {

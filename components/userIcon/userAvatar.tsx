@@ -1,6 +1,5 @@
 "use client"
 import { CircleUserRound } from "lucide-react"
-import { LogoCx as Logo } from "@/components/Logos"
 import { UserAvatarProps } from "@/types/types"
 
 const AVATAR_COLORS = [

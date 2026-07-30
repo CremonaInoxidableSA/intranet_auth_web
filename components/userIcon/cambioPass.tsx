@@ -99,8 +99,8 @@ const CambioPass = ({ open, onOpenChange }: CambioPassProps) => {
         <DialogHeader>
           <DialogTitle>Cambiar contraseña</DialogTitle>
           <DialogDescription>
-            Complete los datos para cambiar la contraseña. Esta debe
-            tener al menos 8 caracteres.
+            Complete los datos para cambiar la contraseña. Esta debe tener al
+            menos 8 caracteres.
             <br />
             <br />
             Al cambiar la contraseña se cerrará la sesión actual y deberá

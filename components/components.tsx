@@ -69,9 +69,7 @@ export const Boton = React.forwardRef<HTMLButtonElement, BotonProps>(
 Boton.displayName = "Boton"
 
 //---------------------------------------SELECTORES---------------------------------------//
-type SimpleArray = (string | number)[]
 type ObjectArray = Record<string, string | number>[]
-type ArrayData = SimpleArray | ObjectArray
 
 export function Selector({ placeholder }: { placeholder: string }) {
   return (
@@ -174,7 +172,6 @@ export const SelectorMultiple = React.memo(function SelectorMultiple({
   )
 })
 
-
 //---------------------------------------TABLAS---------------------------------------//
 export function Tabla({
   columns,
@@ -223,7 +220,7 @@ export function Inputs({ extraClassName, className, ...props }: InputsProps) {
 
 //---------------------------------------TABS---------------------------------------//
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 
 type TabData = {
   id: number

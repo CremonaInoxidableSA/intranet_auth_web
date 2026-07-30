@@ -90,9 +90,9 @@ const submoduloColumns: DataTableColumn<Submodulo>[] = [
 export default function ConfiguracionUsuario() {
   const { user, loading: authLoading } = useAuth()
   const [selectedTabId, setSelectedTabId] = useState(tablas[0].id)
-  const [data, setData] = useState<any[]>([])
+  const [data, setData] = useState<Grupo[] | Modulo[] | Submodulo[] | any[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [_error, setError] = useState<string | null>(null)
   const [userIdToEdit, setUserIdToEdit] = useState<string | undefined>(
     undefined
   )

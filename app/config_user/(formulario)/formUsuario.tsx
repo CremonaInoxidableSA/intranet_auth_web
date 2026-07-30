@@ -65,16 +65,13 @@ export default function FormUsuario({ onUserCreated }: Props) {
       habilitado: true,
     }
 
-    const res = await fetchWithKeycloak(
-      `/api/usuarios/crear-usuario`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      }
-    )
+    const res = await fetchWithKeycloak(`/api/usuarios/crear-usuario`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    })
 
     if (!res.ok) {
       const err = await res.json()

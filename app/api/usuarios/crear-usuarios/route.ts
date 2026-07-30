@@ -6,9 +6,10 @@ const EXTERNAL_API_URL =
 
 export async function POST(request: NextRequest) {
   const authHeader = request.headers.get("authorization")
-  const payload = (await request.json().catch(() => null)) as
-    | Record<string, unknown>
-    | null
+  const payload = (await request.json().catch(() => null)) as Record<
+    string,
+    unknown
+  > | null
 
   const token = authHeader?.startsWith("Bearer ")
     ? authHeader.substring(7)
@@ -43,10 +44,7 @@ export async function POST(request: NextRequest) {
   if (!externalResponse.ok) {
     return NextResponse.json(
       {
-        error:
-          data?.detail ??
-          data?.message ??
-          "Error al crear usuario",
+        error: data?.detail ?? data?.message ?? "Error al crear usuario",
       },
       { status: externalResponse.status }
     )
