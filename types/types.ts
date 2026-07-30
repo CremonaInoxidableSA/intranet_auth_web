@@ -1,8 +1,9 @@
 // Data extra de los usuarios que se utiliza para la gestion de usuarios
 interface UsersExtraData {
   id?: string
-  enabled?: boolean
+  habilitado?: boolean
   apellidoNombre?: string
+  change_password?: boolean
 }
 
 // Data que se obtiene de la API al iniciar sesion

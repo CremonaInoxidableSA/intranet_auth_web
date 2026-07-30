@@ -21,7 +21,7 @@ import {
 
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { PencilLine, Trash2 } from "lucide-react"
+import { Check, ChevronDown, PencilLine, Trash2 } from "lucide-react"
 
 //---------------------------------------BOTONES---------------------------------------//
 export function EliminarButton({
@@ -69,6 +69,10 @@ export const Boton = React.forwardRef<HTMLButtonElement, BotonProps>(
 Boton.displayName = "Boton"
 
 //---------------------------------------SELECTORES---------------------------------------//
+type SimpleArray = (string | number)[]
+type ObjectArray = Record<string, string | number>[]
+type ArrayData = SimpleArray | ObjectArray
+
 export function Selector({ placeholder }: { placeholder: string }) {
   return (
     <Select>
@@ -83,6 +87,93 @@ export function Selector({ placeholder }: { placeholder: string }) {
     </Select>
   )
 }
+
+export const SelectorMultiple = React.memo(function SelectorMultiple({
+  placeholder,
+  data,
+  keyId = "id",
+  keyLabel = "nombre",
+  values,
+  onValuesChange,
+  extraClass,
+  disabled = false,
+}: {
+  placeholder: string
+  data: ObjectArray
+  keyId?: string
+  keyLabel?: string
+  extraClass?: string
+  disabled?: boolean
+  values: (string | number)[]
+  onValuesChange: (values: string[]) => void
+}) {
+  if (data.length === 0) {
+    return (
+      <div
+        className={`flex min-h-10 w-full items-center rounded border-2 border-background6 bg-background3 px-3 py-2 text-sm opacity-70 ${extraClass ?? ""}`}
+      >
+        Filtros no disponibles
+      </div>
+    )
+  }
+
+  const toggle = (id: string) => {
+    const stringValues = values.map(String)
+    onValuesChange(
+      stringValues.includes(id)
+        ? stringValues.filter((v) => v !== id)
+        : [...stringValues, id]
+    )
+  }
+
+  const label =
+    values.length === 0
+      ? placeholder
+      : data
+          .filter((o) => values.map(String).includes(String(o[keyId])))
+          .map((o) => o[keyLabel])
+          .join(", ")
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild disabled={disabled}>
+        <button
+          type="button"
+          className={`flex min-h-10 w-full items-center justify-between rounded border-2 border-background6 bg-background3 px-3 py-2 text-left text-sm disabled:cursor-not-allowed disabled:opacity-50 ${extraClass ?? ""}`}
+        >
+          <span
+            className={`truncate ${values.length === 0 ? "opacity-50" : ""}`}
+          >
+            {label}
+          </span>
+          <ChevronDown className="ml-2 size-4 shrink-0 opacity-50" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-(--radix-popover-trigger-width) p-1"
+        align="start"
+      >
+        {data.map((opcion) => {
+          const id = String(opcion[keyId])
+          const selected = values.map(String).includes(id)
+          return (
+            <div
+              key={id}
+              onClick={() => toggle(id)}
+              className="flex cursor-pointer items-center gap-2 rounded px-2 py-2 text-sm hover:bg-foreground/10"
+            >
+              <div className="flex size-4 shrink-0 items-center justify-center rounded border border-foreground/30">
+                {selected && <Check className="size-3" />}
+              </div>
+              <span>{opcion[keyLabel]}</span>
+            </div>
+          )
+        })}
+      </PopoverContent>
+    </Popover>
+  )
+})
+
 
 //---------------------------------------TABLAS---------------------------------------//
 export function Tabla({
@@ -132,6 +223,7 @@ export function Inputs({ extraClassName, className, ...props }: InputsProps) {
 
 //---------------------------------------TABS---------------------------------------//
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 type TabData = {
   id: number

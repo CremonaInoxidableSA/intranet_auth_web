@@ -13,17 +13,17 @@ function toUsersData(raw: {
   email: string
   nombre: string
   apellido: string
-  enabled: boolean
+  habilitado: boolean
   grupos: string[]
 }): UsersData {
-  const { id, enabled, nombre, apellido, ...resto } = raw
+  const { id, habilitado, nombre, apellido, ...resto } = raw
   return {
     ...resto,
     nombre,
     apellido,
     extra: {
       id,
-      enabled,
+      habilitado,
       apellidoNombre: `${apellido} ${nombre}`.trim() || "—",
     },
   }

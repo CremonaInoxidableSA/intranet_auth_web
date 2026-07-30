@@ -9,7 +9,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { CircleMinus, Ellipsis, PencilLine } from "lucide-react"
+import { CircleMinus, CirclePlus, Ellipsis, PencilLine } from "lucide-react"
 import { UsersData } from "@/types/types"
 
 export type ColumnDef<T> = {
@@ -51,7 +51,7 @@ export const Columns = (
   {
     header: "Habilitado",
     className: "hidden xl:table-cell",
-    cell: ({ row }) => (row.extra?.enabled ? "Sí" : "No"),
+    cell: ({ row }) => (row.extra?.habilitado ? "Sí" : "No"),
   },
   {
     id: "actions",
@@ -61,7 +61,7 @@ export const Columns = (
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button variant="ghost" className="h-8 w-8 ">
               <span className="sr-only">Abrir menú</span>
               <Ellipsis className="h-4 w-4" />
             </Button>
@@ -69,23 +69,27 @@ export const Columns = (
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
             <DropdownMenuItem onClick={() => onEditUser(id)}>
-              <PencilLine className="mr-2 h-4 w-4" /> Editar
+              <PencilLine className="h-4 w-4" /> Editar
             </DropdownMenuItem>
-            {row.extra?.enabled ? (
+            {row.extra?.habilitado ? (
               <DropdownMenuItem
                 onClick={() => id && onDisableUser(id)}
-                className="text-redcremona focus:text-redcremona"
+                className="flex flex-row items-center justify-center text-redcremona"
               >
-                <CircleMinus className="mr-2 h-4 w-4" />
-                Deshabilitar
+                <CircleMinus className="h-4 w-4" />
+                <p className="flex flex-row items-center justify-center text-redcremona">
+                  Deshabilitar
+                </p>
               </DropdownMenuItem>
             ) : (
               <DropdownMenuItem
                 onClick={() => id && onEnableUser(id)}
-                className="text-bluecremona focus:text-bluecremona"
+                className="flex flex-row items-center justify-center text-bluecremona"
               >
-                <CircleMinus className="mr-2 h-4 w-4" />
-                Habilitar
+                <CirclePlus className="h-4 w-4" />
+                <p className="flex flex-row items-center justify-center text-bluecremona">
+                  Habilitar
+                </p>
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>

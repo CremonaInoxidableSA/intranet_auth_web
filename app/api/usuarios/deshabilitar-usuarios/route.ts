@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const EXTERNAL_API_URL =
+const API_AUTH_URL =
   process.env.NEXT_PUBLIC_API_AUTH_URL + "/usuarios/deshabilitar-usuarios"
 
 export async function PUT(request: NextRequest) {
@@ -19,7 +19,7 @@ export async function PUT(request: NextRequest) {
     )
   }
 
-  const externalUrl = new URL(EXTERNAL_API_URL)
+  const externalUrl = new URL(API_AUTH_URL)
   externalUrl.searchParams.set("user_id", userIdParam ?? "")
 
   const externalResponse = await fetch(externalUrl.toString(), {

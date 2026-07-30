@@ -5,120 +5,148 @@ import { Button } from "@/components/ui/button"
 import {
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { toast } from "sonner"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox" // Asegúrate de tener este componente
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
+import { UsersData } from "@/types/types"
+import { SelectorMultiple } from "@/components/components"
+import { fetchGrupos, type Grupo } from "../(data)/grupos"
 
 type Props = {
   onUserCreated: () => void
-  currentUserId?: string
   userIdToEdit?: string
 }
 
-type UserForm = {
-  id_usuario: string
-  email: string
-  nombre: string
-  apellido: string
-  legajo: string
-  dni: string
-  password: string
-}
-
-export default function EditarUsuario({
-  onUserCreated,
-  currentUserId,
-  userIdToEdit,
-}: Props) {
+export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
   const [loading, setLoading] = useState(userIdToEdit !== undefined)
-  const [form, setForm] = useState<UserForm>({
-    id_usuario: userIdToEdit ?? "",
+  const [gruposDisponibles, setGruposDisponibles] = useState<Grupo[]>([])
+  const [gruposSeleccionados, setGruposSeleccionados] = useState<string[]>([])
+  const [cambiarContrasena, setCambiarContrasena] = useState(false)
+
+  const [form, setForm] = useState<
+    UsersData<{ id: string; habilitado: boolean; cambiar_contraseña: boolean }>
+  >({
     email: "",
     nombre: "",
     apellido: "",
-    legajo: "",
-    dni: "",
-    password: "",
+    legajo: undefined,
+    dni: undefined,
+    grupos: [],
+    extra: {
+      id: userIdToEdit ?? "",
+      habilitado: false,
+      cambiar_contraseña: false,
+    },
   })
 
+  // Cargar lista de grupos disponibles
+  useEffect(() => {
+    const loadGrupos = async () => {
+      try {
+        const headers = { Accept: "application/json" }
+        const grupos = await fetchGrupos(headers)
+        setGruposDisponibles(grupos)
+      } catch (error) {
+        console.error("Error al cargar grupos:", error)
+        toast.error("No se pudieron cargar los grupos")
+      }
+    }
+    loadGrupos()
+  }, [])
+
+  // Cargar datos del usuario a editar
   useEffect(() => {
     const fetchUserData = async () => {
-      if (userIdToEdit === undefined || currentUserId === undefined) return
+      if (!userIdToEdit) return
 
       setLoading(true)
       try {
-        const res = await fetchWithKeycloak("/api/usuarios/data_usuario", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            current_user_id: currentUserId,
-            id: userIdToEdit,
-          }),
-        })
+        const res = await fetchWithKeycloak(
+          `/api/usuarios/detalles?user_id=${userIdToEdit}`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          }
+        )
 
         const data = await res.json()
         if (!res.ok) {
-          alert(data.detail || "Error al cargar datos de usuario")
+          toast.error(data.detail || "Error al cargar datos de usuario")
           return
         }
 
         setForm({
-          id_usuario: data.id ?? userIdToEdit,
           email: data.email ?? "",
           nombre: data.nombre ?? "",
           apellido: data.apellido ?? "",
-          legajo: String(data.legajo ?? ""),
-          dni: String(data.dni ?? ""),
-          password: "",
+          legajo: data.legajo ?? undefined,
+          dni: data.dni ?? undefined,
+          grupos: data.grupos ?? [],
+          extra: {
+            id: data.id ?? userIdToEdit,
+            habilitado: data.habilitado ?? false,
+            cambiar_contraseña: data.cambiar_contraseña ?? false,
+          },
         })
+        setGruposSeleccionados(data.grupos ?? [])
+        setCambiarContrasena(data.cambiar_contraseña ?? false)
       } catch {
-        alert("Error de conexión con la API")
+        toast.error("Error de conexión con la API")
       } finally {
         setLoading(false)
       }
     }
 
     fetchUserData()
-  }, [currentUserId, userIdToEdit])
+  }, [userIdToEdit])
 
-  const handleChange = (key: keyof UserForm, value: string) => {
+  const handleChange = (
+    key: keyof Omit<
+      UsersData<{
+        id: string
+        habilitado: boolean
+        cambiar_contraseña: boolean
+      }>,
+      "extra" | "grupos"
+    >,
+    value: string
+  ) => {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
   const handleSubmit = async () => {
-    if (currentUserId === undefined || userIdToEdit === undefined) {
-      alert("No se pudo editar el usuario")
+    if (!userIdToEdit) {
+      toast.error("No se pudo editar el usuario")
       return
     }
 
-    if (!form.email.includes("@")) {
-      alert("Correo electrónico inválido")
+    if (!form?.email?.includes("@")) {
+      toast.error("Correo electrónico inválido")
       return
     }
 
-    const payload: Record<string, unknown> = {
-      current_user_id: currentUserId,
-      id_usuario: form.id_usuario,
+    const payload = {
+      email: form.email,
       nombre: form.nombre,
       apellido: form.apellido,
       legajo: Number(form.legajo),
       dni: Number(form.dni),
-      email: form.email,
-    }
-
-    if (form.password.trim() !== "") {
-      payload.password = form.password
+      grupos: gruposSeleccionados,
+      cambiar_contraseña: cambiarContrasena,
     }
 
     try {
       const res = await fetchWithKeycloak(
-        "/api/usuarios/crear_o_editar_usuario",
+        `/api/usuarios/editar-usuario?user_id=${userIdToEdit}`,
         {
-          method: "POST",
+          method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         }
@@ -126,21 +154,32 @@ export default function EditarUsuario({
 
       const data = await res.json()
       if (!res.ok) {
-        alert(data.detail || "Error al editar usuario")
+        toast.error(data.detail || "Error al editar usuario")
         return
       }
 
+      toast.success("Usuario actualizado correctamente")
       onUserCreated()
     } catch {
-      alert("Error de conexión con la API")
+      toast.error("Error de conexión con la API")
     }
   }
+
+  useEffect(() => {
+    if (!loading && userIdToEdit) {
+      const input = document.getElementById("email")
+      if (input) setTimeout(() => input.focus(), 100)
+    }
+  }, [loading, userIdToEdit])
 
   if (loading) {
     return (
       <DialogContent className="z-800 bg-background3 sm:max-w-150">
         <DialogHeader>
           <DialogTitle>Cargando...</DialogTitle>
+          <DialogDescription>
+            Espere mientras cargan los datos del usuario.
+          </DialogDescription>
         </DialogHeader>
         <div className="flex items-center justify-center py-8">
           <p>Cargando...</p>
@@ -152,16 +191,36 @@ export default function EditarUsuario({
   return (
     <DialogContent className="z-800 bg-background2 sm:max-w-150">
       <DialogHeader>
-        <DialogTitle>Editar Usuario</DialogTitle>
+        <DialogTitle>Editar usuario</DialogTitle>
+        <DialogDescription>
+          Complete los datos a editar del usuario seleccionado.
+        </DialogDescription>
       </DialogHeader>
 
-      <div className="grid gap-4 py-4">
+      <div className="grid gap-4">
+        {/* Campos no editables (solo lectura) */}
+        <div className="flex flex-col gap-4">
+          <div className="gap-1">
+            <Label className="text-sm text-muted-foreground">ID</Label>
+            <p className="text-sm font-medium">{form.extra?.id ?? "—"}</p>
+          </div>
+          <div className="gap-1">
+            <Label className="text-sm text-muted-foreground">Habilitado</Label>
+            <p className="text-sm font-medium">
+              {form.extra?.habilitado ? "Sí" : "No"}
+            </p>
+          </div>
+        </div>
+
+        <hr className="border-background6" />
+
+        {/* Campos editables */}
         <div className="grid gap-2">
           <Label htmlFor="email">Correo electrónico</Label>
           <Input
             id="email"
             type="email"
-            value={form.email}
+            value={form.email ?? ""}
             onChange={(e) => handleChange("email", e.target.value)}
             placeholder="Ingrese el correo electrónico del usuario"
             required
@@ -171,10 +230,10 @@ export default function EditarUsuario({
 
         <div className="grid gap-2 xl:grid-cols-2 xl:gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="name">Nombre</Label>
+            <Label htmlFor="nombre">Nombre</Label>
             <Input
-              id="name"
-              value={form.nombre}
+              id="nombre"
+              value={form.nombre ?? ""}
               onChange={(e) => handleChange("nombre", e.target.value)}
               placeholder="Ingrese el nombre del usuario"
               required
@@ -182,10 +241,10 @@ export default function EditarUsuario({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="surname">Apellido</Label>
+            <Label htmlFor="apellido">Apellido</Label>
             <Input
-              id="surname"
-              value={form.apellido}
+              id="apellido"
+              value={form.apellido ?? ""}
               onChange={(e) => handleChange("apellido", e.target.value)}
               placeholder="Ingrese el apellido del usuario"
               required
@@ -200,7 +259,7 @@ export default function EditarUsuario({
             <Input
               id="legajo"
               type="number"
-              value={form.legajo}
+              value={form.legajo ?? ""}
               onChange={(e) => handleChange("legajo", e.target.value)}
               placeholder="Ingrese el legajo"
               className="border border-background6 bg-background3"
@@ -211,7 +270,7 @@ export default function EditarUsuario({
             <Input
               id="dni"
               type="number"
-              value={form.dni}
+              value={form.dni ?? ""}
               onChange={(e) => handleChange("dni", e.target.value)}
               placeholder="Ingrese el DNI"
               className="border border-background6 bg-background3"
@@ -219,16 +278,33 @@ export default function EditarUsuario({
           </div>
         </div>
 
+        {/* Selector múltiple de grupos */}
         <div className="grid gap-2">
-          <Label htmlFor="password">Contraseña</Label>
-          <Input
-            id="password"
-            type="password"
-            value={form.password}
-            onChange={(e) => handleChange("password", e.target.value)}
-            className="border border-background6 bg-background3"
-            placeholder="Dejar vacío para mantener la contraseña actual"
+          <Label>Grupos</Label>
+          <SelectorMultiple
+            placeholder="Seleccionar grupos"
+            data={gruposDisponibles.map((g) => ({
+              id: String(g.id),
+              nombre: g.rol || g.nombre || "Sin nombre",
+            }))}
+            keyId="id"
+            keyLabel="nombre"
+            values={gruposSeleccionados}
+            onValuesChange={setGruposSeleccionados}
+            extraClass="w-full"
           />
+        </div>
+
+        {/* Checkbox para cambiar contraseña */}
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="cambiarContrasena"
+            checked={cambiarContrasena}
+            onCheckedChange={(checked) => setCambiarContrasena(!!checked)}
+          />
+          <Label htmlFor="cambiarContrasena" className="cursor-pointer">
+            Forzar cambio de contraseña en el próximo inicio de sesión
+          </Label>
         </div>
       </div>
 

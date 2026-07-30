@@ -17,17 +17,21 @@ function normalizeResponse<T>(response: unknown): T[] {
 }
 
 export async function fetchGrupos(
-  headers: Record<string, string> = { Accept: "application/json" }
+  headers: Record<string, string> = { "Content-Type": "application/json" }
 ): Promise<Grupo[]> {
-  const res = await fetchWithKeycloak("/api/grupos/lista-grupos", {
-    method: "GET",
-    headers,
-  })
+  try {
+    const response = await fetchWithKeycloak("/api/grupos/lista", {
+      method: "GET",
+      headers: { Accept: "application/json", ...headers },
+    })
 
-  if (!res.ok) {
-    throw new Error("Error al cargar grupos")
+    if (!response.ok) {
+      return []
+    }
+
+    const data = await response.json()
+    return data ?? []
+  } catch {
+    return []
   }
-
-  const data = await res.json()
-  return normalizeResponse<Grupo>(data)
 }

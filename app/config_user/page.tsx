@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { toast } from "sonner"
 
 import { Boton, TabsComp } from "@/components/components"
 
@@ -231,7 +232,7 @@ export default function ConfiguracionUsuario() {
 
       const result = await res.json()
       if (!res.ok) {
-        alert(
+        toast.error(
           result.error || result.detail || "Error al deshabilitar el usuario"
         )
         return
@@ -239,7 +240,7 @@ export default function ConfiguracionUsuario() {
 
       await refetchUsuarios()
     } catch {
-      alert("Error de conexión con la API")
+      toast.error("Error de conexión con la API")
     }
   }
 
@@ -255,7 +256,7 @@ export default function ConfiguracionUsuario() {
 
       const result = await res.json().catch(() => null)
       if (!res.ok) {
-        alert(
+        toast.error(
           result?.error || result?.detail || "Error al habilitar el usuario"
         )
         return
@@ -263,7 +264,7 @@ export default function ConfiguracionUsuario() {
 
       await refetchUsuarios()
     } catch {
-      alert("Error de conexión con la API")
+      toast.error("Error de conexión con la API")
     }
   }
 
@@ -457,7 +458,6 @@ export default function ConfiguracionUsuario() {
         {userIdToEdit !== undefined && user?.extra?.id !== undefined && (
           <EditarUsuario
             onUserCreated={handleUserUpdated}
-            currentUserId={user.extra.id}
             userIdToEdit={userIdToEdit}
           />
         )}
