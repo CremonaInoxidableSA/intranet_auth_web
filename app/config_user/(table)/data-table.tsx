@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table"
 
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner";
 
 export type DataTableColumn<TData> = {
   accessorKey?: keyof TData
@@ -26,6 +27,7 @@ interface DataTableProps<TData> {
   pageSize?: number
   extraClass?: string
   disableClientPagination?: boolean
+  isLoading?: boolean
 }
 
 export function DataTable<TData extends Record<string, unknown>>({
@@ -33,9 +35,11 @@ export function DataTable<TData extends Record<string, unknown>>({
   data,
   pageSize = 10,
   extraClass,
+  isLoading = false,
   disableClientPagination = false,
 }: DataTableProps<TData>) {
   const [pageIndex, setPageIndex] = useState(0)
+  
 
   const safeData = useMemo(() => (Array.isArray(data) ? data : []), [data])
   const pageCount = disableClientPagination
@@ -72,7 +76,22 @@ export function DataTable<TData extends Record<string, unknown>>({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {currentPageData.length ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 bg-background3 text-center">
+                  <div className="flex items-center justify-center gap-3 text-base font-medium">
+                    <Spinner />
+                    <span>Cargando...</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : currentPageData.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 bg-background3 text-center">
+                  No hay datos disponibles
+                </TableCell>
+              </TableRow>
+            ) : (
               currentPageData.map((row, rowIndex) => (
                 <TableRow
                   key={
@@ -97,15 +116,6 @@ export function DataTable<TData extends Record<string, unknown>>({
                   ))}
                 </TableRow>
               ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 bg-background3 text-center"
-                >
-                  No hay datos.
-                </TableCell>
-              </TableRow>
             )}
           </TableBody>
         </Table>

@@ -282,7 +282,7 @@ export default function ConfiguracionUsuario() {
   }
 
   const habilitarUsuario = async (usuario_id: string | number) => {
-    const res = await fetchWithKeycloak("/api/usuarios/habilitar_usuario", {
+    const res = await fetchWithKeycloak("/api/usuarios/habilitar-usuarios", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -448,87 +448,81 @@ export default function ConfiguracionUsuario() {
           </Dialog>
         </div>
 
-        {isLoading ? (
-          <div className="flex items-center gap-2">
-            <Spinner />
-            <span>Cargando...</span>
-          </div>
-        ) : (
-          <div className="flex w-full flex-col gap-5">
-            {selectedTabId === TAB_USUARIOS && (
-              <div className="flex w-full flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
-                <div className="flex w-full flex-col gap-2 xl:max-w-xl xl:flex-row">
-                  <Input
-                    value={userFilterInput}
-                    onChange={(event) => setUserFilterInput(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") {
-                        aplicarFiltroUsuarios()
-                      }
-                    }}
-                    placeholder="Filtrar por nombre, apellido o email"
-                    className="border border-background6 bg-background3"
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={aplicarFiltroUsuarios}
-                      className="border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30"
-                    >
-                      Filtrar
-                    </Button>
-                    <Button
-                      onClick={limpiarFiltroUsuarios}
-                      className="border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
-                    >
-                      Limpiar
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-            <DataTable
-              key={selectedTabId}
-              columns={currentColumns}
-              extraClass="w-full"
-              data={data}
-              disableClientPagination={selectedTabId === TAB_USUARIOS}
-            />
-            {selectedTabId === TAB_USUARIOS && (
-              <div className="flex w-full flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-                <span className="text-sm text-muted-foreground">
-                  Total usuarios: {userTotalUsers}
-                </span>
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={userPage <= 1}
-                    onClick={() => setUserPage((prev) => Math.max(prev - 1, 1))}
-                  >
-                    Anterior
-                  </Button>
-                  <span className="min-w-28 text-center text-sm">
-                    Página {userPage} de {Math.max(userTotalPages, 1)}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={userPage >= Math.max(userTotalPages, 1)}
-                    onClick={() =>
-                      setUserPage((prev) =>
-                        Math.min(prev + 1, Math.max(userTotalPages, 1))
-                      )
+        <div className="flex w-full flex-col gap-5">
+          {selectedTabId === TAB_USUARIOS && (
+            <div className="flex w-full flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex w-full flex-col gap-2 xl:max-w-xl xl:flex-row">
+                <Input
+                  value={userFilterInput}
+                  onChange={(event) => setUserFilterInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      aplicarFiltroUsuarios()
                     }
+                  }}
+                  placeholder="Filtrar por nombre, apellido o email"
+                  className="border border-background6 bg-background3"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    onClick={aplicarFiltroUsuarios}
+                    className="border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30"
                   >
-                    Siguiente
+                    Filtrar
+                  </Button>
+                  <Button
+                    onClick={limpiarFiltroUsuarios}
+                    className="border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
+                  >
+                    Limpiar
                   </Button>
                 </div>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+          <DataTable
+            key={selectedTabId}
+            columns={currentColumns}
+            extraClass="w-full"
+            data={data}
+            disableClientPagination={selectedTabId === TAB_USUARIOS}
+            isLoading={isLoading}
+          />
+          {selectedTabId === TAB_USUARIOS && (
+            <div className="flex w-full flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+              <span className="text-sm text-muted-foreground">
+                Total usuarios: {userTotalUsers}
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={userPage <= 1}
+                  onClick={() => setUserPage((prev) => Math.max(prev - 1, 1))}
+                >
+                  Anterior
+                </Button>
+                <span className="min-w-28 text-center text-sm">
+                  Página {userPage} de {Math.max(userTotalPages, 1)}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={userPage >= Math.max(userTotalPages, 1)}
+                  onClick={() =>
+                    setUserPage((prev) =>
+                      Math.min(prev + 1, Math.max(userTotalPages, 1))
+                    )
+                  }
+                >
+                  Siguiente
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
