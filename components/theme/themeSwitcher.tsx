@@ -1,30 +1,35 @@
 "use client"
 
+import { Moon, Palette, SunMedium } from "lucide-react"
+import { type LucideIcon } from "lucide-react"
+
 import { useThemeToggle } from "./themeToggleLogic"
-import { Moon, SunMedium } from "lucide-react"
+
+const themeIcons: Record<string, LucideIcon> = {
+  light: SunMedium,
+  dark: Moon,
+  pinky: Palette,
+}
+
+const FallbackIcon = SunMedium
 
 export const ThemeSwitcher = () => {
   const { theme, toggleTheme } = useThemeToggle()
 
-  const isLight = theme === "light"
+  const IconComponent = theme
+    ? (themeIcons[theme] ?? FallbackIcon)
+    : FallbackIcon
 
   return (
     <button
+      type="button"
       onClick={toggleTheme}
-      aria-label="Toggle theme"
-      className="group relative flex h-6 w-6 cursor-pointer items-center justify-center ease-in-out"
+      aria-label="Cambiar tema"
+      className="group relative flex h-6 w-6 items-center justify-center transition-all duration-200"
     >
-      {isLight ? (
-        <div className="group relative flex h-6 w-6 items-center justify-center ease-in-out">
-          <div className="pointer-events-none absolute inset-0 rounded bg-gray-400/0 ease-in-out group-hover:scale-150" />
-          <Moon className="h-6 w-6 transition-transform ease-in-out group-hover:scale-110" />
-        </div>
-      ) : (
-        <div className="group relative flex h-6 w-6 items-center justify-center ease-in-out">
-          <div className="pointer-events-none absolute inset-0 rounded bg-gray-400/0 ease-in-out group-hover:scale-150" />
-          <SunMedium className="h-6 w-6 transition-transform ease-in-out group-hover:scale-110" />
-        </div>
-      )}
+      <div className="pointer-events-none absolute inset-0 rounded-md transition-transform duration-200 group-hover:scale-150" />
+
+      <IconComponent className="h-6 w-6 transition-transform duration-200 group-hover:scale-110" />
     </button>
   )
 }

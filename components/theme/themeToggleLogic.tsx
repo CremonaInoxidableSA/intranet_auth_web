@@ -3,25 +3,38 @@
 import { useEffect, useState } from "react"
 import { useTheme } from "next-themes"
 
+const THEMES = ["light", "dark", "pinky"] as const
+
+type ThemeName = (typeof THEMES)[number]
+
 export const useThemeToggle = () => {
-  const { theme, setTheme, resolvedTheme } = useTheme()
+  const { theme, setTheme } = useTheme()
+
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    const id = requestAnimationFrame(() => setMounted(true))
-    return () => cancelAnimationFrame(id)
+    setMounted(true)
   }, [])
 
-  const currentTheme = mounted ? (resolvedTheme ?? theme) : null
+  const currentTheme = mounted
+    ? ((theme as ThemeName | undefined) ?? "light")
+    : null
 
   const toggleTheme = () => {
-    const t = resolvedTheme ?? theme
-    if (t === "light") {
-      setTheme("dark")
-    } else {
-      setTheme("light")
-    }
+    const current = (theme as ThemeName | undefined) ?? "light"
+
+    const currentIndex = THEMES.indexOf(current)
+
+    const nextTheme =
+      currentIndex === -1
+        ? THEMES[0]
+        : THEMES[(currentIndex + 1) % THEMES.length]
+
+    setTheme(nextTheme)
   }
 
-  return { theme: currentTheme as "light" | "dark" | null, toggleTheme }
+  return {
+    theme: currentTheme,
+    toggleTheme,
+  }
 }

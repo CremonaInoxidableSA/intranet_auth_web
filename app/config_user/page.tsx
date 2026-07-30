@@ -384,6 +384,7 @@ export default function ConfiguracionUsuario() {
             <div className="flex w-full flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex w-full flex-col gap-2 xl:max-w-xl xl:flex-row">
                 <Input
+                  id="user-filter-input"
                   value={userFilterInput}
                   onChange={(event) => setUserFilterInput(event.target.value)}
                   onKeyDown={(event) => {
@@ -419,7 +420,7 @@ export default function ConfiguracionUsuario() {
           />
           {selectedTabId === TAB_USUARIOS && (
             <div className="flex w-full flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm font-semibold text-muted-foreground">
                 Total usuarios: {userTotalUsers}
               </span>
               <div className="flex items-center gap-2">
