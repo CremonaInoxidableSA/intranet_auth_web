@@ -1,10 +1,11 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { Spinner } from "@/components/ui/spinner"
 import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+
+import { Boton, TabsComp } from "@/components/components"
 
 import FormUsuario from "./(formulario)/formUsuario"
 import FormRol from "./(formulario)/formRol"
@@ -12,18 +13,16 @@ import FormModulo from "./(formulario)/formModulo"
 import FormSubmodulo from "./(formulario)/formSubmodulo"
 import EditarUsuario from "./(table)/editarUsuario"
 
-import { columns as userColumns, User } from "./(table)/columns"
+import { Columns as userColumns } from "./(table)/columns"
 import { DataTable, type DataTableColumn } from "./(table)/data-table"
-
-import { useAuth } from "@/context/AuthProvider"
-import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
-
-import { Boton, TabsComp } from "@/components/components"
 
 import { fetchUsuarios } from "./(data)/usuarios"
 import { fetchGrupos, type Grupo } from "./(data)/grupos"
 import { fetchModulos, type Modulo } from "./(data)/modulos"
 import { fetchSubmodulos, type Submodulo } from "./(data)/submodulos"
+
+import { useAuth } from "@/context/AuthProvider"
+import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 
 const TAB_USUARIOS = 1
 const TAB_GRUPOS = 2
@@ -31,22 +30,10 @@ const TAB_MODULOS = 3
 const TAB_SUBMODULOS = 4
 
 const tablas = [
-  {
-    id: TAB_USUARIOS,
-    nombre: "Lista de Usuarios",
-  },
-  {
-    id: TAB_GRUPOS,
-    nombre: "Lista de Grupos",
-  },
-  {
-    id: TAB_MODULOS,
-    nombre: "Lista de Modulos",
-  },
-  {
-    id: TAB_SUBMODULOS,
-    nombre: "Lista de Submodulos",
-  },
+  { id: TAB_USUARIOS, nombre: "Lista de Usuarios" },
+  { id: TAB_GRUPOS, nombre: "Lista de Grupos" },
+  { id: TAB_MODULOS, nombre: "Lista de Modulos" },
+  { id: TAB_SUBMODULOS, nombre: "Lista de Submodulos" },
 ]
 
 const botonesCreacion = [
@@ -77,62 +64,35 @@ const botonesCreacion = [
 ]
 
 const grupoColumns: DataTableColumn<Grupo>[] = [
-  {
-    accessorKey: "id",
-    header: "ID",
-  },
+  { accessorKey: "id", header: "ID" },
   {
     id: "rol",
     header: "Rol",
     cell: ({ row }) => String(row.rol ?? row.nombre ?? "—"),
   },
-  {
-    accessorKey: "descripcion",
-    header: "Descripción",
-  },
+  { accessorKey: "descripcion", header: "Descripción" },
 ]
 
 const moduloColumns: DataTableColumn<Modulo>[] = [
-  {
-    accessorKey: "id",
-    header: "ID",
-  },
-  {
-    accessorKey: "nombre",
-    header: "Módulo",
-  },
-  {
-    accessorKey: "descripcion",
-    header: "Descripción",
-  },
+  { accessorKey: "id", header: "ID" },
+  { accessorKey: "nombre", header: "Módulo" },
+  { accessorKey: "descripcion", header: "Descripción" },
 ]
 
 const submoduloColumns: DataTableColumn<Submodulo>[] = [
-  {
-    accessorKey: "id",
-    header: "ID",
-  },
-  {
-    accessorKey: "nombre",
-    header: "Submódulo",
-  },
-  {
-    accessorKey: "modulo",
-    header: "Módulo",
-  },
-  {
-    accessorKey: "descripcion",
-    header: "Descripción",
-  },
+  { accessorKey: "id", header: "ID" },
+  { accessorKey: "nombre", header: "Submódulo" },
+  { accessorKey: "modulo", header: "Módulo" },
+  { accessorKey: "descripcion", header: "Descripción" },
 ]
 
 export default function ConfiguracionUsuario() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [selectedTabId, setSelectedTabId] = useState(tablas[0].id)
-  const [data, setData] = useState<Record<string, unknown>[]>([])
+  const [data, setData] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [userIdToEdit, setUserIdToEdit] = useState<string | number | undefined>(
+  const [userIdToEdit, setUserIdToEdit] = useState<string | undefined>(
     undefined
   )
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
@@ -147,7 +107,6 @@ export default function ConfiguracionUsuario() {
     if (tabId === TAB_USUARIOS) {
       return { "Content-Type": "application/json" }
     }
-
     return { Accept: "application/json" }
   }
 
@@ -159,6 +118,13 @@ export default function ConfiguracionUsuario() {
   useEffect(() => {
     let mounted = true
 
+    if (authLoading) {
+      setIsLoading(true)
+      return () => {
+        mounted = false
+      }
+    }
+
     const loadData = async () => {
       setIsLoading(true)
       setError(null)
@@ -167,15 +133,11 @@ export default function ConfiguracionUsuario() {
         switch (selectedTabId) {
           case TAB_USUARIOS: {
             const usersResponse = await fetchUsuarios(
-              user?.extra?.id,
-              {
-                numeroPagina: userPage,
-                filtro: userFilter,
-              },
+              { numeroPagina: userPage, filtro: userFilter },
               currentHeaders
             )
             if (!mounted) return
-            setData(usersResponse.users)
+            setData(usersResponse.data)
             setUserTotalPages(usersResponse.paginacion.total_paginas)
             setUserTotalUsers(usersResponse.paginacion.total_usuarios)
             break
@@ -226,21 +188,30 @@ export default function ConfiguracionUsuario() {
     return () => {
       mounted = false
     }
-  }, [selectedTabId, user?.extra?.id, currentHeaders, userPage, userFilter])
+  }, [authLoading, selectedTabId, currentHeaders, userPage, userFilter])
 
   const refetchUsuarios = async () => {
-    if (selectedTabId !== TAB_USUARIOS) return
-    const usersResponse = await fetchUsuarios(
-      user?.extra?.id,
-      {
-        numeroPagina: userPage,
-        filtro: userFilter,
-      },
-      currentHeaders
-    )
-    setData(usersResponse.users)
-    setUserTotalPages(usersResponse.paginacion.total_paginas)
-    setUserTotalUsers(usersResponse.paginacion.total_usuarios)
+    if (selectedTabId !== TAB_USUARIOS || authLoading) return
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const usersResponse = await fetchUsuarios(
+        { numeroPagina: userPage, filtro: userFilter },
+        currentHeaders
+      )
+      setData(usersResponse.data)
+      setUserTotalPages(usersResponse.paginacion.total_paginas)
+      setUserTotalUsers(usersResponse.paginacion.total_usuarios)
+    } catch {
+      setError("Error al cargar los datos")
+      setData([])
+      setUserTotalPages(1)
+      setUserTotalUsers(0)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleUserCreated = async () => {
@@ -248,93 +219,55 @@ export default function ConfiguracionUsuario() {
     setIsCreateDialogOpen(false)
   }
 
-  const deshabilitarUsuario = async (usuario_id: string | number) => {
+  const deshabilitarUsuario = async (usuario_id: string) => {
     try {
       const res = await fetchWithKeycloak(
-        "/api/usuarios/deshabilitar_usuario",
+        `/api/usuarios/deshabilitar-usuarios?user_id=${encodeURIComponent(usuario_id)}`,
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            current_user_id: user?.extra?.id,
-            usuario_id,
-          }),
+          method: "PUT",
+          headers: { Accept: "application/json" },
         }
       )
 
       const result = await res.json()
-
       if (!res.ok) {
-        alert(result.detail || "Error al deshabilitar el usuario")
-        return
-      }
-
-      setData((prev) =>
-        prev.map((u) =>
-          (u as User).id === usuario_id ? { ...(u as User), habilitado: 0 } : u
+        alert(
+          result.error || result.detail || "Error al deshabilitar el usuario"
         )
-      )
-    } catch {
-      alert("Error de conexión con la API")
-    }
-  }
-
-  const habilitarUsuario = async (usuario_id: string | number) => {
-    const res = await fetchWithKeycloak("/api/usuarios/habilitar-usuarios", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        current_user_id: user?.extra?.id,
-        usuario_id,
-      }),
-    })
-
-    if (!res.ok) return
-
-    setData((prev) =>
-      prev.map((u) =>
-        (u as User).id === usuario_id ? { ...(u as User), habilitado: 1 } : u
-      )
-    )
-  }
-
-  const eliminarUsuario = async (usuario_id: string | number) => {
-    const confirmar = confirm(
-      "¿Estás seguro de que querés eliminar este usuario? Esta acción no se puede deshacer."
-    )
-
-    if (!confirmar) return
-
-    try {
-      const res = await fetchWithKeycloak("/api/usuarios/deshabilitar-usuario", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          current_user_id: user?.extra?.id,
-          usuario_id,
-        }),
-      })
-
-      const result = await res.json()
-
-      if (!res.ok) {
-        alert(result.detail || "Error al eliminar el usuario")
         return
       }
 
-      setData((prev) => prev.filter((u) => (u as User).id !== usuario_id))
+      await refetchUsuarios()
     } catch {
       alert("Error de conexión con la API")
     }
   }
 
-  const editarUsuario = (id: string | number | undefined) => {
+  const habilitarUsuario = async (usuario_id: string) => {
+    try {
+      const res = await fetchWithKeycloak(
+        `/api/usuarios/habilitar-usuarios?user_id=${encodeURIComponent(usuario_id)}`,
+        {
+          method: "PUT",
+          headers: { Accept: "application/json" },
+        }
+      )
+
+      const result = await res.json().catch(() => null)
+      if (!res.ok) {
+        alert(
+          result?.error || result?.detail || "Error al habilitar el usuario"
+        )
+        return
+      }
+
+      await refetchUsuarios()
+    } catch {
+      alert("Error de conexión con la API")
+    }
+  }
+
+  const editarUsuario = (id: string | undefined) => {
     setUserIdToEdit(id)
     setIsEditDialogOpen(true)
   }
@@ -351,30 +284,27 @@ export default function ConfiguracionUsuario() {
     setUserPage(1)
   }
 
-  const currentColumns = useMemo<
-    DataTableColumn<Record<string, unknown>>[]
-  >(() => {
+  const currentColumns = useMemo<DataTableColumn<any>[]>(() => {
     switch (selectedTabId) {
       case TAB_GRUPOS:
-        return grupoColumns as DataTableColumn<Record<string, unknown>>[]
+        return grupoColumns as DataTableColumn<any>[]
       case TAB_MODULOS:
-        return moduloColumns as DataTableColumn<Record<string, unknown>>[]
+        return moduloColumns as DataTableColumn<any>[]
       case TAB_SUBMODULOS:
-        return submoduloColumns as DataTableColumn<Record<string, unknown>>[]
+        return submoduloColumns as DataTableColumn<any>[]
       default:
         return userColumns(
           editarUsuario,
           deshabilitarUsuario,
-          habilitarUsuario,
-          eliminarUsuario
-        ) as DataTableColumn<Record<string, unknown>>[]
+          habilitarUsuario
+        ) as DataTableColumn<any>[]
     }
   }, [selectedTabId])
 
-  const handleUserUpdated = () => {
+  const handleUserUpdated = async () => {
     setIsEditDialogOpen(false)
     setUserIdToEdit(undefined)
-    refetchUsuarios()
+    await refetchUsuarios()
   }
 
   const currentCreateButton = botonesCreacion.find(
@@ -456,9 +386,7 @@ export default function ConfiguracionUsuario() {
                   value={userFilterInput}
                   onChange={(event) => setUserFilterInput(event.target.value)}
                   onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      aplicarFiltroUsuarios()
-                    }
+                    if (event.key === "Enter") aplicarFiltroUsuarios()
                   }}
                   placeholder="Filtrar por nombre, apellido o email"
                   className="border border-background6 bg-background3"
@@ -529,7 +457,7 @@ export default function ConfiguracionUsuario() {
         {userIdToEdit !== undefined && user?.extra?.id !== undefined && (
           <EditarUsuario
             onUserCreated={handleUserUpdated}
-            currentUserId={user?.extra?.id}
+            currentUserId={user.extra.id}
             userIdToEdit={userIdToEdit}
           />
         )}

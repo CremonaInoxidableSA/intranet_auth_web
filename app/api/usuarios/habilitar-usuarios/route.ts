@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 const EXTERNAL_API_URL =
-  process.env.NEXT_PUBLIC_API_AUTH_URL + "/usuarios/habilitar-usuario"
+  process.env.NEXT_PUBLIC_API_AUTH_URL + "/usuarios/habilitar-usuarios"
 
 export async function PUT(request: NextRequest) {
   const authHeader = request.headers.get("authorization")
@@ -35,10 +35,7 @@ export async function PUT(request: NextRequest) {
   if (!externalResponse.ok) {
     return NextResponse.json(
       {
-        error:
-          data?.detail ??
-          data?.message ??
-          "Error al obtener la lista de usuarios",
+        error: data?.detail ?? data?.message ?? "Error al habilitar usuario",
       },
       { status: externalResponse.status }
     )

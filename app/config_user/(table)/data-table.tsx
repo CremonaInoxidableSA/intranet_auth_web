@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table"
 
 import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner";
+import { Spinner } from "@/components/ui/spinner"
 
 export type DataTableColumn<TData> = {
   accessorKey?: keyof TData
@@ -39,7 +39,6 @@ export function DataTable<TData extends Record<string, unknown>>({
   disableClientPagination = false,
 }: DataTableProps<TData>) {
   const [pageIndex, setPageIndex] = useState(0)
-  
 
   const safeData = useMemo(() => (Array.isArray(data) ? data : []), [data])
   const pageCount = disableClientPagination
@@ -78,7 +77,10 @@ export function DataTable<TData extends Record<string, unknown>>({
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 bg-background3 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 bg-background3 text-center"
+                >
                   <div className="flex items-center justify-center gap-3 text-base font-medium">
                     <Spinner />
                     <span>Cargando...</span>
@@ -87,7 +89,10 @@ export function DataTable<TData extends Record<string, unknown>>({
               </TableRow>
             ) : currentPageData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 bg-background3 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 bg-background3 text-center"
+                >
                   No hay datos disponibles
                 </TableCell>
               </TableRow>

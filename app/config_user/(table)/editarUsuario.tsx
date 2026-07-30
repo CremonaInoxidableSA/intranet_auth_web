@@ -9,46 +9,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 
 type Props = {
   onUserCreated: () => void
-  currentUserId?: number
-  userIdToEdit?: string | number
+  currentUserId?: string
+  userIdToEdit?: string
 }
 
 type UserForm = {
-  id_usuario: string | number
+  id_usuario: string
   email: string
   nombre: string
   apellido: string
   legajo: string
   dni: string
   password: string
-}
-
-const grupoNameToRolId: Record<string, string> = {
-  superadmin: "1",
-  admin: "1",
-  user: "2",
-}
-
-const normalizeGrupoValue = (grupo: unknown): string => {
-  if (typeof grupo === "number") return String(grupo)
-  if (typeof grupo === "string") {
-    if (/^\d+$/.test(grupo)) return grupo
-    return grupoNameToRolId[grupo] ?? ""
-  }
-  return ""
 }
 
 export default function EditarUsuario({
@@ -72,13 +50,10 @@ export default function EditarUsuario({
       if (userIdToEdit === undefined || currentUserId === undefined) return
 
       setLoading(true)
-
       try {
         const res = await fetchWithKeycloak("/api/usuarios/data_usuario", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             current_user_id: currentUserId,
             id: userIdToEdit,
@@ -100,8 +75,7 @@ export default function EditarUsuario({
           dni: String(data.dni ?? ""),
           password: "",
         })
-      } catch (error) {
-        console.error(error)
+      } catch {
         alert("Error de conexión con la API")
       } finally {
         setLoading(false)
@@ -145,9 +119,7 @@ export default function EditarUsuario({
         "/api/usuarios/crear_o_editar_usuario",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         }
       )
@@ -159,8 +131,7 @@ export default function EditarUsuario({
       }
 
       onUserCreated()
-    } catch (error) {
-      console.error(error)
+    } catch {
       alert("Error de conexión con la API")
     }
   }
@@ -210,7 +181,6 @@ export default function EditarUsuario({
               className="border border-background6 bg-background3"
             />
           </div>
-
           <div className="grid gap-2">
             <Label htmlFor="surname">Apellido</Label>
             <Input
@@ -236,7 +206,6 @@ export default function EditarUsuario({
               className="border border-background6 bg-background3"
             />
           </div>
-
           <div className="grid gap-2">
             <Label htmlFor="dni">DNI</Label>
             <Input

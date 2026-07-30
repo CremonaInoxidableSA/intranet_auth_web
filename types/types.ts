@@ -1,7 +1,8 @@
 // Data extra de los usuarios que se utiliza para la gestion de usuarios
 interface UsersExtraData {
-  id?: number
+  id?: string
   enabled?: boolean
+  apellidoNombre?: string
 }
 
 // Data que se obtiene de la API al iniciar sesion
@@ -42,4 +43,16 @@ export interface UserAvatarProps {
   loading?: boolean
   sizeClass?: string
   textClass?: string
+}
+
+// Info de paginación, reusable en cualquier listado paginado
+export interface Paginacion {
+  total_paginas: number
+  total_usuarios: number
+}
+
+// Respuesta genérica de un endpoint de listado paginado
+export interface ApiListResult<T> {
+  data: T[]
+  paginacion: Paginacion
 }

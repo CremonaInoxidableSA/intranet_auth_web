@@ -9,7 +9,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { CircleMinus, Ellipsis, PencilLine, Trash2 } from "lucide-react"
+import { CircleMinus, Ellipsis, PencilLine } from "lucide-react"
+import { UsersData } from "@/types/types"
 
 export type ColumnDef<T> = {
   accessorKey?: keyof T
@@ -19,56 +20,43 @@ export type ColumnDef<T> = {
   cell?: (props: { row: T }) => ReactNode
 }
 
-export type User = {
-  id?: string | number
-  email: string
-  apellidoNombre: string
-  grupos?: string[]
-  habilitado: number
-  reporte?: number
+const GRUPO_LABELS: Record<string, string> = {
+  superadmin: "Superadmin",
+  admin: "Admin",
+  user: "Usuario",
 }
 
-export const columns = (
-  onEditUser: (id: string | number | undefined) => void,
-  onDisableUser: (usuario_id: string | number) => void,
-  onEnableUser: (usuario_id: string | number) => void,
-  onDeleteUser: (usuario_id: string | number) => void
-): ColumnDef<User>[] => [
+export const Columns = (
+  onEditUser: (id: string | undefined) => void,
+  onDisableUser: (id: string) => void,
+  onEnableUser: (id: string) => void
+): ColumnDef<UsersData>[] => [
   {
     accessorKey: "email",
     header: "Email",
     className: "hidden xl:table-cell",
   },
   {
-    accessorKey: "apellidoNombre",
     header: "Apellido y Nombre",
+    cell: ({ row }) => row.extra?.apellidoNombre || "—",
   },
   {
     accessorKey: "grupos",
     header: "Grupos",
-    cell: ({ row }) => {
-      const grupos = row.grupos
-      if (Array.isArray(grupos) && grupos.length > 0) {
-        const grupoMap: Record<string, string> = {
-          superadmin: "Superadmin",
-          admin: "Admin",
-          user: "Usuario",
-        }
-        return grupos.map((grupo) => grupoMap[grupo] ?? grupo ?? "—").join(", ")
-      }
-      return "—"
-    },
+    cell: ({ row }) =>
+      row.grupos?.length
+        ? row.grupos.map((grupo) => GRUPO_LABELS[grupo] ?? grupo).join(", ")
+        : "—",
   },
   {
-    accessorKey: "habilitado",
     header: "Habilitado",
     className: "hidden xl:table-cell",
-    cell: ({ row }) => (row.habilitado === 1 ? "Sí" : "No"),
+    cell: ({ row }) => (row.extra?.enabled ? "Sí" : "No"),
   },
   {
     id: "actions",
     cell: ({ row }) => {
-      const user = row
+      const id = row.extra?.id
 
       return (
         <DropdownMenu>
@@ -80,31 +68,26 @@ export const columns = (
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => onEditUser(user.id)}>
+            <DropdownMenuItem onClick={() => onEditUser(id)}>
               <PencilLine className="mr-2 h-4 w-4" /> Editar
             </DropdownMenuItem>
-            {user.habilitado === 1 ? (
+            {row.extra?.enabled ? (
               <DropdownMenuItem
-                onClick={() => user.id !== undefined && onDisableUser(user.id)}
+                onClick={() => id && onDisableUser(id)}
+                className="text-redcremona focus:text-redcremona"
               >
                 <CircleMinus className="mr-2 h-4 w-4" />
                 Deshabilitar
               </DropdownMenuItem>
             ) : (
               <DropdownMenuItem
-                onClick={() => user.id !== undefined && onEnableUser(user.id)}
+                onClick={() => id && onEnableUser(id)}
+                className="text-bluecremona focus:text-bluecremona"
               >
                 <CircleMinus className="mr-2 h-4 w-4" />
                 Habilitar
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem
-              onClick={() => user.id !== undefined && onDeleteUser(user.id)}
-              className="text-redcremona focus:text-redcremona"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Eliminar
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
