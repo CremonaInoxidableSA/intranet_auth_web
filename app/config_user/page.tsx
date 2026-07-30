@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useCallback } from "react"
 import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,6 +24,9 @@ import { fetchSubmodulos, type Submodulo } from "./(data)/submodulos"
 
 import { useAuth } from "@/context/AuthProvider"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
+import { UsersData } from "@/types/types"
+
+type DataItem = UsersData | Grupo | Modulo | Submodulo
 
 const TAB_USUARIOS = 1
 const TAB_GRUPOS = 2
@@ -90,9 +93,9 @@ const submoduloColumns: DataTableColumn<Submodulo>[] = [
 export default function ConfiguracionUsuario() {
   const { user, loading: authLoading } = useAuth()
   const [selectedTabId, setSelectedTabId] = useState(tablas[0].id)
-  const [data, setData] = useState<Grupo[] | Modulo[] | Submodulo[] | any[]>([])
+  const [data, setData] = useState<DataItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [_error, setError] = useState<string | null>(null)
+  const [, setError] = useState<string | null>(null)
   const [userIdToEdit, setUserIdToEdit] = useState<string | undefined>(
     undefined
   )
@@ -116,13 +119,45 @@ export default function ConfiguracionUsuario() {
     [selectedTabId]
   )
 
+  // ==================== refetchUsuarios (memoizado) ====================
+  const refetchUsuarios = useCallback(async () => {
+    if (selectedTabId !== TAB_USUARIOS || authLoading) return
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const usersResponse = await fetchUsuarios(
+        { numeroPagina: userPage, filtro: userFilter },
+        currentHeaders
+      )
+      setData(usersResponse.data)
+      setUserTotalPages(usersResponse.paginacion.total_paginas)
+      setUserTotalUsers(usersResponse.paginacion.total_usuarios)
+    } catch {
+      setError("Error al cargar los datos")
+      setData([])
+      setUserTotalPages(1)
+      setUserTotalUsers(0)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [selectedTabId, authLoading, userPage, userFilter, currentHeaders])
+
+  // ==================== useEffect principal ====================
   useEffect(() => {
     let mounted = true
+    let rafId: number | undefined
 
     if (authLoading) {
-      setIsLoading(true)
+      rafId = requestAnimationFrame(() => {
+        if (mounted) {
+          setIsLoading(true)
+        }
+      })
       return () => {
         mounted = false
+        if (rafId) cancelAnimationFrame(rafId)
       }
     }
 
@@ -188,130 +223,124 @@ export default function ConfiguracionUsuario() {
     loadData()
     return () => {
       mounted = false
+      if (rafId) cancelAnimationFrame(rafId)
     }
   }, [authLoading, selectedTabId, currentHeaders, userPage, userFilter])
 
-  const refetchUsuarios = async () => {
-    if (selectedTabId !== TAB_USUARIOS || authLoading) return
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const usersResponse = await fetchUsuarios(
-        { numeroPagina: userPage, filtro: userFilter },
-        currentHeaders
-      )
-      setData(usersResponse.data)
-      setUserTotalPages(usersResponse.paginacion.total_paginas)
-      setUserTotalUsers(usersResponse.paginacion.total_usuarios)
-    } catch {
-      setError("Error al cargar los datos")
-      setData([])
-      setUserTotalPages(1)
-      setUserTotalUsers(0)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleUserCreated = async () => {
-    await refetchUsuarios()
-    setIsCreateDialogOpen(false)
-  }
-
-  const deshabilitarUsuario = async (usuario_id: string) => {
-    try {
-      const res = await fetchWithKeycloak(
-        `/api/usuarios/deshabilitar-usuarios?user_id=${encodeURIComponent(usuario_id)}`,
-        {
-          method: "PUT",
-          headers: { Accept: "application/json" },
-        }
-      )
-
-      const result = await res.json()
-      if (!res.ok) {
-        toast.error(
-          result.error || result.detail || "Error al deshabilitar el usuario"
+  // ==================== deshabilitarUsuario (memoizado) ====================
+  const deshabilitarUsuario = useCallback(
+    async (usuario_id: string) => {
+      try {
+        const res = await fetchWithKeycloak(
+          `/api/usuarios/deshabilitar-usuarios?user_id=${encodeURIComponent(usuario_id)}`,
+          {
+            method: "PUT",
+            headers: { Accept: "application/json" },
+          }
         )
-        return
-      }
 
-      await refetchUsuarios()
-    } catch {
-      toast.error("Error de conexión con la API")
-    }
-  }
-
-  const habilitarUsuario = async (usuario_id: string) => {
-    try {
-      const res = await fetchWithKeycloak(
-        `/api/usuarios/habilitar-usuarios?user_id=${encodeURIComponent(usuario_id)}`,
-        {
-          method: "PUT",
-          headers: { Accept: "application/json" },
+        const result = await res.json()
+        if (!res.ok) {
+          toast.error(
+            result.error || result.detail || "Error al deshabilitar el usuario"
+          )
+          return
         }
-      )
 
-      const result = await res.json().catch(() => null)
-      if (!res.ok) {
-        toast.error(
-          result?.error || result?.detail || "Error al habilitar el usuario"
-        )
-        return
+        await refetchUsuarios()
+      } catch {
+        toast.error("Error de conexión con la API")
       }
+    },
+    [refetchUsuarios]
+  )
 
-      await refetchUsuarios()
-    } catch {
-      toast.error("Error de conexión con la API")
-    }
-  }
+  // ==================== habilitarUsuario (memoizado) ====================
+  const habilitarUsuario = useCallback(
+    async (usuario_id: string) => {
+      try {
+        const res = await fetchWithKeycloak(
+          `/api/usuarios/habilitar-usuarios?user_id=${encodeURIComponent(usuario_id)}`,
+          {
+            method: "PUT",
+            headers: { Accept: "application/json" },
+          }
+        )
 
-  const editarUsuario = (id: string | undefined) => {
+        const result = await res.json().catch(() => null)
+        if (!res.ok) {
+          toast.error(
+            result?.error || result?.detail || "Error al habilitar el usuario"
+          )
+          return
+        }
+
+        await refetchUsuarios()
+      } catch {
+        toast.error("Error de conexión con la API")
+      }
+    },
+    [refetchUsuarios]
+  )
+
+  // ==================== editarUsuario (memoizado) ====================
+  const editarUsuario = useCallback((id: string | undefined) => {
     setUserIdToEdit(id)
     setIsEditDialogOpen(true)
-  }
+  }, [])
 
-  const aplicarFiltroUsuarios = () => {
-    setUserPage(1)
-    const parsedFiltro = userFilterInput.trim()
-    setUserFilter(parsedFiltro === "" ? null : parsedFiltro)
-  }
+  // ==================== handleUserCreated (memoizado) ====================
+  const handleUserCreated = useCallback(async () => {
+    await refetchUsuarios()
+    setIsCreateDialogOpen(false)
+  }, [refetchUsuarios])
 
-  const limpiarFiltroUsuarios = () => {
-    setUserFilterInput("")
-    setUserFilter(null)
-    setUserPage(1)
-  }
-
-  const currentColumns = useMemo<DataTableColumn<any>[]>(() => {
-    switch (selectedTabId) {
-      case TAB_GRUPOS:
-        return grupoColumns as DataTableColumn<any>[]
-      case TAB_MODULOS:
-        return moduloColumns as DataTableColumn<any>[]
-      case TAB_SUBMODULOS:
-        return submoduloColumns as DataTableColumn<any>[]
-      default:
-        return userColumns(
-          editarUsuario,
-          deshabilitarUsuario,
-          habilitarUsuario
-        ) as DataTableColumn<any>[]
-    }
-  }, [selectedTabId])
-
-  const handleUserUpdated = async () => {
+  // ==================== handleUserUpdated (memoizado) ====================
+  const handleUserUpdated = useCallback(async () => {
     setIsEditDialogOpen(false)
     setUserIdToEdit(undefined)
     await refetchUsuarios()
-  }
+  }, [refetchUsuarios])
 
+  // ==================== aplicarFiltroUsuarios (memoizado) ====================
+  const aplicarFiltroUsuarios = useCallback(() => {
+    setUserPage(1)
+    const parsedFiltro = userFilterInput.trim()
+    setUserFilter(parsedFiltro === "" ? null : parsedFiltro)
+  }, [userFilterInput])
+
+  // ==================== limpiarFiltroUsuarios (memoizado) ====================
+  const limpiarFiltroUsuarios = useCallback(() => {
+    setUserFilterInput("")
+    setUserFilter(null)
+    setUserPage(1)
+  }, [])
+
+  // ==================== currentColumns ====================
+  const userTableColumns = useMemo(
+    () => userColumns(editarUsuario, deshabilitarUsuario, habilitarUsuario),
+    [editarUsuario, deshabilitarUsuario, habilitarUsuario]
+  )
+
+  const currentColumns = useMemo<DataTableColumn<DataItem>[]>(() => {
+    switch (selectedTabId) {
+      case TAB_GRUPOS:
+        return grupoColumns as DataTableColumn<DataItem>[]
+      case TAB_MODULOS:
+        return moduloColumns as DataTableColumn<DataItem>[]
+      case TAB_SUBMODULOS:
+        return submoduloColumns as DataTableColumn<DataItem>[]
+      default:
+        return userTableColumns as DataTableColumn<DataItem>[]
+    }
+  }, [selectedTabId, userTableColumns])
+
+  // ==================== currentCreateButton ====================
   const currentCreateButton = botonesCreacion.find(
     (boton) => boton.id === selectedTabId
   )
 
+  // ==================== renderCreateForm ====================
   const renderCreateForm = () => {
     switch (selectedTabId) {
       case TAB_USUARIOS:
@@ -412,9 +441,11 @@ export default function ConfiguracionUsuario() {
           )}
           <DataTable
             key={selectedTabId}
-            columns={currentColumns}
+            columns={
+              currentColumns as DataTableColumn<Record<string, unknown>>[]
+            }
             extraClass="w-full"
-            data={data}
+            data={data as Record<string, unknown>[]}
             disableClientPagination={selectedTabId === TAB_USUARIOS}
             isLoading={isLoading}
           />

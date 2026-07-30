@@ -1,7 +1,7 @@
-export type Modulo = {
-  id?: number
-  nombre?: string
-  descripcion?: string
+export interface Modulo extends Record<string, unknown> {
+  id: number
+  nombre: string
+  descripcion: string
 }
 
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"

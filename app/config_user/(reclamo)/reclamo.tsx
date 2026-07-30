@@ -27,7 +27,7 @@ import { toast } from "sonner"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 
 export default function GenerarReclamo() {
-  const { email } = useAuth()
+  const { user } = useAuth()
 
   const [form, setForm] = useState({
     nombre: "",
@@ -48,7 +48,7 @@ export default function GenerarReclamo() {
       return
     }
 
-    if (!email) {
+    if (!user?.email) {
       toast.error("Error: correo electrónico no disponible", {
         position: "top-center",
       })
@@ -65,7 +65,7 @@ export default function GenerarReclamo() {
             apellido: form.apellido,
             area: form.area,
             reporte: form.reporte,
-            email: email,
+            email: user.email,
           }),
         }
       )

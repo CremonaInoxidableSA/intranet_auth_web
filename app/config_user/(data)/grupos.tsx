@@ -1,20 +1,11 @@
-export type Grupo = {
-  id?: number
-  rol?: string
+export interface Grupo extends Record<string, unknown> {
+  id: number
+  rol: string
   nombre?: string
-  descripcion?: string
+  descripcion: string
 }
 
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
-
-function normalizeResponse<T>(response: unknown): T[] {
-  if (Array.isArray(response)) return response
-  if (response && typeof response === "object") {
-    const maybeData = (response as { data?: unknown }).data
-    if (Array.isArray(maybeData)) return maybeData
-  }
-  return []
-}
 
 export async function fetchGrupos(
   headers: Record<string, string> = { "Content-Type": "application/json" }

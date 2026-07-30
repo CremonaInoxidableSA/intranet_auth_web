@@ -97,10 +97,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       submodulos: parseStringArray(data.submodulos),
       permisos: parseStringArray(data.permisos),
 
-      // Si luego necesitás datos internos de la aplicación,
-      // los agregás acá.
       extra: {
-        id: legajo,
+        id: typeof data.id === "string" ? data.id : "",
+        habilitado:
+          typeof data.habilitado === "boolean" ? data.habilitado : false,
+        apellidoNombre:
+          typeof data.apellidoNombre === "string" ? data.apellidoNombre : "",
+        change_password:
+          typeof data.change_password === "boolean"
+            ? data.change_password
+            : false,
       },
     }
   }, [])
