@@ -29,6 +29,9 @@ const UserIcon = () => {
     `${user?.nombre ?? ""}${user?.nombre || user?.apellido ? " " : ""}${user?.apellido ?? ""}`.trim() ||
     "Usuario"
 
+  const canManageUsers =
+    user?.submodulos?.some((s) => s.nombre === "SUBMODULO_CONFIG_USER") ?? false
+
   const closeSession = async () => {
     try {
       setLoggingOut(true)
@@ -64,9 +67,8 @@ const UserIcon = () => {
           ) : (
             <div className="flex flex-col items-start gap-1">
               <p className="text-lg">{displayName}</p>
-              <p className="text-xs">{user?.submodulos ?? "user"}</p>
 
-              {user?.submodulos?.includes("SUBMODULO_CONFIG_USER") ? (
+              {canManageUsers ? (
                 <Button
                   className="w-full cursor-pointer border border-bluecremona bg-bluecremona/10 hover:bg-bluecremona/30"
                   onClick={() => {

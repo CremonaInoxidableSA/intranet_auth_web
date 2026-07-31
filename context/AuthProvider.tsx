@@ -10,7 +10,7 @@ import {
   useCallback,
 } from "react"
 
-import { AuthContextType, ApiResponse, UsersData } from "@/types/types"
+import { AuthContextType, ApiResponse, UsersData, PermisosData, SubmodulosData, ModulosData, GruposData } from "@/types/types"
 
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 
@@ -92,10 +92,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       legajo,
       dni,
 
-      grupos: parseStringArray(data.grupos),
-      modulos: parseStringArray(data.modulos),
-      submodulos: parseStringArray(data.submodulos),
-      permisos: parseStringArray(data.permisos),
+      grupos: Array.isArray(data.grupos) ? (data.grupos as GruposData[]) : [],
+
+      modulos: Array.isArray(data.modulos)
+        ? (data.modulos as ModulosData[])
+        : [],
+
+      submodulos: Array.isArray(data.submodulos)
+        ? (data.submodulos as SubmodulosData[])
+        : [],
+
+      permisos: Array.isArray(data.permisos)
+        ? (data.permisos as PermisosData[])
+        : [],
 
       extra: {
         id: typeof data.id === "string" ? data.id : "",

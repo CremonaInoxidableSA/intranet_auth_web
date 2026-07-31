@@ -1,4 +1,4 @@
-import { ApiListResult, UsersData } from "@/types/types"
+import { ApiListResult, GruposData, UsersData } from "@/types/types"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 
 type FetchUsuariosParams = {
@@ -14,7 +14,7 @@ function toUsersData(raw: {
   nombre: string
   apellido: string
   habilitado: boolean
-  grupos: string[]
+  grupos: GruposData[]
 }): UsersData {
   const { id, habilitado, nombre, apellido, ...resto } = raw
   return {
