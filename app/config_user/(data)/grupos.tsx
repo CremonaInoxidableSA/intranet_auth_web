@@ -1,4 +1,4 @@
-import { ApiListResult, UsersData } from "@/types/types"
+import { ApiListResult } from "@/types/types"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 
 type FetchGruposParams = {

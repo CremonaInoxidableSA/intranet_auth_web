@@ -39,7 +39,10 @@ export default function SeleccionarGrupos({ initialSelected, onSave }: Props) {
     setLoading(true)
     try {
       const headers = { Accept: "application/json" }
-      const result = await fetchGrupos({ numeroPagina: pagina, filtro }, headers)
+      const result = await fetchGrupos(
+        { numeroPagina: pagina, filtro },
+        headers
+      )
       setGrupos(result.data)
       setTotalPaginas(result.paginacion?.total_paginas || 1)
     } catch {
@@ -121,7 +124,9 @@ export default function SeleccionarGrupos({ initialSelected, onSave }: Props) {
             </div>
           ) : (
             grupos.map((grupo) => {
-              const checked = seleccionados.includes(grupo?.nombre ? grupo?.nombre : "")
+              const checked = seleccionados.includes(
+                grupo?.nombre ? grupo?.nombre : ""
+              )
               return (
                 <label
                   key={grupo?.nombre}
@@ -129,7 +134,9 @@ export default function SeleccionarGrupos({ initialSelected, onSave }: Props) {
                 >
                   <Checkbox
                     checked={checked}
-                    onCheckedChange={() => toggle(grupo?.nombre ? grupo?.nombre : "")}
+                    onCheckedChange={() =>
+                      toggle(grupo?.nombre ? grupo?.nombre : "")
+                    }
                   />
                   <span>{grupo?.nombre}</span>
                 </label>
@@ -161,7 +168,9 @@ export default function SeleccionarGrupos({ initialSelected, onSave }: Props) {
               size="sm"
               disabled={!canNext}
               onClick={() =>
-                setPagina((prev) => Math.min(prev + 1, Math.max(totalPaginas, 1)))
+                setPagina((prev) =>
+                  Math.min(prev + 1, Math.max(totalPaginas, 1))
+                )
               }
             >
               Siguiente

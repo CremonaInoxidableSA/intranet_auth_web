@@ -8,13 +8,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { CircleMinus, CirclePlus, Ellipsis, PencilLine } from "lucide-react"
 import {
-  CircleMinus,
-  CirclePlus,
-  Ellipsis,
-  PencilLine,
-} from "lucide-react"
-import { UsersData, GruposData, ModulosData, SubmodulosData, PermisosData } from "@/types/types"
+  UsersData,
+  GruposData,
+  ModulosData,
+  SubmodulosData,
+} from "@/types/types"
 import { type DataTableColumn } from "./data-table"
 
 export const getUsuarioColumns = (
