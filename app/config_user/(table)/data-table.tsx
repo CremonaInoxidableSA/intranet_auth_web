@@ -9,7 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 
@@ -18,16 +17,25 @@ export type DataTableColumn<TData> = {
   header?: string
   id?: string
   className?: string
-  cell?: (props: { row: TData }) => ReactNode
+  cell?: (props: { row: TData; index: number }) => ReactNode
+  sortable?: boolean
+  filterable?: boolean
 }
 
-interface DataTableProps<TData> {
+export type DataTableProps<TData> = {
   columns: DataTableColumn<TData>[]
   data: TData[]
   pageSize?: number
   extraClass?: string
   disableClientPagination?: boolean
   isLoading?: boolean
+  emptyMessage?: string
+  loadingMessage?: string
+  onRowClick?: (row: TData, index: number) => void
+  rowClassName?: string | ((row: TData, index: number) => string)
+  getRowKey?: (row: TData, index: number) => string | number
+  paginationPosition?: "top" | "bottom" | "both"
+  showPageInfo?: boolean
 }
 
 export function DataTable<TData extends Record<string, unknown>>({
@@ -37,26 +45,72 @@ export function DataTable<TData extends Record<string, unknown>>({
   extraClass,
   isLoading = false,
   disableClientPagination = false,
+  emptyMessage = "No hay datos disponibles",
+  loadingMessage = "Cargando...",
+  onRowClick,
+  rowClassName,
+  getRowKey,
+  paginationPosition = "bottom",
+  showPageInfo = true,
 }: DataTableProps<TData>) {
   const [pageIndex, setPageIndex] = useState(0)
 
   const safeData = useMemo(() => (Array.isArray(data) ? data : []), [data])
-  const pageCount = disableClientPagination
-    ? 1
-    : Math.max(1, Math.ceil(safeData.length / pageSize))
-  const currentPageData = useMemo(
-    () =>
-      disableClientPagination
-        ? safeData
-        : safeData.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize),
-    [disableClientPagination, safeData, pageIndex, pageSize]
-  )
+
+  const pageCount = useMemo(() => {
+    if (disableClientPagination) return 1
+    return Math.max(1, Math.ceil(safeData.length / pageSize))
+  }, [disableClientPagination, safeData.length, pageSize])
+
+  const currentPageData = useMemo(() => {
+    if (disableClientPagination) return safeData
+    return safeData.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize)
+  }, [disableClientPagination, safeData, pageIndex, pageSize])
 
   const canPreviousPage = pageIndex > 0
   const canNextPage = pageIndex < pageCount - 1
 
+  const handlePageChange = (newPageIndex: number) => {
+    setPageIndex(Math.max(0, Math.min(newPageIndex, pageCount - 1)))
+  }
+
+  const Pagination = () => {
+    if (disableClientPagination) return null
+
+    return (
+      <div className="flex items-center justify-between py-4">
+        {showPageInfo && (
+          <span className="text-sm text-muted-foreground">
+            Mostrando {currentPageData.length} de {safeData.length} registros
+            {pageCount > 1 && ` · Página ${pageIndex + 1} de ${pageCount}`}
+          </span>
+        )}
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(pageIndex - 1)}
+            disabled={!canPreviousPage}
+          >
+            Anterior
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(pageIndex + 1)}
+            disabled={!canNextPage}
+          >
+            Siguiente
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={`flex flex-col ${extraClass}`}>
+      {paginationPosition === "top" && <Pagination />}
+
       <div className="overflow-hidden rounded border">
         <Table>
           <TableHeader className="bg-background2">
@@ -83,7 +137,7 @@ export function DataTable<TData extends Record<string, unknown>>({
                 >
                   <div className="flex items-center justify-center gap-3 text-base font-medium">
                     <Spinner />
-                    <span>Cargando...</span>
+                    <span>{loadingMessage}</span>
                   </div>
                 </TableCell>
               </TableRow>
@@ -93,60 +147,53 @@ export function DataTable<TData extends Record<string, unknown>>({
                   colSpan={columns.length}
                   className="h-24 bg-background3 text-center"
                 >
-                  No hay datos disponibles
+                  {emptyMessage}
                 </TableCell>
               </TableRow>
             ) : (
-              currentPageData.map((row, rowIndex) => (
-                <TableRow
-                  key={
-                    (row as { id?: string | number }).id ??
-                    `row-${pageIndex * pageSize + rowIndex}`
-                  }
-                  className="odd:bg-background3 even:bg-background4 hover:bg-background5"
-                >
-                  {columns.map((column) => (
-                    <TableCell
-                      key={
-                        column.id ?? String(column.accessorKey ?? column.header)
-                      }
-                      className={column.className}
-                    >
-                      {column.cell
-                        ? column.cell({ row })
-                        : column.accessorKey
-                          ? String(row[column.accessorKey] ?? "—")
-                          : "—"}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              currentPageData.map((row, rowIndex) => {
+                const key = getRowKey
+                  ? getRowKey(row, rowIndex)
+                  : ((row as { id?: string | number }).id ??
+                    `row-${pageIndex * pageSize + rowIndex}`)
+
+                const className =
+                  typeof rowClassName === "function"
+                    ? rowClassName(row, rowIndex)
+                    : rowClassName
+
+                return (
+                  <TableRow
+                    key={key}
+                    className={`odd:bg-background3 even:bg-background4 hover:bg-background5 ${className || ""}`}
+                    onClick={() => onRowClick?.(row, rowIndex)}
+                    style={{ cursor: onRowClick ? "pointer" : "default" }}
+                  >
+                    {columns.map((column) => (
+                      <TableCell
+                        key={
+                          column.id ??
+                          String(column.accessorKey ?? column.header)
+                        }
+                        className={column.className}
+                      >
+                        {column.cell
+                          ? column.cell({ row, index: rowIndex })
+                          : column.accessorKey
+                            ? String(row[column.accessorKey] ?? "—")
+                            : "—"}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                )
+              })
             )}
           </TableBody>
         </Table>
       </div>
-      {!disableClientPagination && (
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))}
-            disabled={!canPreviousPage}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              setPageIndex((prev) => Math.min(prev + 1, pageCount - 1))
-            }
-            disabled={!canNextPage}
-          >
-            Next
-          </Button>
-        </div>
-      )}
+
+      {paginationPosition === "bottom" && <Pagination />}
+      {paginationPosition === "both" && <Pagination />}
     </div>
   )
 }

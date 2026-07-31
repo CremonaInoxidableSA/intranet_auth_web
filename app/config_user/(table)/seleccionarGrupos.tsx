@@ -121,17 +121,17 @@ export default function SeleccionarGrupos({ initialSelected, onSave }: Props) {
             </div>
           ) : (
             grupos.map((grupo) => {
-              const checked = seleccionados.includes(grupo.nombre)
+              const checked = seleccionados.includes(grupo?.nombre ? grupo?.nombre : "")
               return (
                 <label
-                  key={grupo.nombre}
+                  key={grupo?.nombre}
                   className="flex cursor-pointer items-center gap-2 rounded px-2 py-2 text-sm hover:bg-foreground/10"
                 >
                   <Checkbox
                     checked={checked}
-                    onCheckedChange={() => toggle(grupo.nombre)}
+                    onCheckedChange={() => toggle(grupo?.nombre ? grupo?.nombre : "")}
                   />
-                  <span>{grupo.nombre}</span>
+                  <span>{grupo?.nombre}</span>
                 </label>
               )
             })

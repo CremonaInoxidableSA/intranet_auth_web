@@ -1,6 +1,5 @@
 "use client"
 
-import type { ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -9,28 +8,20 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { CircleMinus, CirclePlus, Ellipsis, PencilLine } from "lucide-react"
-import { UsersData } from "@/types/types"
+import {
+  CircleMinus,
+  CirclePlus,
+  Ellipsis,
+  PencilLine,
+} from "lucide-react"
+import { UsersData, GruposData, ModulosData, SubmodulosData, PermisosData } from "@/types/types"
+import { type DataTableColumn } from "./data-table"
 
-export type ColumnDef<T> = {
-  accessorKey?: keyof T
-  header?: string
-  id?: string
-  className?: string
-  cell?: (props: { row: T }) => ReactNode
-}
-
-const GRUPO_LABELS: Record<string, string> = {
-  superadmin: "Superadmin",
-  admin: "Admin",
-  user: "Usuario",
-}
-
-export const Columns = (
+export const getUsuarioColumns = (
   onEditUser: (id: string | undefined) => void,
   onDisableUser: (id: string) => void,
   onEnableUser: (id: string) => void
-): ColumnDef<UsersData>[] => [
+): DataTableColumn<UsersData>[] => [
   {
     accessorKey: "email",
     header: "Email",
@@ -44,9 +35,7 @@ export const Columns = (
     accessorKey: "grupos",
     header: "Grupos",
     cell: ({ row }) =>
-      row.grupos?.length
-        ? row.grupos.map((grupo) => GRUPO_LABELS[grupo] ?? grupo).join(", ")
-        : "—",
+      row.grupos?.length ? row.grupos.map((grupo) => grupo).join(", ") : "—",
   },
   {
     header: "Habilitado",
@@ -96,5 +85,97 @@ export const Columns = (
         </DropdownMenu>
       )
     },
+  },
+]
+
+export const getGrupoColumns = (): DataTableColumn<GruposData>[] => [
+  {
+    accessorKey: "nombre",
+    header: "Nombre",
+    className: "font-medium",
+  },
+  {
+    header: "Permisos",
+    cell: () => (
+      <p className="items-center justify-start">Editar para ver permisos</p>
+    ),
+  },
+  {
+    header: "Modulos",
+    cell: () => (
+      <p className="items-center justify-start">Editar para ver modulos</p>
+    ),
+  },
+  {
+    header: "Submodulos",
+    cell: () => (
+      <p className="items-center justify-start">Editar para ver submodulos</p>
+    ),
+  },
+  {
+    cell: () => (
+      <Button variant="ghost" className="h-8 w-8">
+        <span className="sr-only">Editar</span>
+        <PencilLine className="h-4 w-4" />
+      </Button>
+    ),
+  },
+]
+
+export const getModuloColumns = (): DataTableColumn<ModulosData>[] => [
+  {
+    accessorKey: "nombre",
+    header: "Nombre",
+    className: "font-medium",
+  },
+  {
+    header: "URL",
+    cell: () => (
+      <p className="items-center justify-start">Editar para ver URL</p>
+    ),
+  },
+  {
+    header: "Submodulos",
+    cell: () => (
+      <p className="items-center justify-start">Editar para ver submodulos</p>
+    ),
+  },
+  {
+    cell: () => (
+      <Button variant="ghost" className="h-8 w-8">
+        <span className="sr-only">Editar</span>
+        <PencilLine className="h-4 w-4" />
+      </Button>
+    ),
+  },
+]
+
+export const getSubmoduloColumns = (): DataTableColumn<SubmodulosData>[] => [
+  {
+    accessorKey: "nombre",
+    header: "Nombre",
+    className: "font-medium",
+  },
+  {
+    header: "URL",
+    cell: () => (
+      <p className="items-center justify-start">Editar para ver URL</p>
+    ),
+  },
+  {
+    header: "Modulo Principal",
+    cell: () => (
+      <p className="items-center justify-start">
+        Editar para ver modulo principal
+      </p>
+    ),
+  },
+  {
+    cell: () => (
+      <Button variant="ghost" className="h-8 w-8">
+        <span className="sr-only">Editar</span>
+        <PencilLine className="h-4 w-4" />
+      </Button>
+    ),
   },
 ]

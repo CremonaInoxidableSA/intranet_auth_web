@@ -1,355 +1,52 @@
 "use client"
 
-import { useEffect, useMemo, useState, useCallback } from "react"
 import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { toast } from "sonner"
-
 import { Boton, TabsComp } from "@/components/components"
-
 import FormUsuario from "./(formulario)/formUsuario"
 import FormRol from "./(formulario)/formRol"
 import FormModulo from "./(formulario)/formModulo"
 import FormSubmodulo from "./(formulario)/formSubmodulo"
 import EditarUsuario from "./(table)/editarUsuario"
-
-import { Columns as userColumns } from "./(table)/columns"
 import { DataTable, type DataTableColumn } from "./(table)/data-table"
-
-import { fetchUsuarios } from "./(data)/usuarios"
-import { fetchGrupos, type Grupo } from "./(data)/grupos"
-import { fetchModulos, type Modulo } from "./(data)/modulos"
-import { fetchSubmodulos, type Submodulo } from "./(data)/submodulos"
-
-import { useAuth } from "@/context/AuthProvider"
-import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
-import { UsersData } from "@/types/types"
-
-type DataItem = UsersData | Grupo | Modulo | Submodulo
-
-const TAB_USUARIOS = 1
-const TAB_GRUPOS = 2
-const TAB_MODULOS = 3
-const TAB_SUBMODULOS = 4
-
-const tablas = [
-  { id: TAB_USUARIOS, nombre: "Lista de Usuarios" },
-  { id: TAB_GRUPOS, nombre: "Lista de Grupos" },
-  { id: TAB_MODULOS, nombre: "Lista de Modulos" },
-  { id: TAB_SUBMODULOS, nombre: "Lista de Submodulos" },
-]
-
-const botonesCreacion = [
-  {
-    id: TAB_USUARIOS,
-    nombre: "Crear Usuario",
-    extraClass:
-      "border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30",
-  },
-  {
-    id: TAB_GRUPOS,
-    nombre: "Crear Grupo",
-    extraClass:
-      "border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30",
-  },
-  {
-    id: TAB_MODULOS,
-    nombre: "Agregar Modulo",
-    extraClass:
-      "border-greencremona bg-greencremona/20 text-greencremona hover:bg-greencremona/30",
-  },
-  {
-    id: TAB_SUBMODULOS,
-    nombre: "Agregar Submodulo",
-    extraClass:
-      "border-orangecremona bg-orangecremona/20 text-orangecremona hover:bg-orangecremona/30",
-  },
-]
-
-const grupoColumns: DataTableColumn<Grupo>[] = [
-  { accessorKey: "id", header: "ID" },
-  {
-    id: "rol",
-    header: "Rol",
-    cell: ({ row }) => String(row.rol ?? row.nombre ?? "—"),
-  },
-  { accessorKey: "descripcion", header: "Descripción" },
-]
-
-const moduloColumns: DataTableColumn<Modulo>[] = [
-  { accessorKey: "id", header: "ID" },
-  { accessorKey: "nombre", header: "Módulo" },
-  { accessorKey: "descripcion", header: "Descripción" },
-]
-
-const submoduloColumns: DataTableColumn<Submodulo>[] = [
-  { accessorKey: "id", header: "ID" },
-  { accessorKey: "nombre", header: "Submódulo" },
-  { accessorKey: "modulo", header: "Módulo" },
-  { accessorKey: "descripcion", header: "Descripción" },
-]
+import { useConfiguracionUsuario, tablas, TAB_USUARIOS } from "./funciones"
 
 export default function ConfiguracionUsuario() {
-  const { user, loading: authLoading } = useAuth()
-  const [selectedTabId, setSelectedTabId] = useState(tablas[0].id)
-  const [data, setData] = useState<DataItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [, setError] = useState<string | null>(null)
-  const [userIdToEdit, setUserIdToEdit] = useState<string | undefined>(
-    undefined
-  )
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [userPage, setUserPage] = useState(1)
-  const [userFilterInput, setUserFilterInput] = useState("")
-  const [userFilter, setUserFilter] = useState<string | null>(null)
-  const [userTotalPages, setUserTotalPages] = useState(1)
-  const [userTotalUsers, setUserTotalUsers] = useState(0)
+  const {
+    selectedTabId,
+    setSelectedTabId,
+    data,
+    isLoading,
+    userIdToEdit,
+    isEditDialogOpen,
+    setIsEditDialogOpen,
+    isCreateDialogOpen,
+    setIsCreateDialogOpen,
+    userPage,
+    setUserPage,
+    userFilterInput,
+    setUserFilterInput,
+    userTotalPages,
+    userTotalUsers,
+    user,
+    handleUserCreated,
+    handleUserUpdated,
+    aplicarFiltroUsuarios,
+    limpiarFiltroUsuarios,
+    currentColumns,
+    currentCreateButton,
+  } = useConfiguracionUsuario()
 
-  const createHeaders = (tabId: number): Record<string, string> => {
-    if (tabId === TAB_USUARIOS) {
-      return { "Content-Type": "application/json" }
-    }
-    return { Accept: "application/json" }
-  }
-
-  const currentHeaders = useMemo(
-    () => createHeaders(selectedTabId),
-    [selectedTabId]
-  )
-
-  // ==================== refetchUsuarios (memoizado) ====================
-  const refetchUsuarios = useCallback(async () => {
-    if (selectedTabId !== TAB_USUARIOS || authLoading) return
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const usersResponse = await fetchUsuarios(
-        { numeroPagina: userPage, filtro: userFilter },
-        currentHeaders
-      )
-      setData(usersResponse.data)
-      setUserTotalPages(usersResponse.paginacion.total_paginas)
-      setUserTotalUsers(usersResponse.paginacion.total_usuarios)
-    } catch {
-      setError("Error al cargar los datos")
-      setData([])
-      setUserTotalPages(1)
-      setUserTotalUsers(0)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [selectedTabId, authLoading, userPage, userFilter, currentHeaders])
-
-  // ==================== useEffect principal ====================
-  useEffect(() => {
-    let mounted = true
-    let rafId: number | undefined
-
-    if (authLoading) {
-      rafId = requestAnimationFrame(() => {
-        if (mounted) {
-          setIsLoading(true)
-        }
-      })
-      return () => {
-        mounted = false
-        if (rafId) cancelAnimationFrame(rafId)
-      }
-    }
-
-    const loadData = async () => {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        switch (selectedTabId) {
-          case TAB_USUARIOS: {
-            const usersResponse = await fetchUsuarios(
-              { numeroPagina: userPage, filtro: userFilter },
-              currentHeaders
-            )
-            if (!mounted) return
-            setData(usersResponse.data)
-            setUserTotalPages(usersResponse.paginacion.total_paginas)
-            setUserTotalUsers(usersResponse.paginacion.total_usuarios)
-            break
-          }
-          case TAB_GRUPOS: {
-            const grupos = await fetchGrupos(currentHeaders)
-            if (!mounted) return
-            setData(grupos)
-            setUserTotalPages(1)
-            setUserTotalUsers(0)
-            break
-          }
-          case TAB_MODULOS: {
-            const modulos = await fetchModulos(currentHeaders)
-            if (!mounted) return
-            setData(modulos)
-            setUserTotalPages(1)
-            setUserTotalUsers(0)
-            break
-          }
-          case TAB_SUBMODULOS: {
-            const submodulos = await fetchSubmodulos(currentHeaders)
-            if (!mounted) return
-            setData(submodulos)
-            setUserTotalPages(1)
-            setUserTotalUsers(0)
-            break
-          }
-          default:
-            if (!mounted) return
-            setData([])
-            setUserTotalPages(1)
-            setUserTotalUsers(0)
-        }
-      } catch {
-        if (!mounted) return
-        setError("Error al cargar los datos")
-        setData([])
-        setUserTotalPages(1)
-        setUserTotalUsers(0)
-      } finally {
-        if (!mounted) return
-        setIsLoading(false)
-      }
-    }
-
-    loadData()
-    return () => {
-      mounted = false
-      if (rafId) cancelAnimationFrame(rafId)
-    }
-  }, [authLoading, selectedTabId, currentHeaders, userPage, userFilter])
-
-  // ==================== deshabilitarUsuario (memoizado) ====================
-  const deshabilitarUsuario = useCallback(
-    async (usuario_id: string) => {
-      try {
-        const res = await fetchWithKeycloak(
-          `/api/usuarios/deshabilitar-usuarios?user_id=${encodeURIComponent(usuario_id)}`,
-          {
-            method: "PUT",
-            headers: { Accept: "application/json" },
-          }
-        )
-
-        const result = await res.json()
-        if (!res.ok) {
-          toast.error(
-            result.error || result.detail || "Error al deshabilitar el usuario"
-          )
-          return
-        }
-
-        await refetchUsuarios()
-      } catch {
-        toast.error("Error de conexión con la API")
-      }
-    },
-    [refetchUsuarios]
-  )
-
-  // ==================== habilitarUsuario (memoizado) ====================
-  const habilitarUsuario = useCallback(
-    async (usuario_id: string) => {
-      try {
-        const res = await fetchWithKeycloak(
-          `/api/usuarios/habilitar-usuarios?user_id=${encodeURIComponent(usuario_id)}`,
-          {
-            method: "PUT",
-            headers: { Accept: "application/json" },
-          }
-        )
-
-        const result = await res.json().catch(() => null)
-        if (!res.ok) {
-          toast.error(
-            result?.error || result?.detail || "Error al habilitar el usuario"
-          )
-          return
-        }
-
-        await refetchUsuarios()
-      } catch {
-        toast.error("Error de conexión con la API")
-      }
-    },
-    [refetchUsuarios]
-  )
-
-  // ==================== editarUsuario (memoizado) ====================
-  const editarUsuario = useCallback((id: string | undefined) => {
-    setUserIdToEdit(id)
-    setIsEditDialogOpen(true)
-  }, [])
-
-  // ==================== handleUserCreated (memoizado) ====================
-  const handleUserCreated = useCallback(async () => {
-    await refetchUsuarios()
-    setIsCreateDialogOpen(false)
-  }, [refetchUsuarios])
-
-  // ==================== handleUserUpdated (memoizado) ====================
-  const handleUserUpdated = useCallback(async () => {
-    setIsEditDialogOpen(false)
-    setUserIdToEdit(undefined)
-    await refetchUsuarios()
-  }, [refetchUsuarios])
-
-  // ==================== aplicarFiltroUsuarios (memoizado) ====================
-  const aplicarFiltroUsuarios = useCallback(() => {
-    setUserPage(1)
-    const parsedFiltro = userFilterInput.trim()
-    setUserFilter(parsedFiltro === "" ? null : parsedFiltro)
-  }, [userFilterInput])
-
-  // ==================== limpiarFiltroUsuarios (memoizado) ====================
-  const limpiarFiltroUsuarios = useCallback(() => {
-    setUserFilterInput("")
-    setUserFilter(null)
-    setUserPage(1)
-  }, [])
-
-  // ==================== currentColumns ====================
-  const userTableColumns = useMemo(
-    () => userColumns(editarUsuario, deshabilitarUsuario, habilitarUsuario),
-    [editarUsuario, deshabilitarUsuario, habilitarUsuario]
-  )
-
-  const currentColumns = useMemo<DataTableColumn<DataItem>[]>(() => {
-    switch (selectedTabId) {
-      case TAB_GRUPOS:
-        return grupoColumns as DataTableColumn<DataItem>[]
-      case TAB_MODULOS:
-        return moduloColumns as DataTableColumn<DataItem>[]
-      case TAB_SUBMODULOS:
-        return submoduloColumns as DataTableColumn<DataItem>[]
-      default:
-        return userTableColumns as DataTableColumn<DataItem>[]
-    }
-  }, [selectedTabId, userTableColumns])
-
-  // ==================== currentCreateButton ====================
-  const currentCreateButton = botonesCreacion.find(
-    (boton) => boton.id === selectedTabId
-  )
-
-  // ==================== renderCreateForm ====================
   const renderCreateForm = () => {
     switch (selectedTabId) {
       case TAB_USUARIOS:
         return <FormUsuario onUserCreated={handleUserCreated} />
-      case TAB_GRUPOS:
+      case 2: // TAB_GRUPOS
         return <FormRol />
-      case TAB_MODULOS:
+      case 3: // TAB_MODULOS
         return <FormModulo />
-      case TAB_SUBMODULOS:
+      case 4: // TAB_SUBMODULOS
         return <FormSubmodulo />
       default:
         return null
@@ -448,6 +145,9 @@ export default function ConfiguracionUsuario() {
             data={data as Record<string, unknown>[]}
             disableClientPagination={selectedTabId === TAB_USUARIOS}
             isLoading={isLoading}
+            emptyMessage="No hay registros disponibles"
+            loadingMessage="Cargando datos..."
+            showPageInfo={selectedTabId === TAB_USUARIOS}
           />
           {selectedTabId === TAB_USUARIOS && (
             <div className="flex w-full flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">

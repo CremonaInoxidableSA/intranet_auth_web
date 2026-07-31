@@ -14,16 +14,34 @@ export interface UsersData<T = UsersExtraData> {
   legajo?: number
   dni?: number
 
-  grupos?: string[]
-  submodulos?: string[]
-  modulos?: string[]
-  permisos?: string[]
+  grupos?: GruposData[]
+  submodulos?: SubmodulosData[]
+  modulos?: ModulosData[]
+  permisos?: PermisosData[]
 
   extra?: T
 }
 
 export interface GruposData {
-  nombre: string
+  nombre?: string
+}
+
+export interface ModulosData {
+  nombre?: string
+  subdominio?: string
+  path?: string
+  icono?: string
+}
+
+export interface SubmodulosData {
+  modulo_padre?: string
+  nombre?: string
+  path?: string
+  icono?: string
+}
+
+export interface PermisosData {
+  nombre?: string
 }
 
 export interface AuthContextType {
