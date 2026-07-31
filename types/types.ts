@@ -22,6 +22,10 @@ export interface UsersData<T = UsersExtraData> {
   extra?: T
 }
 
+export interface GruposData {
+  nombre: string
+}
+
 export interface AuthContextType {
   user: UsersData | null
 

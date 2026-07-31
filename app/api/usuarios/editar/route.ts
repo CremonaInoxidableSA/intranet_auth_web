@@ -22,7 +22,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Cuerpo inválido" }, { status: 400 })
   }
 
-  const externalUrl = `${API_AUTH_URL}/usuarios/editar-usuario?user_id=${userId}` // Ajusta según tu API
+  const externalUrl = `${API_AUTH_URL}/usuarios/editar?user_id=${userId}`
 
   try {
     const response = await fetch(externalUrl, {

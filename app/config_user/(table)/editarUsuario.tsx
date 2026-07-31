@@ -13,11 +13,12 @@ import {
 import { toast } from "sonner"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox" // Asegúrate de tener este componente
+import { Checkbox } from "@/components/ui/checkbox"
+import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 import { UsersData } from "@/types/types"
-import { SelectorMultiple } from "@/components/components"
-import { fetchGrupos, type Grupo } from "../(data)/grupos"
+import { TextScrollArea } from "@/components/components"
+import SeleccionarGrupos from "./seleccionarGrupos"
 
 type Props = {
   onUserCreated: () => void
@@ -26,7 +27,6 @@ type Props = {
 
 export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
   const [loading, setLoading] = useState(userIdToEdit !== undefined)
-  const [gruposDisponibles, setGruposDisponibles] = useState<Grupo[]>([])
   const [gruposSeleccionados, setGruposSeleccionados] = useState<string[]>([])
   const [cambiarContrasena, setCambiarContrasena] = useState(false)
 
@@ -46,22 +46,6 @@ export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
     },
   })
 
-  // Cargar lista de grupos disponibles
-  useEffect(() => {
-    const loadGrupos = async () => {
-      try {
-        const headers = { Accept: "application/json" }
-        const grupos = await fetchGrupos(headers)
-        setGruposDisponibles(grupos)
-      } catch (error) {
-        console.error("Error al cargar grupos:", error)
-        toast.error("No se pudieron cargar los grupos")
-      }
-    }
-    loadGrupos()
-  }, [])
-
-  // Cargar datos del usuario a editar
   useEffect(() => {
     const fetchUserData = async () => {
       if (!userIdToEdit) return
@@ -144,7 +128,7 @@ export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
 
     try {
       const res = await fetchWithKeycloak(
-        `/api/usuarios/editar-usuario?user_id=${userIdToEdit}`,
+        `/api/usuarios/editar?user_id=${userIdToEdit}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -278,20 +262,27 @@ export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
           </div>
         </div>
 
-        {/* Selector múltiple de grupos */}
+        {/* Grupos asignados */}
         <div className="grid gap-2">
-          <Label>Grupos</Label>
-          <SelectorMultiple
-            placeholder="Seleccionar grupos"
-            data={gruposDisponibles.map((g) => ({
-              id: String(g.id),
-              nombre: g.rol || g.nombre || "Sin nombre",
-            }))}
-            keyId="id"
-            keyLabel="nombre"
-            values={gruposSeleccionados}
-            onValuesChange={setGruposSeleccionados}
-            extraClass="w-full"
+          <div className="flex items-center justify-between">
+            <Label>Grupos</Label>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button type="button" variant="outline" size="sm">
+                  {gruposSeleccionados.length > 0
+                    ? "Editar grupos"
+                    : "+ Agregar grupos"}
+                </Button>
+              </DialogTrigger>
+              <SeleccionarGrupos
+                initialSelected={gruposSeleccionados}
+                onSave={setGruposSeleccionados}
+              />
+            </Dialog>
+          </div>
+          <TextScrollArea
+            tags={gruposSeleccionados}
+            extraClass="h-40 rounded border border-background6 bg-background3 p-2"
           />
         </div>
 

@@ -21,7 +21,11 @@ import {
 
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Check, ChevronDown, PencilLine, Trash2 } from "lucide-react"
+import { Separator } from "@/components/ui/separator"
+
+import { Check, ChevronDown, PencilLine, Trash2, } from "lucide-react"
+
+import { Virtuoso } from "react-virtuoso"
 
 //---------------------------------------BOTONES---------------------------------------//
 export function EliminarButton({
@@ -201,6 +205,83 @@ export function Tabla({
     </Table>
   )
 }
+
+export const TextScrollArea = React.memo(function TextScrollArea({
+  tags,
+  subtitles,
+  selectedIndex,
+  extraClass,
+  placeholder,
+  placeholderExtraClass,
+  extras,
+  onTagClick,
+}: {
+  tags: string[]
+  subtitles?: string[]
+  selectedIndex?: number
+  extraClass?: string
+  placeholder?: string
+  placeholderExtraClass?: string
+  extras?: (tag: string, index: number) => React.ReactNode
+  onTagClick?: (tag: string, index: number) => void
+}) {
+  return (
+    <div className={`flex flex-col rounded ${extraClass || ""}`}>
+      {placeholder && (
+        <h4
+          className={`mb-2 leading-none font-medium ${placeholderExtraClass || ""}`}
+        >
+          {placeholder}
+        </h4>
+      )}
+      {tags.length === 0 ? (
+        <div className="flex flex-1 items-center justify-center opacity-50">
+          <p className="text-sm">No hay datos disponibles</p>
+        </div>
+      ) : (
+        <Virtuoso
+          style={{ flex: 1, minHeight: 0, height: "100%" }}
+          totalCount={tags.length}
+          components={{
+            Footer: () => (
+              <p className="py-4 text-center text-sm opacity-50">
+                No hay más datos disponibles
+              </p>
+            ),
+          }}
+          itemContent={(index) => {
+            const tag = tags[index]
+            const subtitle = subtitles?.[index]
+            const isSelected = selectedIndex === index
+            return (
+              <div key={tag} className="mr-4">
+                <span
+                  className={`flex flex-row items-center rounded px-2 hover:bg-foreground/10 ${isSelected ? "bg-foreground/10" : ""}`}
+                >
+                  <div
+                    onClick={() => onTagClick?.(tag, index)}
+                    className="flex flex-1 cursor-pointer py-2"
+                  >
+                    <div className="flex flex-col">
+                      <span className={isSelected ? "font-semibold" : ""}>
+                        {tag}
+                      </span>
+                      {subtitle && (
+                        <span className="text-xs opacity-50">{subtitle}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div>{extras?.(tag, index)}</div>
+                </span>
+                {index < tags.length - 1 && <Separator className="my-2" />}
+              </div>
+            )
+          }}
+        />
+      )}
+    </div>
+  )
+})
 
 //---------------------------------------INPUTS---------------------------------------//
 type InputsProps = ComponentProps<typeof Input> & {
