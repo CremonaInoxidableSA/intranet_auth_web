@@ -25,7 +25,7 @@ export async function fetchGrupos(
   })
 
   const response = await fetchWithKeycloak(
-    `/api/grupos/lista?${query.toString()}`,
+    `/api/permisos/grupos/lista?${query.toString()}`,
     {
       method: "GET",
       headers: { Accept: "application/json", ...headers },

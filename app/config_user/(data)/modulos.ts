@@ -18,7 +18,7 @@ const normalizeResponse = <T>(response: unknown): T[] => {
 export async function fetchModulos(
   headers: Record<string, string> = { Accept: "application/json" }
 ): Promise<Modulo[]> {
-  const res = await fetchWithKeycloak("/api/modulos/lista-modulos", {
+  const res = await fetchWithKeycloak("/api/permisos/modulos/lista", {
     method: "GET",
     headers,
   })

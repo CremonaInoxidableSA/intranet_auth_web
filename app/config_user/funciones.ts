@@ -253,7 +253,7 @@ export function useConfiguracionUsuario() {
     async (nombre: string) => {
       try {
         const res = await fetchWithKeycloak(
-          `/api/grupos/eliminar?nombre=${encodeURIComponent(nombre)}`,
+          `/api/permisos/grupos/eliminar?nombre=${encodeURIComponent(nombre)}`,
           { method: "DELETE" }
         )
         if (!res.ok) {
@@ -300,7 +300,7 @@ export function useConfiguracionUsuario() {
   )
 
   const grupoColumns = useMemo(
-    () => getGrupoColumns(handleEditGrupo, handleDeleteGrupo),
+    () => getGrupoColumns(),
     [handleEditGrupo, handleDeleteGrupo]
   )
 

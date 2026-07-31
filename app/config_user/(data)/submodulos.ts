@@ -19,10 +19,13 @@ const normalizeResponse = <T>(response: unknown): T[] => {
 export async function fetchSubmodulos(
   headers: Record<string, string> = { Accept: "application/json" }
 ): Promise<Submodulo[]> {
-  const res = await fetchWithKeycloak("/api/submodulos/lista-submodulos", {
-    method: "GET",
-    headers,
-  })
+  const res = await fetchWithKeycloak(
+    "/api/permisos/submodulos/lista-submodulos",
+    {
+      method: "GET",
+      headers,
+    }
+  )
 
   if (!res.ok) {
     throw new Error("Error al cargar submódulos")
