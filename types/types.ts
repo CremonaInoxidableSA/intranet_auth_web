@@ -89,6 +89,10 @@ export interface SubmodulosPaginacion extends PaginacionBase {
   total_submodulos: number
 }
 
+export interface PermisosPaginacion extends PaginacionBase {
+  total_permisos: number
+}
+
 // Respuesta genérica de un endpoint de listado paginado
 export interface ApiListResult<T, P extends PaginacionBase = Paginacion> {
   data: T[]

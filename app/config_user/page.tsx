@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Boton, TabsComp } from "@/components/components"
 import FormUsuario from "./(formulario)/formUsuario"
-import FormRol from "./(formulario)/formRol"
+import FormRol from "./(formulario)/formGrupo"
 import FormModulo from "./(formulario)/formModulo"
 import FormSubmodulo from "./(formulario)/formSubmodulo"
-import EditarUsuario from "./(table)/editarUsuario"
+import EditarUsuario from "./(formulario)/formUsuario"
 import { DataTable, type DataTableColumn } from "./(table)/data-table"
 import {
   useConfiguracionUsuario,
@@ -65,6 +65,7 @@ export default function ConfiguracionUsuario() {
     limpiarFiltroModulos,
     aplicarFiltroSubmodulos,
     limpiarFiltroSubmodulos,
+    handleGrupoCreated,
     currentColumns,
     currentCreateButton,
   } = useConfiguracionUsuario()
@@ -74,7 +75,7 @@ export default function ConfiguracionUsuario() {
       case TAB_USUARIOS:
         return <FormUsuario onUserCreated={handleUserCreated} />
       case 2: // TAB_GRUPOS
-        return <FormRol />
+        return <FormRol onGrupoCreated={handleGrupoCreated} />
       case 3: // TAB_MODULOS
         return <FormModulo />
       case 4: // TAB_SUBMODULOS

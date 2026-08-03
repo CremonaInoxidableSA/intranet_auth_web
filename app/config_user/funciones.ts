@@ -310,6 +310,11 @@ export function useConfiguracionUsuario() {
     setIsCreateDialogOpen(false)
   }, [refetchUsuarios])
 
+  const handleGrupoCreated = useCallback(async () => {
+    await loadData()
+    setIsCreateDialogOpen(false)
+  }, [loadData])
+
   const handleUserUpdated = useCallback(async () => {
     setIsEditDialogOpen(false)
     setUserIdToEdit(undefined)
@@ -455,6 +460,7 @@ export function useConfiguracionUsuario() {
     limpiarFiltroModulos,
     aplicarFiltroSubmodulos,
     limpiarFiltroSubmodulos,
+    handleGrupoCreated,
     refetchUsuarios,
     currentColumns,
     currentCreateButton,
