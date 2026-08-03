@@ -60,11 +60,31 @@ export function EditarButton({
 type BotonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   extraClass?: string
   placeholder?: string
+  loading?: boolean
+  loadingText?: React.ReactNode
 }
 
 export const Boton = React.forwardRef<HTMLButtonElement, BotonProps>(
-  ({ extraClass, placeholder, children, type = "button", ...props }, ref) => (
-    <Button ref={ref} type={type} className={extraClass} {...props}>
+  (
+    {
+      extraClass,
+      placeholder,
+      children,
+      type = "button",
+      loading = false,
+      loadingText,
+      ...props
+    },
+    ref
+  ) => (
+    <Button
+      ref={ref}
+      type={type}
+      className={extraClass}
+      loading={loading}
+      loadingText={loadingText}
+      {...props}
+    >
       {children ?? placeholder}
     </Button>
   )

@@ -35,6 +35,7 @@ export default function GenerarReclamo() {
     area: "",
     reporte: "",
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleChange = (key: string, value: string | boolean | number) => {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -54,6 +55,8 @@ export default function GenerarReclamo() {
       })
       return
     }
+
+    setIsSubmitting(true)
 
     try {
       const response = await fetchWithKeycloak(
@@ -91,6 +94,8 @@ export default function GenerarReclamo() {
       toast.error(`Error al enviar el reclamo: ${error}`, {
         position: "top-center",
       })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -162,7 +167,9 @@ export default function GenerarReclamo() {
         <DialogClose asChild>
           <Button variant="outline">Cancelar</Button>
         </DialogClose>
-        <Button onClick={handleSubmit}>Generar Reclamo</Button>
+        <Button onClick={handleSubmit} loading={isSubmitting}>
+          Generar Reclamo
+        </Button>
       </DialogFooter>
     </DialogContent>
   )

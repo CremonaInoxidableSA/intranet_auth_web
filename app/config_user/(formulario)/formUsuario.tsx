@@ -27,6 +27,7 @@ type Props = {
 
 export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
   const [loading, setLoading] = useState(userIdToEdit !== undefined)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [gruposSeleccionados, setGruposSeleccionados] = useState<string[]>([])
   const [cambiarContrasena, setCambiarContrasena] = useState(false)
 
@@ -126,6 +127,8 @@ export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
       cambiar_contraseña: cambiarContrasena,
     }
 
+    setIsSubmitting(true)
+
     try {
       const res = await fetchWithKeycloak(
         `/api/usuarios/editar?user_id=${userIdToEdit}`,
@@ -146,6 +149,8 @@ export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
       onUserCreated()
     } catch {
       toast.error("Error de conexión con la API")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -303,7 +308,9 @@ export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
         <DialogClose asChild>
           <Button variant="outline">Cancelar</Button>
         </DialogClose>
-        <Button onClick={handleSubmit}>Guardar cambios</Button>
+        <Button onClick={handleSubmit} loading={isSubmitting}>
+          Guardar cambios
+        </Button>
       </DialogFooter>
     </DialogContent>
   )

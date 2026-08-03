@@ -27,6 +27,7 @@ type Props = {
 
 export default function FormGrupo({ onGrupoCreated }: Props) {
   const [nombreGrupo, setNombreGrupo] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [permisosSeleccionados, setPermisosSeleccionados] = useState<string[]>(
     []
   )
@@ -48,6 +49,8 @@ export default function FormGrupo({ onGrupoCreated }: Props) {
       submodulos: submodulosSeleccionados,
     }
 
+    setIsSubmitting(true)
+
     try {
       const res = await fetchWithKeycloak("/api/permisos/grupos/crear", {
         method: "POST",
@@ -65,6 +68,8 @@ export default function FormGrupo({ onGrupoCreated }: Props) {
       onGrupoCreated()
     } catch {
       toast.error("Error de conexión con la API")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -164,7 +169,9 @@ export default function FormGrupo({ onGrupoCreated }: Props) {
         <DialogClose asChild>
           <Button variant="outline">Cancelar</Button>
         </DialogClose>
-        <Button onClick={handleSubmit}>Crear Grupo</Button>
+        <Button onClick={handleSubmit} loading={isSubmitting}>
+          Crear Grupo
+        </Button>
       </DialogFooter>
     </DialogContent>
   )
