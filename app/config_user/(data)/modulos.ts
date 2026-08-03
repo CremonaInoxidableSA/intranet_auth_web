@@ -1,32 +1,58 @@
-export interface Modulo extends Record<string, unknown> {
-  id: number
-  nombre: string
-  descripcion: string
-}
-
+import { ApiListResult, ModulosData, ModulosPaginacion } from "@/types/types"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 
-const normalizeResponse = <T>(response: unknown): T[] => {
-  if (Array.isArray(response)) return response
-  if (response && typeof response === "object") {
-    const maybeData = (response as { data?: unknown }).data
-    if (Array.isArray(maybeData)) return maybeData
+export type Modulo = ModulosData
+
+type FetchModulosParams = {
+  numeroPagina?: number
+  filtro?: string | null
+}
+
+const PAGINACION_VACIA: ModulosPaginacion = {
+  total_paginas: 1,
+  total_modulos: 0,
+}
+
+function toModuloData(raw: {
+  nombre: string
+  subdominio: string
+  path: string
+  icono: string
+}): Modulo {
+  const { nombre, subdominio, path, icono } = raw
+  return {
+    nombre,
+    subdominio,
+    path,
+    icono,
   }
-  return []
 }
 
 export async function fetchModulos(
-  headers: Record<string, string> = { Accept: "application/json" }
-): Promise<Modulo[]> {
-  const res = await fetchWithKeycloak("/api/permisos/modulos/lista", {
-    method: "GET",
-    headers,
+  { numeroPagina = 1, filtro }: FetchModulosParams = {},
+  headers: Record<string, string> = { "Content-Type": "application/json" }
+): Promise<ApiListResult<Modulo, ModulosPaginacion>> {
+  const query = new URLSearchParams({
+    numero_pagina: String(numeroPagina),
+    filtro: filtro?.trim() || "0",
   })
 
-  if (!res.ok) {
+  const response = await fetchWithKeycloak(
+    `/api/permisos/modulos/lista?${query.toString()}`,
+    {
+      method: "GET",
+      headers: { Accept: "application/json", ...headers },
+    }
+  )
+
+  if (!response.ok) {
     throw new Error("Error al cargar módulos")
   }
 
-  const data = await res.json()
-  return normalizeResponse<Modulo>(data)
+  const result = await response.json()
+
+  return {
+    data: (result.data ?? []).map(toModuloData),
+    paginacion: result.paginacion ?? PAGINACION_VACIA,
+  }
 }

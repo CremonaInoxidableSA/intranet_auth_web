@@ -10,7 +10,14 @@ import FormModulo from "./(formulario)/formModulo"
 import FormSubmodulo from "./(formulario)/formSubmodulo"
 import EditarUsuario from "./(table)/editarUsuario"
 import { DataTable, type DataTableColumn } from "./(table)/data-table"
-import { useConfiguracionUsuario, tablas, TAB_USUARIOS } from "./funciones"
+import {
+  useConfiguracionUsuario,
+  tablas,
+  TAB_USUARIOS,
+  TAB_GRUPOS,
+  TAB_MODULOS,
+  TAB_SUBMODULOS,
+} from "./funciones"
 
 export default function ConfiguracionUsuario() {
   const {
@@ -29,11 +36,35 @@ export default function ConfiguracionUsuario() {
     setUserFilterInput,
     userTotalPages,
     userTotalUsers,
+    groupPage,
+    setGroupPage,
+    groupFilterInput,
+    setGroupFilterInput,
+    groupTotalPages,
+    groupTotalGrupos,
+    modPage,
+    setModPage,
+    modFilterInput,
+    setModFilterInput,
+    modTotalPages,
+    modTotalModulos,
+    subPage,
+    setSubPage,
+    subFilterInput,
+    setSubFilterInput,
+    subTotalPages,
+    subTotalSubmodulos,
     user,
     handleUserCreated,
     handleUserUpdated,
     aplicarFiltroUsuarios,
     limpiarFiltroUsuarios,
+    aplicarFiltroGrupos,
+    limpiarFiltroGrupos,
+    aplicarFiltroModulos,
+    limpiarFiltroModulos,
+    aplicarFiltroSubmodulos,
+    limpiarFiltroSubmodulos,
     currentColumns,
     currentCreateButton,
   } = useConfiguracionUsuario()
@@ -136,6 +167,96 @@ export default function ConfiguracionUsuario() {
               </div>
             </div>
           )}
+          {selectedTabId === TAB_GRUPOS && (
+            <div className="flex w-full flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex w-full flex-col gap-2 xl:max-w-xl xl:flex-row">
+                <Input
+                  id="group-filter-input"
+                  value={groupFilterInput}
+                  onChange={(event) => setGroupFilterInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") aplicarFiltroGrupos()
+                  }}
+                  placeholder="Filtrar por nombre"
+                  className="border border-background6 bg-background3"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    onClick={aplicarFiltroGrupos}
+                    className="border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30"
+                  >
+                    Filtrar
+                  </Button>
+                  <Button
+                    onClick={limpiarFiltroGrupos}
+                    className="border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
+                  >
+                    Limpiar
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          {selectedTabId === TAB_MODULOS && (
+            <div className="flex w-full flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex w-full flex-col gap-2 xl:max-w-xl xl:flex-row">
+                <Input
+                  id="mod-filter-input"
+                  value={modFilterInput}
+                  onChange={(event) => setModFilterInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") aplicarFiltroModulos()
+                  }}
+                  placeholder="Filtrar por nombre"
+                  className="border border-background6 bg-background3"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    onClick={aplicarFiltroModulos}
+                    className="border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30"
+                  >
+                    Filtrar
+                  </Button>
+                  <Button
+                    onClick={limpiarFiltroModulos}
+                    className="border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
+                  >
+                    Limpiar
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          {selectedTabId === TAB_SUBMODULOS && (
+            <div className="flex w-full flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex w-full flex-col gap-2 xl:max-w-xl xl:flex-row">
+                <Input
+                  id="sub-filter-input"
+                  value={subFilterInput}
+                  onChange={(event) => setSubFilterInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") aplicarFiltroSubmodulos()
+                  }}
+                  placeholder="Filtrar por nombre"
+                  className="border border-background6 bg-background3"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    onClick={aplicarFiltroSubmodulos}
+                    className="border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30"
+                  >
+                    Filtrar
+                  </Button>
+                  <Button
+                    onClick={limpiarFiltroSubmodulos}
+                    className="border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
+                  >
+                    Limpiar
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
           <DataTable
             key={selectedTabId}
             columns={
@@ -143,11 +264,21 @@ export default function ConfiguracionUsuario() {
             }
             extraClass="w-full"
             data={data as Record<string, unknown>[]}
-            disableClientPagination={selectedTabId === TAB_USUARIOS}
+            disableClientPagination={
+              selectedTabId === TAB_USUARIOS ||
+              selectedTabId === TAB_GRUPOS ||
+              selectedTabId === TAB_MODULOS ||
+              selectedTabId === TAB_SUBMODULOS
+            }
             isLoading={isLoading}
             emptyMessage="No hay registros disponibles"
             loadingMessage="Cargando datos..."
-            showPageInfo={selectedTabId === TAB_USUARIOS}
+            showPageInfo={
+              selectedTabId === TAB_USUARIOS ||
+              selectedTabId === TAB_GRUPOS ||
+              selectedTabId === TAB_MODULOS ||
+              selectedTabId === TAB_SUBMODULOS
+            }
           />
           {selectedTabId === TAB_USUARIOS && (
             <div className="flex w-full flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
@@ -175,6 +306,108 @@ export default function ConfiguracionUsuario() {
                   onClick={() =>
                     setUserPage((prev) =>
                       Math.min(prev + 1, Math.max(userTotalPages, 1))
+                    )
+                  }
+                >
+                  Siguiente
+                </Button>
+              </div>
+            </div>
+          )}
+          {selectedTabId === TAB_GRUPOS && (
+            <div className="flex w-full flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+              <span className="text-sm font-semibold text-muted-foreground">
+                Total grupos: {groupTotalGrupos}
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={groupPage <= 1}
+                  onClick={() => setGroupPage((prev) => Math.max(prev - 1, 1))}
+                >
+                  Anterior
+                </Button>
+                <span className="min-w-28 text-center text-sm">
+                  Página {groupPage} de {Math.max(groupTotalPages, 1)}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={groupPage >= Math.max(groupTotalPages, 1)}
+                  onClick={() =>
+                    setGroupPage((prev) =>
+                      Math.min(prev + 1, Math.max(groupTotalPages, 1))
+                    )
+                  }
+                >
+                  Siguiente
+                </Button>
+              </div>
+            </div>
+          )}
+          {selectedTabId === TAB_MODULOS && (
+            <div className="flex w-full flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+              <span className="text-sm font-semibold text-muted-foreground">
+                Total módulos: {modTotalModulos}
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={modPage <= 1}
+                  onClick={() => setModPage((prev) => Math.max(prev - 1, 1))}
+                >
+                  Anterior
+                </Button>
+                <span className="min-w-28 text-center text-sm">
+                  Página {modPage} de {Math.max(modTotalPages, 1)}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={modPage >= Math.max(modTotalPages, 1)}
+                  onClick={() =>
+                    setModPage((prev) =>
+                      Math.min(prev + 1, Math.max(modTotalPages, 1))
+                    )
+                  }
+                >
+                  Siguiente
+                </Button>
+              </div>
+            </div>
+          )}
+          {selectedTabId === TAB_SUBMODULOS && (
+            <div className="flex w-full flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+              <span className="text-sm font-semibold text-muted-foreground">
+                Total submódulos: {subTotalSubmodulos}
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={subPage <= 1}
+                  onClick={() => setSubPage((prev) => Math.max(prev - 1, 1))}
+                >
+                  Anterior
+                </Button>
+                <span className="min-w-28 text-center text-sm">
+                  Página {subPage} de {Math.max(subTotalPages, 1)}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={subPage >= Math.max(subTotalPages, 1)}
+                  onClick={() =>
+                    setSubPage((prev) =>
+                      Math.min(prev + 1, Math.max(subTotalPages, 1))
                     )
                   }
                 >

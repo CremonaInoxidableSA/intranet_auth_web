@@ -1,36 +1,62 @@
-export interface Submodulo extends Record<string, unknown> {
-  id: number
-  nombre: string
-  modulo: string
-  descripcion: string
-}
-
+import {
+  ApiListResult,
+  SubmodulosData,
+  SubmodulosPaginacion,
+} from "@/types/types"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 
-const normalizeResponse = <T>(response: unknown): T[] => {
-  if (Array.isArray(response)) return response
-  if (response && typeof response === "object") {
-    const maybeData = (response as { data?: unknown }).data
-    if (Array.isArray(maybeData)) return maybeData
+export type Submodulo = SubmodulosData
+
+type FetchSubmodulosParams = {
+  numeroPagina?: number
+  filtro?: string | null
+}
+
+const PAGINACION_VACIA: SubmodulosPaginacion = {
+  total_paginas: 1,
+  total_submodulos: 0,
+}
+
+function toSubmoduloData(raw: {
+  nombre: string
+  modulo_padre: string
+  path: string
+  icono: string
+}): Submodulo {
+  const { nombre, modulo_padre, path, icono } = raw
+  return {
+    nombre,
+    modulo_padre,
+    path,
+    icono,
   }
-  return []
 }
 
 export async function fetchSubmodulos(
-  headers: Record<string, string> = { Accept: "application/json" }
-): Promise<Submodulo[]> {
-  const res = await fetchWithKeycloak(
-    "/api/permisos/submodulos/lista-submodulos",
+  { numeroPagina = 1, filtro }: FetchSubmodulosParams = {},
+  headers: Record<string, string> = { "Content-Type": "application/json" }
+): Promise<ApiListResult<Submodulo, SubmodulosPaginacion>> {
+  const query = new URLSearchParams({
+    numero_pagina: String(numeroPagina),
+    filtro: filtro?.trim() || "0",
+  })
+
+  const response = await fetchWithKeycloak(
+    `/api/permisos/submodulos/lista?${query.toString()}`,
     {
       method: "GET",
-      headers,
+      headers: { Accept: "application/json", ...headers },
     }
   )
 
-  if (!res.ok) {
+  if (!response.ok) {
     throw new Error("Error al cargar submódulos")
   }
 
-  const data = await res.json()
-  return normalizeResponse<Submodulo>(data)
+  const result = await response.json()
+
+  return {
+    data: (result.data ?? []).map(toSubmoduloData),
+    paginacion: result.paginacion ?? PAGINACION_VACIA,
+  }
 }

@@ -74,6 +74,21 @@ export function useConfiguracionUsuario() {
   const [userFilter, setUserFilter] = useState<string | null>(null)
   const [userTotalPages, setUserTotalPages] = useState(1)
   const [userTotalUsers, setUserTotalUsers] = useState(0)
+  const [groupPage, setGroupPage] = useState(1)
+  const [groupFilterInput, setGroupFilterInput] = useState("")
+  const [groupFilter, setGroupFilter] = useState<string | null>(null)
+  const [groupTotalPages, setGroupTotalPages] = useState(1)
+  const [groupTotalGrupos, setGroupTotalGrupos] = useState(0)
+  const [modPage, setModPage] = useState(1)
+  const [modFilterInput, setModFilterInput] = useState("")
+  const [modFilter, setModFilter] = useState<string | null>(null)
+  const [modTotalPages, setModTotalPages] = useState(1)
+  const [modTotalModulos, setModTotalModulos] = useState(0)
+  const [subPage, setSubPage] = useState(1)
+  const [subFilterInput, setSubFilterInput] = useState("")
+  const [subFilter, setSubFilter] = useState<string | null>(null)
+  const [subTotalPages, setSubTotalPages] = useState(1)
+  const [subTotalSubmodulos, setSubTotalSubmodulos] = useState(0)
 
   const createHeaders = (tabId: number): Record<string, string> => {
     if (tabId === TAB_USUARIOS) {
@@ -128,24 +143,33 @@ export function useConfiguracionUsuario() {
           break
         }
         case TAB_GRUPOS: {
-          const grupos = await fetchGrupos(currentHeaders)
+          const grupos = await fetchGrupos(
+            { numeroPagina: groupPage, filtro: groupFilter },
+            currentHeaders
+          )
           setData(grupos.data)
-          setUserTotalPages(1)
-          setUserTotalUsers(0)
+          setGroupTotalPages(grupos.paginacion.total_paginas)
+          setGroupTotalGrupos(grupos.paginacion.total_grupos)
           break
         }
         case TAB_MODULOS: {
-          const modulos = await fetchModulos(currentHeaders)
-          setData(modulos)
-          setUserTotalPages(1)
-          setUserTotalUsers(0)
+          const modulos = await fetchModulos(
+            { numeroPagina: modPage, filtro: modFilter },
+            currentHeaders
+          )
+          setData(modulos.data)
+          setModTotalPages(modulos.paginacion.total_paginas)
+          setModTotalModulos(modulos.paginacion.total_modulos)
           break
         }
         case TAB_SUBMODULOS: {
-          const submodulos = await fetchSubmodulos(currentHeaders)
-          setData(submodulos)
-          setUserTotalPages(1)
-          setUserTotalUsers(0)
+          const submodulos = await fetchSubmodulos(
+            { numeroPagina: subPage, filtro: subFilter },
+            currentHeaders
+          )
+          setData(submodulos.data)
+          setSubTotalPages(submodulos.paginacion.total_paginas)
+          setSubTotalSubmodulos(submodulos.paginacion.total_submodulos)
           break
         }
         default:
@@ -161,7 +185,18 @@ export function useConfiguracionUsuario() {
     } finally {
       setIsLoading(false)
     }
-  }, [selectedTabId, currentHeaders, userPage, userFilter])
+  }, [
+    selectedTabId,
+    currentHeaders,
+    userPage,
+    userFilter,
+    groupPage,
+    groupFilter,
+    modPage,
+    modFilter,
+    subPage,
+    subFilter,
+  ])
 
   useEffect(() => {
     let mounted = true
@@ -293,6 +328,42 @@ export function useConfiguracionUsuario() {
     setUserPage(1)
   }, [])
 
+  const aplicarFiltroGrupos = useCallback(() => {
+    setGroupPage(1)
+    const parsedFiltro = groupFilterInput.trim()
+    setGroupFilter(parsedFiltro === "" ? null : parsedFiltro)
+  }, [groupFilterInput])
+
+  const limpiarFiltroGrupos = useCallback(() => {
+    setGroupFilterInput("")
+    setGroupFilter(null)
+    setGroupPage(1)
+  }, [])
+
+  const aplicarFiltroModulos = useCallback(() => {
+    setModPage(1)
+    const parsedFiltro = modFilterInput.trim()
+    setModFilter(parsedFiltro === "" ? null : parsedFiltro)
+  }, [modFilterInput])
+
+  const limpiarFiltroModulos = useCallback(() => {
+    setModFilterInput("")
+    setModFilter(null)
+    setModPage(1)
+  }, [])
+
+  const aplicarFiltroSubmodulos = useCallback(() => {
+    setSubPage(1)
+    const parsedFiltro = subFilterInput.trim()
+    setSubFilter(parsedFiltro === "" ? null : parsedFiltro)
+  }, [subFilterInput])
+
+  const limpiarFiltroSubmodulos = useCallback(() => {
+    setSubFilterInput("")
+    setSubFilter(null)
+    setSubPage(1)
+  }, [])
+
   const usuarioColumns = useMemo(
     () =>
       getUsuarioColumns(editarUsuario, deshabilitarUsuario, habilitarUsuario),
@@ -348,6 +419,27 @@ export function useConfiguracionUsuario() {
     userFilter,
     userTotalPages,
     userTotalUsers,
+    groupPage,
+    setGroupPage,
+    groupFilterInput,
+    setGroupFilterInput,
+    groupFilter,
+    groupTotalPages,
+    groupTotalGrupos,
+    modPage,
+    setModPage,
+    modFilterInput,
+    setModFilterInput,
+    modFilter,
+    modTotalPages,
+    modTotalModulos,
+    subPage,
+    setSubPage,
+    subFilterInput,
+    setSubFilterInput,
+    subFilter,
+    subTotalPages,
+    subTotalSubmodulos,
     user,
     authLoading,
     deshabilitarUsuario,
@@ -357,6 +449,12 @@ export function useConfiguracionUsuario() {
     handleUserUpdated,
     aplicarFiltroUsuarios,
     limpiarFiltroUsuarios,
+    aplicarFiltroGrupos,
+    limpiarFiltroGrupos,
+    aplicarFiltroModulos,
+    limpiarFiltroModulos,
+    aplicarFiltroSubmodulos,
+    limpiarFiltroSubmodulos,
     refetchUsuarios,
     currentColumns,
     currentCreateButton,

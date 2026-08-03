@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
         error:
           data?.detail ??
           data?.message ??
-          "Error al obtener la lista de modulos",
+          "Error al obtener la lista de módulos",
       },
       { status: externalResponse.status }
     )

@@ -69,13 +69,28 @@ export interface UserAvatarProps {
 }
 
 // Info de paginación, reusable en cualquier listado paginado
-export interface Paginacion {
+export interface PaginacionBase {
   total_paginas: number
+}
+
+export interface Paginacion extends PaginacionBase {
   total_usuarios: number
 }
 
+export interface GruposPaginacion extends PaginacionBase {
+  total_grupos: number
+}
+
+export interface ModulosPaginacion extends PaginacionBase {
+  total_modulos: number
+}
+
+export interface SubmodulosPaginacion extends PaginacionBase {
+  total_submodulos: number
+}
+
 // Respuesta genérica de un endpoint de listado paginado
-export interface ApiListResult<T> {
+export interface ApiListResult<T, P extends PaginacionBase = Paginacion> {
   data: T[]
-  paginacion: Paginacion
+  paginacion: P
 }
