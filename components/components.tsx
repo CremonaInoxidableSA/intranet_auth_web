@@ -19,6 +19,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
+
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -360,5 +366,28 @@ export function TabsComp({
         ))}
       </TabsList>
     </Tabs>
+  )
+}
+
+export function HoverInfo({
+  placeholder,
+  content,
+  extraClass,
+}: {
+  placeholder: string
+  content: React.ReactNode
+  extraClass?: string
+}) {
+  return (
+    <HoverCard openDelay={200} closeDelay={100}>
+      <HoverCardTrigger asChild>
+        <Button variant="link" tabIndex={-1} className={extraClass}>
+          {placeholder}
+        </Button>
+      </HoverCardTrigger>
+      <HoverCardContent className="flex w-64 flex-col gap-0.5">
+        {content}
+      </HoverCardContent>
+    </HoverCard>
   )
 }
