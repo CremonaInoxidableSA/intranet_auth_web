@@ -88,7 +88,9 @@ export const getUsuarioColumns = (
   },
 ]
 
-export const getGrupoColumns = (): DataTableColumn<GruposData>[] => [
+export const getGrupoColumns = (
+  onEditGrupo: (grupo: GruposData) => void
+): DataTableColumn<GruposData>[] => [
   {
     accessorKey: "nombre",
     header: "Nombre",
@@ -113,8 +115,13 @@ export const getGrupoColumns = (): DataTableColumn<GruposData>[] => [
     ),
   },
   {
-    cell: () => (
-      <Button variant="ghost" className="h-8 w-8">
+    id: "actions",
+    cell: ({ row }) => (
+      <Button
+        variant="ghost"
+        className="h-8 w-8"
+        onClick={() => onEditGrupo(row)}
+      >
         <span className="sr-only">Editar</span>
         <PencilLine className="h-4 w-4" />
       </Button>
@@ -122,7 +129,9 @@ export const getGrupoColumns = (): DataTableColumn<GruposData>[] => [
   },
 ]
 
-export const getModuloColumns = (): DataTableColumn<ModulosData>[] => [
+export const getModuloColumns = (
+  onEditModulo: (modulo: ModulosData) => void
+): DataTableColumn<ModulosData>[] => [
   {
     accessorKey: "nombre",
     header: "Nombre",
@@ -130,8 +139,10 @@ export const getModuloColumns = (): DataTableColumn<ModulosData>[] => [
   },
   {
     header: "URL",
-    cell: () => (
-      <p className="items-center justify-start">Editar para ver URL</p>
+    cell: ({ row }) => (
+      <p className="items-center justify-start">
+        {row.subdominio ? `${row.subdominio}` : "—"}
+      </p>
     ),
   },
   {
@@ -141,8 +152,13 @@ export const getModuloColumns = (): DataTableColumn<ModulosData>[] => [
     ),
   },
   {
-    cell: () => (
-      <Button variant="ghost" className="h-8 w-8">
+    id: "actions",
+    cell: ({ row }) => (
+      <Button
+        variant="ghost"
+        className="h-8 w-8"
+        onClick={() => onEditModulo(row)}
+      >
         <span className="sr-only">Editar</span>
         <PencilLine className="h-4 w-4" />
       </Button>
@@ -150,7 +166,9 @@ export const getModuloColumns = (): DataTableColumn<ModulosData>[] => [
   },
 ]
 
-export const getSubmoduloColumns = (): DataTableColumn<SubmodulosData>[] => [
+export const getSubmoduloColumns = (
+  onEditSubmodulo: (submodulo: SubmodulosData) => void
+): DataTableColumn<SubmodulosData>[] => [
   {
     accessorKey: "nombre",
     header: "Nombre",
@@ -158,21 +176,28 @@ export const getSubmoduloColumns = (): DataTableColumn<SubmodulosData>[] => [
   },
   {
     header: "URL",
-    cell: () => (
-      <p className="items-center justify-start">Editar para ver URL</p>
-    ),
-  },
-  {
-    header: "Modulo Principal",
-    cell: () => (
+    cell: ({ row }) => (
       <p className="items-center justify-start">
-        Editar para ver modulo principal
+        {row.path ? `${row.path}` : "—"}
       </p>
     ),
   },
   {
-    cell: () => (
-      <Button variant="ghost" className="h-8 w-8">
+    header: "Modulo Principal",
+    cell: ({ row }) => (
+      <p className="items-center justify-start">
+        {row.modulo_padre ? `${row.modulo_padre}` : "—"}
+      </p>
+    ),
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => (
+      <Button
+        variant="ghost"
+        className="h-8 w-8"
+        onClick={() => onEditSubmodulo(row)}
+      >
         <span className="sr-only">Editar</span>
         <PencilLine className="h-4 w-4" />
       </Button>

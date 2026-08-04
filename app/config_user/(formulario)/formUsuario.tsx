@@ -136,7 +136,7 @@ export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
     try {
       const endpoint = isEditing
         ? `/api/usuarios/editar?user_id=${userIdToEdit}`
-        : "/api/usuarios/crear-usuarios"
+        : "/api/usuarios/crear"
 
       const res = await fetchWithKeycloak(endpoint, {
         method: isEditing ? "PUT" : "POST",

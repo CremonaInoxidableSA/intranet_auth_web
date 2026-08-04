@@ -19,6 +19,12 @@ import {
 
 type DataItem = UsersData | GruposData | Modulo | Submodulo
 
+type EditTarget = {
+  tabId: number
+  item?: DataItem | null
+  id?: string
+}
+
 export const TAB_USUARIOS = 1
 export const TAB_GRUPOS = 2
 export const TAB_MODULOS = 3
@@ -67,6 +73,7 @@ export function useConfiguracionUsuario() {
   const [userIdToEdit, setUserIdToEdit] = useState<string | undefined>(
     undefined
   )
+  const [editTarget, setEditTarget] = useState<EditTarget | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [userPage, setUserPage] = useState(1)
@@ -282,6 +289,29 @@ export function useConfiguracionUsuario() {
 
   const editarUsuario = useCallback((id: string | undefined) => {
     setUserIdToEdit(id)
+    setEditTarget(null)
+    setIsEditDialogOpen(true)
+  }, [])
+
+  const editarGrupo = useCallback((grupo: GruposData) => {
+    setEditTarget({ tabId: TAB_GRUPOS, item: grupo, id: grupo.nombre })
+    setUserIdToEdit(undefined)
+    setIsEditDialogOpen(true)
+  }, [])
+
+  const editarModulo = useCallback((modulo: Modulo) => {
+    setEditTarget({ tabId: TAB_MODULOS, item: modulo, id: modulo.nombre })
+    setUserIdToEdit(undefined)
+    setIsEditDialogOpen(true)
+  }, [])
+
+  const editarSubmodulo = useCallback((submodulo: Submodulo) => {
+    setEditTarget({
+      tabId: TAB_SUBMODULOS,
+      item: submodulo,
+      id: submodulo.nombre,
+    })
+    setUserIdToEdit(undefined)
     setIsEditDialogOpen(true)
   }, [])
 
@@ -302,9 +332,28 @@ export function useConfiguracionUsuario() {
 
   const handleUserUpdated = useCallback(async () => {
     setIsEditDialogOpen(false)
+    setEditTarget(null)
     setUserIdToEdit(undefined)
     await refetchUsuarios()
   }, [refetchUsuarios])
+
+  const handleGrupoUpdated = useCallback(async () => {
+    setIsEditDialogOpen(false)
+    setEditTarget(null)
+    await loadData()
+  }, [loadData])
+
+  const handleModuloUpdated = useCallback(async () => {
+    setIsEditDialogOpen(false)
+    setEditTarget(null)
+    await loadData()
+  }, [loadData])
+
+  const handleSubmoduloUpdated = useCallback(async () => {
+    setIsEditDialogOpen(false)
+    setEditTarget(null)
+    await loadData()
+  }, [loadData])
 
   const aplicarFiltroUsuarios = useCallback(() => {
     setUserPage(1)
@@ -360,10 +409,19 @@ export function useConfiguracionUsuario() {
     [editarUsuario, deshabilitarUsuario, habilitarUsuario]
   )
 
-  const grupoColumns = useMemo(() => getGrupoColumns(), [])
+  const grupoColumns = useMemo(
+    () => getGrupoColumns(editarGrupo),
+    [editarGrupo]
+  )
 
-  const moduloColumns = useMemo(() => getModuloColumns(), [])
-  const submoduloColumns = useMemo(() => getSubmoduloColumns(), [])
+  const moduloColumns = useMemo(
+    () => getModuloColumns(editarModulo),
+    [editarModulo]
+  )
+  const submoduloColumns = useMemo(
+    () => getSubmoduloColumns(editarSubmodulo),
+    [editarSubmodulo]
+  )
 
   const currentColumns = useMemo<DataTableColumn<DataItem>[]>(() => {
     switch (selectedTabId) {
@@ -397,6 +455,8 @@ export function useConfiguracionUsuario() {
     userIdToEdit,
     isEditDialogOpen,
     setIsEditDialogOpen,
+    editTarget,
+    setEditTarget,
     isCreateDialogOpen,
     setIsCreateDialogOpen,
     userPage,
@@ -444,6 +504,9 @@ export function useConfiguracionUsuario() {
     limpiarFiltroSubmodulos,
     handleGrupoCreated,
     handleSubmoduloCreated,
+    handleGrupoUpdated,
+    handleModuloUpdated,
+    handleSubmoduloUpdated,
     refetchUsuarios,
     currentColumns,
     currentCreateButton,

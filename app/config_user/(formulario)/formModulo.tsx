@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   DialogClose,
@@ -17,16 +17,38 @@ import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 
 type Props = {
   onModuloCreated?: () => void
+  isEditing?: boolean
+  initialData?: {
+    nombre?: string
+    subdominio?: string
+    path?: string
+    icono?: string
+  }
 }
 
-export default function FormModulo({ onModuloCreated }: Props) {
+export default function FormModulo({
+  onModuloCreated,
+  isEditing = false,
+  initialData,
+}: Props) {
   const [form, setForm] = useState({
     nombre: "",
     subdominio: "",
     path: "",
     icono: "",
   })
+  const [identifier, setIdentifier] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    setForm({
+      nombre: initialData?.nombre ?? "",
+      subdominio: initialData?.subdominio ?? "",
+      path: initialData?.path ?? "",
+      icono: initialData?.icono ?? "",
+    })
+    setIdentifier(initialData?.nombre ?? initialData?.subdominio ?? "")
+  }, [initialData])
 
   const handleChange = (field: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -46,25 +68,41 @@ export default function FormModulo({ onModuloCreated }: Props) {
     setIsSubmitting(true)
 
     try {
-      const res = await fetchWithKeycloak("/api/permisos/modulos/crear", {
-        method: "POST",
+      const endpoint = isEditing
+        ? `/api/permisos/modulos/editar?modulo_nombre=${encodeURIComponent(identifier || form.nombre.trim())}`
+        : "/api/permisos/modulos/crear"
+      const method = isEditing ? "PUT" : "POST"
+
+      const res = await fetchWithKeycloak(endpoint, {
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nombre: form.nombre.trim(),
-          subdominio: form.subdominio.trim(),
-          path: form.path.trim(),
-          icono: form.icono.trim(),
-        }),
+        body: JSON.stringify(
+          isEditing
+            ? {
+                subdominio: form.subdominio.trim(),
+                path: form.path.trim(),
+                icono: form.icono.trim(),
+              }
+            : {
+                nombre: form.nombre.trim(),
+                subdominio: form.subdominio.trim(),
+                path: form.path.trim(),
+                icono: form.icono.trim(),
+              }
+        ),
       })
 
       const data = await res.json().catch(() => null)
       if (!res.ok) {
-        toast.error(data?.error || data?.detail || "Error al crear módulo")
+        toast.error(data?.error || data?.detail || "Error al guardar módulo")
         return
       }
 
-      toast.success("Módulo creado correctamente")
-      setForm({ nombre: "", subdominio: "", path: "", icono: "" })
+      toast.success(
+        isEditing
+          ? "Módulo actualizado correctamente"
+          : "Módulo creado correctamente"
+      )
       onModuloCreated?.()
     } catch {
       toast.error("Error de conexión con la API")
@@ -76,9 +114,13 @@ export default function FormModulo({ onModuloCreated }: Props) {
   return (
     <DialogContent className="z-100 bg-background2 sm:max-w-150">
       <DialogHeader>
-        <DialogTitle>Crear Módulo</DialogTitle>
+        <DialogTitle>
+          {isEditing ? "Editar Módulo" : "Crear Módulo"}
+        </DialogTitle>
         <DialogDescription>
-          Complete los datos para crear un nuevo módulo.
+          {isEditing
+            ? "Actualice los datos del módulo y guarde los cambios."
+            : "Complete los datos para crear un nuevo módulo."}
         </DialogDescription>
       </DialogHeader>
 
@@ -137,7 +179,7 @@ export default function FormModulo({ onModuloCreated }: Props) {
           <Button variant="outline">Cancelar</Button>
         </DialogClose>
         <Button onClick={handleSubmit} loading={isSubmitting}>
-          Crear Módulo
+          {isEditing ? "Guardar cambios" : "Crear Módulo"}
         </Button>
       </DialogFooter>
     </DialogContent>

@@ -43,6 +43,13 @@ type FormState = {
 
 type Props = {
   onSubmoduloCreated?: () => void
+  isEditing?: boolean
+  initialData?: {
+    modulo_padre?: string
+    nombre?: string
+    path?: string
+    icono?: string
+  }
 }
 
 const initialForm: FormState = {
@@ -52,13 +59,18 @@ const initialForm: FormState = {
   icono: "",
 }
 
-export default function FormSubmodulo({ onSubmoduloCreated }: Props) {
+export default function FormSubmodulo({
+  onSubmoduloCreated,
+  isEditing = false,
+  initialData,
+}: Props) {
   const [form, setForm] = useState<FormState>(initialForm)
   const [modulos, setModulos] = useState<Modulo[]>([])
   const [isLoadingModulos, setIsLoadingModulos] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isModuloSelectorOpen, setIsModuloSelectorOpen] = useState(false)
   const [moduloPadreDraft, setModuloPadreDraft] = useState("")
+  const [identifier, setIdentifier] = useState("")
 
   useEffect(() => {
     let isMounted = true
@@ -91,6 +103,16 @@ export default function FormSubmodulo({ onSubmoduloCreated }: Props) {
       isMounted = false
     }
   }, [])
+
+  useEffect(() => {
+    setForm({
+      modulo_padre: initialData?.modulo_padre ?? "",
+      nombre: initialData?.nombre ?? "",
+      path: initialData?.path ?? "",
+      icono: initialData?.icono ?? "",
+    })
+    setIdentifier(initialData?.nombre ?? "")
+  }, [initialData])
 
   const handleChange = (field: keyof FormState, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -126,25 +148,44 @@ export default function FormSubmodulo({ onSubmoduloCreated }: Props) {
     setIsSubmitting(true)
 
     try {
-      const res = await fetchWithKeycloak("/api/permisos/submodulos/crear", {
-        method: "POST",
+      const endpoint = isEditing
+        ? `/api/permisos/submodulos/editar?submodulo_nombre=${encodeURIComponent(identifier || nombreTrim)}`
+        : "/api/permisos/submodulos/crear"
+      const method = isEditing ? "PUT" : "POST"
+
+      const res = await fetchWithKeycloak(endpoint, {
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          modulo_padre: form.modulo_padre.trim(),
-          nombre: nombreTrim,
-          path: form.path.trim(),
-          icono: form.icono.trim(),
-        }),
+        body: JSON.stringify(
+          isEditing
+            ? {
+                modulo_padre: form.modulo_padre.trim(),
+                path: form.path.trim(),
+                icono: form.icono.trim(),
+              }
+            : {
+                modulo_padre: form.modulo_padre.trim(),
+                nombre: nombreTrim,
+                path: form.path.trim(),
+                icono: form.icono.trim(),
+              }
+        ),
       })
 
       const data = await res.json().catch(() => null)
       if (!res.ok) {
-        toast.error(data?.error || data?.detail || "Error al crear submódulo")
+        toast.error(data?.error || data?.detail || "Error al guardar submódulo")
         return
       }
 
-      toast.success("Submódulo creado correctamente")
-      setForm(initialForm)
+      toast.success(
+        isEditing
+          ? "Submódulo actualizado correctamente"
+          : "Submódulo creado correctamente"
+      )
+      if (!isEditing) {
+        setForm(initialForm)
+      }
       onSubmoduloCreated?.()
     } catch {
       toast.error("Error de conexión con la API")
@@ -156,9 +197,13 @@ export default function FormSubmodulo({ onSubmoduloCreated }: Props) {
   return (
     <DialogContent className="z-100 bg-background2 sm:max-w-180">
       <DialogHeader>
-        <DialogTitle>Crear Submódulo</DialogTitle>
+        <DialogTitle>
+          {isEditing ? "Editar Submódulo" : "Crear Submódulo"}
+        </DialogTitle>
         <DialogDescription>
-          Complete los datos para crear un nuevo submódulo.
+          {isEditing
+            ? "Actualice los datos del submódulo y guarde los cambios."
+            : "Complete los datos para crear un nuevo submódulo."}
         </DialogDescription>
       </DialogHeader>
 
@@ -343,7 +388,7 @@ export default function FormSubmodulo({ onSubmoduloCreated }: Props) {
           <Button variant="outline">Cancelar</Button>
         </DialogClose>
         <Button onClick={handleSubmit} loading={isSubmitting}>
-          Crear Submódulo
+          {isEditing ? "Guardar cambios" : "Crear Submódulo"}
         </Button>
       </DialogFooter>
     </DialogContent>

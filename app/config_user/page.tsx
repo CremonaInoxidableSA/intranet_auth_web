@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Boton, TabsComp } from "@/components/components"
 import FormUsuario from "./(formulario)/formUsuario"
-import FormRol from "./(formulario)/formGrupo"
+import FormGrupo from "./(formulario)/formGrupo"
 import FormModulo from "./(formulario)/formModulo"
 import FormSubmodulo from "./(formulario)/formSubmodulo"
 import EditarUsuario from "./(formulario)/formUsuario"
 import { DataTable, type DataTableColumn } from "./(table)/data-table"
+import type { GruposData, ModulosData, SubmodulosData } from "@/types/types"
 import {
   useConfiguracionUsuario,
   tablas,
@@ -28,6 +29,8 @@ export default function ConfiguracionUsuario() {
     userIdToEdit,
     isEditDialogOpen,
     setIsEditDialogOpen,
+    editTarget,
+    setEditTarget,
     isCreateDialogOpen,
     setIsCreateDialogOpen,
     userPage,
@@ -67,6 +70,9 @@ export default function ConfiguracionUsuario() {
     limpiarFiltroSubmodulos,
     handleGrupoCreated,
     handleSubmoduloCreated,
+    handleGrupoUpdated,
+    handleModuloUpdated,
+    handleSubmoduloUpdated,
     currentColumns,
     currentCreateButton,
   } = useConfiguracionUsuario()
@@ -75,15 +81,58 @@ export default function ConfiguracionUsuario() {
     switch (selectedTabId) {
       case TAB_USUARIOS:
         return <FormUsuario onUserCreated={handleUserCreated} />
-      case 2: // TAB_GRUPOS
-        return <FormRol onGrupoCreated={handleGrupoCreated} />
-      case 3: // TAB_MODULOS
-        return <FormModulo />
-      case 4: // TAB_SUBMODULOS
+      case TAB_GRUPOS:
+        return <FormGrupo onGrupoCreated={handleGrupoCreated} />
+      case TAB_MODULOS:
+        return <FormModulo onModuloCreated={handleGrupoCreated} />
+      case TAB_SUBMODULOS:
         return <FormSubmodulo onSubmoduloCreated={handleSubmoduloCreated} />
       default:
         return null
     }
+  }
+
+  const renderEditForm = () => {
+    if (editTarget?.tabId === TAB_GRUPOS) {
+      return (
+        <FormGrupo
+          isEditing
+          initialData={editTarget.item as GruposData | undefined}
+          onGrupoCreated={handleGrupoUpdated}
+        />
+      )
+    }
+
+    if (editTarget?.tabId === TAB_MODULOS) {
+      return (
+        <FormModulo
+          isEditing
+          initialData={editTarget.item as ModulosData | undefined}
+          onModuloCreated={handleModuloUpdated}
+        />
+      )
+    }
+
+    if (editTarget?.tabId === TAB_SUBMODULOS) {
+      return (
+        <FormSubmodulo
+          isEditing
+          initialData={editTarget.item as SubmodulosData | undefined}
+          onSubmoduloCreated={handleSubmoduloUpdated}
+        />
+      )
+    }
+
+    if (userIdToEdit !== undefined && user?.extra?.id !== undefined) {
+      return (
+        <EditarUsuario
+          onUserCreated={handleUserUpdated}
+          userIdToEdit={userIdToEdit}
+        />
+      )
+    }
+
+    return null
   }
 
   return (
@@ -421,13 +470,16 @@ export default function ConfiguracionUsuario() {
         </div>
       </div>
 
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        {userIdToEdit !== undefined && user?.extra?.id !== undefined && (
-          <EditarUsuario
-            onUserCreated={handleUserUpdated}
-            userIdToEdit={userIdToEdit}
-          />
-        )}
+      <Dialog
+        open={isEditDialogOpen}
+        onOpenChange={(open) => {
+          setIsEditDialogOpen(open)
+          if (!open) {
+            setEditTarget(null)
+          }
+        }}
+      >
+        {renderEditForm()}
       </Dialog>
     </section>
   )

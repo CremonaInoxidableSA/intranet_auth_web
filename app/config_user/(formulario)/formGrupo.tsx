@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
@@ -22,11 +22,23 @@ import SeleccionarPermisos from "../(table)/seleccionarPermisos"
 import SeleccionarSubmodulos from "../(table)/seleccionarSubmodulos"
 
 type Props = {
-  onGrupoCreated: () => void
+  onGrupoCreated?: () => void
+  isEditing?: boolean
+  initialData?: {
+    nombre?: string
+    permisos?: string[]
+    modulos?: string[]
+    submodulos?: string[]
+  }
 }
 
-export default function FormGrupo({ onGrupoCreated }: Props) {
+export default function FormGrupo({
+  onGrupoCreated,
+  isEditing = false,
+  initialData,
+}: Props) {
   const [nombreGrupo, setNombreGrupo] = useState("")
+  const [identifier, setIdentifier] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [permisosSeleccionados, setPermisosSeleccionados] = useState<string[]>(
     []
@@ -36,36 +48,59 @@ export default function FormGrupo({ onGrupoCreated }: Props) {
     string[]
   >([])
 
+  useEffect(() => {
+    setNombreGrupo(initialData?.nombre ?? "")
+    setIdentifier(initialData?.nombre ?? "")
+    setPermisosSeleccionados(initialData?.permisos ?? [])
+    setModulosSeleccionados(initialData?.modulos ?? [])
+    setSubmodulosSeleccionados(initialData?.submodulos ?? [])
+  }, [initialData])
+
   const handleSubmit = async () => {
     if (!nombreGrupo.trim()) {
       toast.error("El nombre del grupo es obligatorio")
       return
     }
 
-    const payload = {
-      nombre: nombreGrupo.trim(),
-      permisos: permisosSeleccionados,
-      modulos: modulosSeleccionados,
-      submodulos: submodulosSeleccionados,
-    }
+    const payload = isEditing
+      ? {
+          permisos: permisosSeleccionados,
+          modulos: modulosSeleccionados,
+          submodulos: submodulosSeleccionados,
+        }
+      : {
+          nombre: nombreGrupo.trim(),
+          permisos: permisosSeleccionados,
+          modulos: modulosSeleccionados,
+          submodulos: submodulosSeleccionados,
+        }
 
     setIsSubmitting(true)
 
     try {
-      const res = await fetchWithKeycloak("/api/permisos/grupos/crear", {
-        method: "POST",
+      const endpoint = isEditing
+        ? `/api/permisos/grupos/editar?grupo_nombre=${encodeURIComponent(identifier || nombreGrupo.trim())}`
+        : "/api/permisos/grupos/crear"
+      const method = isEditing ? "PUT" : "POST"
+
+      const res = await fetchWithKeycloak(endpoint, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
 
       const data = await res.json().catch(() => null)
       if (!res.ok) {
-        toast.error(data?.error || data?.detail || "Error al crear grupo")
+        toast.error(data?.error || data?.detail || "Error al guardar grupo")
         return
       }
 
-      toast.success("Grupo creado correctamente")
-      onGrupoCreated()
+      toast.success(
+        isEditing
+          ? "Grupo actualizado correctamente"
+          : "Grupo creado correctamente"
+      )
+      onGrupoCreated?.()
     } catch {
       toast.error("Error de conexión con la API")
     } finally {
@@ -76,9 +111,11 @@ export default function FormGrupo({ onGrupoCreated }: Props) {
   return (
     <DialogContent className="z-100 bg-background2 sm:max-w-150">
       <DialogHeader>
-        <DialogTitle>Crear Grupo</DialogTitle>
+        <DialogTitle>{isEditing ? "Editar Grupo" : "Crear Grupo"}</DialogTitle>
         <DialogDescription>
-          Complete los datos para crear un nuevo grupo.
+          {isEditing
+            ? "Actualice los datos del grupo y guarde los cambios."
+            : "Complete los datos para crear un nuevo grupo."}
         </DialogDescription>
       </DialogHeader>
 
@@ -170,7 +207,7 @@ export default function FormGrupo({ onGrupoCreated }: Props) {
           <Button variant="outline">Cancelar</Button>
         </DialogClose>
         <Button onClick={handleSubmit} loading={isSubmitting}>
-          Crear Grupo
+          {isEditing ? "Guardar cambios" : "Crear Grupo"}
         </Button>
       </DialogFooter>
     </DialogContent>
