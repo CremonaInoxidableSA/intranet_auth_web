@@ -66,6 +66,7 @@ export default function ConfiguracionUsuario() {
     aplicarFiltroSubmodulos,
     limpiarFiltroSubmodulos,
     handleGrupoCreated,
+    handleSubmoduloCreated,
     currentColumns,
     currentCreateButton,
   } = useConfiguracionUsuario()
@@ -79,7 +80,7 @@ export default function ConfiguracionUsuario() {
       case 3: // TAB_MODULOS
         return <FormModulo />
       case 4: // TAB_SUBMODULOS
-        return <FormSubmodulo />
+        return <FormSubmodulo onSubmoduloCreated={handleSubmoduloCreated} />
       default:
         return null
     }

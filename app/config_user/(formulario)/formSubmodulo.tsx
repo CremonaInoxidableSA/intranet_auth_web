@@ -41,6 +41,10 @@ type FormState = {
   icono: string
 }
 
+type Props = {
+  onSubmoduloCreated?: () => void
+}
+
 const initialForm: FormState = {
   modulo_padre: "",
   nombre: "",
@@ -48,7 +52,7 @@ const initialForm: FormState = {
   icono: "",
 }
 
-export default function FormSubmodulo() {
+export default function FormSubmodulo({ onSubmoduloCreated }: Props) {
   const [form, setForm] = useState<FormState>(initialForm)
   const [modulos, setModulos] = useState<Modulo[]>([])
   const [isLoadingModulos, setIsLoadingModulos] = useState(false)
@@ -141,6 +145,7 @@ export default function FormSubmodulo() {
 
       toast.success("Submódulo creado correctamente")
       setForm(initialForm)
+      onSubmoduloCreated?.()
     } catch {
       toast.error("Error de conexión con la API")
     } finally {
@@ -149,7 +154,7 @@ export default function FormSubmodulo() {
   }
 
   return (
-    <DialogContent className="z-1200 bg-background2 sm:max-w-180">
+    <DialogContent className="z-100 bg-background2 sm:max-w-180">
       <DialogHeader>
         <DialogTitle>Crear Submódulo</DialogTitle>
         <DialogDescription>
@@ -197,7 +202,7 @@ export default function FormSubmodulo() {
                   : "+ Seleccionar módulo padre"}
               </Button>
             </DialogTrigger>
-            <DialogContent className="z-[1300] sm:max-w-lg">
+            <DialogContent className="z-100 sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle>Seleccionar módulo padre</DialogTitle>
                 <DialogDescription>

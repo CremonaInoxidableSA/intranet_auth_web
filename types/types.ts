@@ -31,6 +31,7 @@ export interface ModulosData {
   subdominio?: string
   path?: string
   icono?: string
+  habilitado?: boolean
 }
 
 export interface SubmodulosData {
@@ -38,6 +39,7 @@ export interface SubmodulosData {
   nombre?: string
   path?: string
   icono?: string
+  habilitado?: boolean
 }
 
 export interface PermisosData {

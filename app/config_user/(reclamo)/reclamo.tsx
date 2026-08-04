@@ -100,7 +100,7 @@ export default function GenerarReclamo() {
   }
 
   return (
-    <DialogContent className="z-800 bg-background3 sm:max-w-150">
+    <DialogContent className="z-100 bg-background3 sm:max-w-150">
       <DialogHeader>
         <DialogTitle>Generar Reclamo</DialogTitle>
         <DialogDescription>
@@ -140,7 +140,7 @@ export default function GenerarReclamo() {
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Seleccione un área" />
             </SelectTrigger>
-            <SelectContent position="popper" className="z-900">
+            <SelectContent position="popper" className="z-100">
               <SelectGroup>
                 <SelectLabel>Área</SelectLabel>
                 <SelectItem value="exportacion">Exportación</SelectItem>

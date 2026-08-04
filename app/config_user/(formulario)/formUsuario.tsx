@@ -25,32 +25,41 @@ type Props = {
   userIdToEdit?: string
 }
 
+const getEmptyForm = (userId?: string) => ({
+  email: "",
+  nombre: "",
+  apellido: "",
+  legajo: undefined,
+  dni: undefined,
+  grupos: [],
+  extra: {
+    id: userId ?? "",
+    habilitado: false,
+    cambiar_contraseña: false,
+  },
+})
+
 export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
-  const [loading, setLoading] = useState(userIdToEdit !== undefined)
+  const isEditing = Boolean(userIdToEdit)
+  const [loading, setLoading] = useState(isEditing)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [gruposSeleccionados, setGruposSeleccionados] = useState<string[]>([])
   const [cambiarContrasena, setCambiarContrasena] = useState(false)
 
   const [form, setForm] = useState<
     UsersData<{ id: string; habilitado: boolean; cambiar_contraseña: boolean }>
-  >({
-    email: "",
-    nombre: "",
-    apellido: "",
-    legajo: undefined,
-    dni: undefined,
-    grupos: [],
-    extra: {
-      id: userIdToEdit ?? "",
-      habilitado: false,
-      cambiar_contraseña: false,
-    },
-  })
+  >(getEmptyForm(userIdToEdit))
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      if (!userIdToEdit) return
+    if (!userIdToEdit) {
+      setForm(getEmptyForm())
+      setGruposSeleccionados([])
+      setCambiarContrasena(false)
+      setLoading(false)
+      return
+    }
 
+    const fetchUserData = async () => {
       setLoading(true)
       try {
         const res = await fetchWithKeycloak(
@@ -107,11 +116,6 @@ export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
   }
 
   const handleSubmit = async () => {
-    if (!userIdToEdit) {
-      toast.error("No se pudo editar el usuario")
-      return
-    }
-
     if (!form?.email?.includes("@")) {
       toast.error("Correo electrónico inválido")
       return
@@ -130,22 +134,27 @@ export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
     setIsSubmitting(true)
 
     try {
-      const res = await fetchWithKeycloak(
-        `/api/usuarios/editar?user_id=${userIdToEdit}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      )
+      const endpoint = isEditing
+        ? `/api/usuarios/editar?user_id=${userIdToEdit}`
+        : "/api/usuarios/crear-usuarios"
 
-      const data = await res.json()
+      const res = await fetchWithKeycloak(endpoint, {
+        method: isEditing ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+
+      const data = await res.json().catch(() => null)
       if (!res.ok) {
-        toast.error(data.detail || "Error al editar usuario")
+        toast.error(data?.detail || data?.error || "Error al guardar usuario")
         return
       }
 
-      toast.success("Usuario actualizado correctamente")
+      toast.success(
+        isEditing
+          ? "Usuario actualizado correctamente"
+          : "Usuario creado correctamente"
+      )
       onUserCreated()
     } catch {
       toast.error("Error de conexión con la API")
@@ -163,7 +172,7 @@ export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
 
   if (loading) {
     return (
-      <DialogContent className="z-800 bg-background3 sm:max-w-150">
+      <DialogContent className="z-100 bg-background3 sm:max-w-150">
         <DialogHeader>
           <DialogTitle>Cargando...</DialogTitle>
           <DialogDescription>
@@ -178,30 +187,40 @@ export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
   }
 
   return (
-    <DialogContent className="z-800 bg-background2 sm:max-w-150">
+    <DialogContent className="z-100 bg-background2 sm:max-w-150">
       <DialogHeader>
-        <DialogTitle>Editar usuario</DialogTitle>
+        <DialogTitle>
+          {isEditing ? "Editar usuario" : "Crear usuario"}
+        </DialogTitle>
         <DialogDescription>
-          Complete los datos a editar del usuario seleccionado.
+          {isEditing
+            ? "Complete los datos a editar del usuario seleccionado."
+            : "Complete los datos para crear un nuevo usuario."}
         </DialogDescription>
       </DialogHeader>
 
       <div className="grid gap-4">
-        {/* Campos no editables (solo lectura) */}
-        <div className="flex flex-col gap-4">
-          <div className="gap-1">
-            <Label className="text-sm text-muted-foreground">ID</Label>
-            <p className="text-sm font-medium">{form.extra?.id ?? "—"}</p>
-          </div>
-          <div className="gap-1">
-            <Label className="text-sm text-muted-foreground">Habilitado</Label>
-            <p className="text-sm font-medium">
-              {form.extra?.habilitado ? "Sí" : "No"}
-            </p>
-          </div>
-        </div>
+        {isEditing && (
+          <>
+            {/* Campos no editables (solo lectura) */}
+            <div className="flex flex-col gap-4">
+              <div className="gap-1">
+                <Label className="text-sm text-muted-foreground">ID</Label>
+                <p className="text-sm font-medium">{form.extra?.id ?? "—"}</p>
+              </div>
+              <div className="gap-1">
+                <Label className="text-sm text-muted-foreground">
+                  Habilitado
+                </Label>
+                <p className="text-sm font-medium">
+                  {form.extra?.habilitado ? "Sí" : "No"}
+                </p>
+              </div>
+            </div>
 
-        <hr className="border-background6" />
+            <hr className="border-background6" />
+          </>
+        )}
 
         {/* Campos editables */}
         <div className="grid gap-2">
@@ -309,7 +328,7 @@ export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
           <Button variant="outline">Cancelar</Button>
         </DialogClose>
         <Button onClick={handleSubmit} loading={isSubmitting}>
-          Guardar cambios
+          {isEditing ? "Guardar cambios" : "Crear usuario"}
         </Button>
       </DialogFooter>
     </DialogContent>

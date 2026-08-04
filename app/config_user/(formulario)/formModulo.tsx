@@ -74,7 +74,7 @@ export default function FormModulo({ onModuloCreated }: Props) {
   }
 
   return (
-    <DialogContent className="z-800 bg-background2 sm:max-w-150">
+    <DialogContent className="z-100 bg-background2 sm:max-w-150">
       <DialogHeader>
         <DialogTitle>Crear Módulo</DialogTitle>
         <DialogDescription>

@@ -80,7 +80,7 @@ export default function SeleccionarGrupos({ initialSelected, onSave }: Props) {
   const canNext = pagina < Math.max(totalPaginas, 1)
 
   return (
-    <DialogContent className="z-900 bg-background2 sm:max-w-125">
+    <DialogContent className="z-100 bg-background2 sm:max-w-125">
       <DialogHeader>
         <DialogTitle>Seleccionar grupos</DialogTitle>
         <DialogDescription>

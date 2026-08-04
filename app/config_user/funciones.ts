@@ -214,7 +214,12 @@ export function useConfiguracionUsuario() {
       }
     }
 
-    loadData()
+    const runLoadData = async () => {
+      await loadData()
+    }
+
+    void runLoadData()
+
     return () => {
       mounted = false
       if (rafId) cancelAnimationFrame(rafId)
@@ -280,37 +285,17 @@ export function useConfiguracionUsuario() {
     setIsEditDialogOpen(true)
   }, [])
 
-  const handleEditGrupo = useCallback((nombre: string) => {
-    console.log("Editar grupo:", nombre)
-  }, [])
-
-  const handleDeleteGrupo = useCallback(
-    async (nombre: string) => {
-      try {
-        const res = await fetchWithKeycloak(
-          `/api/permisos/grupos/eliminar?nombre=${encodeURIComponent(nombre)}`,
-          { method: "DELETE" }
-        )
-        if (!res.ok) {
-          const err = await res.json()
-          toast.error(err.detail || "Error al eliminar grupo")
-          return
-        }
-        toast.success("Grupo eliminado correctamente")
-        await loadData()
-      } catch {
-        toast.error("Error de conexión con la API")
-      }
-    },
-    [loadData]
-  )
-
   const handleUserCreated = useCallback(async () => {
     await refetchUsuarios()
     setIsCreateDialogOpen(false)
   }, [refetchUsuarios])
 
   const handleGrupoCreated = useCallback(async () => {
+    await loadData()
+    setIsCreateDialogOpen(false)
+  }, [loadData])
+
+  const handleSubmoduloCreated = useCallback(async () => {
     await loadData()
     setIsCreateDialogOpen(false)
   }, [loadData])
@@ -375,10 +360,7 @@ export function useConfiguracionUsuario() {
     [editarUsuario, deshabilitarUsuario, habilitarUsuario]
   )
 
-  const grupoColumns = useMemo(
-    () => getGrupoColumns(),
-    [handleEditGrupo, handleDeleteGrupo]
-  )
+  const grupoColumns = useMemo(() => getGrupoColumns(), [])
 
   const moduloColumns = useMemo(() => getModuloColumns(), [])
   const submoduloColumns = useMemo(() => getSubmoduloColumns(), [])
@@ -461,6 +443,7 @@ export function useConfiguracionUsuario() {
     aplicarFiltroSubmodulos,
     limpiarFiltroSubmodulos,
     handleGrupoCreated,
+    handleSubmoduloCreated,
     refetchUsuarios,
     currentColumns,
     currentCreateButton,
