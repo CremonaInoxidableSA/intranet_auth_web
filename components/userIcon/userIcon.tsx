@@ -16,6 +16,7 @@ import { UserAvatar } from "@/components/userIcon/userAvatar"
 import CambioPass from "@/components/userIcon/cambioPass"
 
 import { useAuth } from "@/context/AuthProvider"
+import { useSubmodulos } from "@/context/usePermisos"
 
 const UserIcon = () => {
   const router = useRouter()
@@ -29,9 +30,10 @@ const UserIcon = () => {
     `${user?.nombre ?? ""}${user?.nombre || user?.apellido ? " " : ""}${user?.apellido ?? ""}`.trim() ||
     "Usuario"
 
-  const canManageUsers =
-    user?.permisos?.some((p) => p.nombre === "PERMISO_CONTRASEÑA_USUARIOS") ??
-    false
+  const { tieneAcceso } = useSubmodulos()
+
+  const canManageUsers = tieneAcceso("SUBMODULO_CONFIG_USUARIOS")
+
 
   const closeSession = async () => {
     try {
@@ -40,6 +42,34 @@ const UserIcon = () => {
       setOpen(false)
     } finally {
       setLoggingOut(false)
+    }
+  }
+
+  const configurarUsuarios = () => {
+    if (!canManageUsers) {
+      return (
+        <Button
+          className="w-full cursor-pointer border border-bluecremona bg-bluecremona/10 hover:bg-bluecremona/30"
+          onClick={() => {
+            setOpen(false)
+            setTimeout(() => setChangePassOpen(true), 150)
+          }}
+        >
+          <p className="font-medium text-bluecremona">Cambiar contraseña</p>
+        </Button>
+      )
+    }
+
+    if (canManageUsers) {
+    <Button
+      className="w-full cursor-pointer border border-bluecremona bg-bluecremona/10 hover:bg-bluecremona/30"
+      onClick={() => {
+        router.push("/config_user")
+        setOpen(false)
+      }}
+    >
+      <p className="font-medium text-bluecremona">Configurar usuarios</p>
+    </Button>
     }
   }
 
@@ -68,33 +98,7 @@ const UserIcon = () => {
           ) : (
             <div className="flex flex-col items-start gap-1">
               <p className="text-lg">{displayName}</p>
-
-              {canManageUsers ? (
-                <Button
-                  className="w-full cursor-pointer border border-bluecremona bg-bluecremona/10 hover:bg-bluecremona/30"
-                  onClick={() => {
-                    router.push("/config_user")
-                    setOpen(false)
-                  }}
-                >
-                  <p className="font-medium text-bluecremona">
-                    Configurar usuarios
-                  </p>
-                </Button>
-              ) : (
-                <Button
-                  className="w-full cursor-pointer border border-bluecremona bg-bluecremona/10 hover:bg-bluecremona/30"
-                  onClick={() => {
-                    setOpen(false)
-                    setTimeout(() => setChangePassOpen(true), 150)
-                  }}
-                >
-                  <p className="font-medium text-bluecremona">
-                    Cambiar contraseña
-                  </p>
-                </Button>
-              )}
-
+              {configurarUsuarios()}
               <Button
                 className="w-full cursor-pointer bg-redcremona hover:bg-redcremona/70"
                 onClick={closeSession}
