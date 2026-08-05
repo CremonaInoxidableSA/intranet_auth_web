@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -8,7 +9,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { CircleMinus, CirclePlus, Ellipsis, PencilLine } from "lucide-react"
+import { Dialog, DialogTrigger } from "@/components/ui/dialog"
+import {
+  CircleMinus,
+  CirclePlus,
+  Ellipsis,
+  KeyRound,
+  PencilLine,
+} from "lucide-react"
 import {
   UsersData,
   GruposData,
@@ -16,6 +24,87 @@ import {
   SubmodulosData,
 } from "@/types/types"
 import { type DataTableColumn } from "./data-table"
+import { EditarContraseña } from "../(formulario)/formUsuario"
+
+function UserActionsCell({
+  row,
+  onEditUser,
+  onDisableUser,
+  onEnableUser,
+}: {
+  row: UsersData
+  onEditUser: (id: string | undefined) => void
+  onDisableUser: (id: string) => void
+  onEnableUser: (id: string) => void
+}) {
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = React.useState(false)
+  const id = row.extra?.id
+
+  return (
+    <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8">
+            <span className="sr-only">Abrir menú</span>
+            <Ellipsis className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+          <DropdownMenuItem asChild>
+            <button
+              type="button"
+              onClick={() => onEditUser(id)}
+              className="flex w-full cursor-pointer flex-row items-center justify-start text-bluecremona"
+            >
+              <PencilLine className="mr-2 h-4 w-4" />
+              <span>Editar</span>
+            </button>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <button
+              type="button"
+              onClick={() => setIsPasswordDialogOpen(true)}
+              className="flex w-full cursor-pointer flex-row items-center justify-start text-amber-600"
+            >
+              <KeyRound className="mr-2 h-4 w-4" />
+              <span>Cambiar contraseña</span>
+            </button>
+          </DropdownMenuItem>
+          {row.extra?.habilitado ? (
+            <DropdownMenuItem asChild>
+              <button
+                type="button"
+                onClick={() => id && onDisableUser(id)}
+                className="flex w-full cursor-pointer flex-row items-center justify-start text-redcremona"
+              >
+                <CircleMinus className="mr-2 h-4 w-4" />
+                <span>Deshabilitar</span>
+              </button>
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem asChild>
+              <button
+                type="button"
+                onClick={() => id && onEnableUser(id)}
+                className="flex w-full cursor-pointer flex-row items-center justify-start text-greencremona"
+              >
+                <CirclePlus className="mr-2 h-4 w-4" />
+                <span>Habilitar</span>
+              </button>
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {id ? (
+        <EditarContraseña
+          userId={id}
+          onPasswordChanged={() => setIsPasswordDialogOpen(false)}
+        />
+      ) : null}
+    </Dialog>
+  )
+}
 
 export const getUsuarioColumns = (
   onEditUser: (id: string | undefined) => void,
@@ -44,47 +133,14 @@ export const getUsuarioColumns = (
   },
   {
     id: "actions",
-    cell: ({ row }) => {
-      const id = row.extra?.id
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8">
-              <span className="sr-only">Abrir menú</span>
-              <Ellipsis className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => onEditUser(id)}
-              className="flex cursor-pointer flex-row items-center justify-start text-bluecremona"
-            >
-              <PencilLine className="h-4 w-4" />
-              <p className="items-center justify-start">Editar</p>
-            </DropdownMenuItem>
-            {row.extra?.habilitado ? (
-              <DropdownMenuItem
-                onClick={() => id && onDisableUser(id)}
-                className="cursor-pointer flex-row items-center justify-start text-redcremona"
-              >
-                <CircleMinus className="h-4 w-4" />
-                <p className="items-center justify-start">Deshabilitar</p>
-              </DropdownMenuItem>
-            ) : (
-              <DropdownMenuItem
-                onClick={() => id && onEnableUser(id)}
-                className="cursor-pointer flex-row items-center justify-start text-greencremona"
-              >
-                <CirclePlus className="h-4 w-4" />
-                <p className="items-center justify-start">Habilitar</p>
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
+    cell: ({ row }) => (
+      <UserActionsCell
+        row={row}
+        onEditUser={onEditUser}
+        onDisableUser={onDisableUser}
+        onEnableUser={onEnableUser}
+      />
+    ),
   },
 ]
 

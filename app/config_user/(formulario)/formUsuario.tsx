@@ -39,10 +39,11 @@ const getEmptyForm = (userId?: string) => ({
     id: userId ?? "",
     habilitado: false,
     cambiar_contraseña: false,
+    password: "",
   },
 })
 
-export default function EditarUsuario({
+export function EditarUsuario({
   onUserCreated,
   userIdToEdit,
   onDisableUser,
@@ -54,9 +55,15 @@ export default function EditarUsuario({
   const [isStatusUpdating, setIsStatusUpdating] = useState(false)
   const [gruposSeleccionados, setGruposSeleccionados] = useState<string[]>([])
   const [cambiarContrasena, setCambiarContrasena] = useState(false)
+  const [usuarioHabilitado, setUsuarioHabilitado] = useState(true)
 
   const [form, setForm] = useState<
-    UsersData<{ id: string; habilitado: boolean; cambiar_contraseña: boolean }>
+    UsersData<{
+      id: string
+      habilitado: boolean
+      cambiar_contraseña: boolean
+      password: string
+    }>
   >(getEmptyForm(userIdToEdit))
 
   const loadUserData = useCallback(
@@ -99,10 +106,12 @@ export default function EditarUsuario({
             id: data.id ?? userIdToEdit,
             habilitado: data.habilitado ?? false,
             cambiar_contraseña: data.cambiar_contraseña ?? false,
+            password: data.password ?? "",
           },
         })
         setGruposSeleccionados(data.grupos ?? [])
         setCambiarContrasena(data.cambiar_contraseña ?? false)
+        setUsuarioHabilitado(data.habilitado ?? false)
       } catch {
         toast.error("Error de conexión con la API")
       } finally {
@@ -124,6 +133,7 @@ export default function EditarUsuario({
         id: string
         habilitado: boolean
         cambiar_contraseña: boolean
+        password: string
       }>,
       "extra" | "grupos"
     >,
@@ -171,6 +181,8 @@ export default function EditarUsuario({
       dni: Number(form.dni),
       grupos: gruposSeleccionados,
       cambiar_contraseña: cambiarContrasena,
+      password: form.extra?.password,
+      habilitado: form.extra?.habilitado ?? true,
     }
 
     setIsSubmitting(true)
@@ -395,6 +407,19 @@ export default function EditarUsuario({
             Forzar cambio de contraseña en el próximo inicio de sesión
           </Label>
         </div>
+        {!isEditing && (
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="usuarioHabilitado"
+              checked={usuarioHabilitado}
+              onCheckedChange={(checked) => setUsuarioHabilitado(!!checked)}
+            />
+            <Label htmlFor="usuarioHabilitado" className="cursor-pointer">
+              El usuario se creara habilitado y podrá iniciar sesión. Desmarque
+              esta opción para crear un usuario deshabilitado.
+            </Label>
+          </div>
+        )}
       </div>
 
       <DialogFooter>
@@ -403,6 +428,116 @@ export default function EditarUsuario({
         </DialogClose>
         <Button onClick={handleSubmit} loading={isSubmitting}>
           {isEditing ? "Guardar cambios" : "Crear usuario"}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  )
+}
+
+export function EditarContraseña({
+  userId,
+  onPasswordChanged,
+}: {
+  userId: string
+  onPasswordChanged: () => void
+}) {
+  const [password, setPassword] = useState("")
+  const [passwordConfirmation, setPasswordConfirmation] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleSubmit = async () => {
+    if (!password || !passwordConfirmation) {
+      toast.error("Complete la contraseña y su confirmación")
+      return
+    }
+
+    if (password !== passwordConfirmation) {
+      toast.error("Las contraseñas no coinciden")
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      const res = await fetchWithKeycloak("/api/usuarios/change-password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          password,
+          password_confirmation: passwordConfirmation,
+        }),
+      })
+
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        toast.error(
+          data?.detail || data?.error || "Error al cambiar la contraseña"
+        )
+        return
+      }
+
+      toast.success("Contraseña actualizada correctamente")
+      setPassword("")
+      setPasswordConfirmation("")
+      onPasswordChanged()
+    } catch {
+      toast.error("Error de conexión con la API")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <DialogContent className="z-100 bg-background2 sm:max-w-150">
+      <DialogHeader>
+        <DialogTitle>Editar contraseña</DialogTitle>
+        <DialogDescription>
+          Complete los datos para cambiar la contraseña del usuario.
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="grid gap-4">
+        <div className="grid gap-2">
+          <Label htmlFor="password">Nueva contraseña</Label>
+          <Input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Ingrese la nueva contraseña"
+            required
+            className="border border-background6 bg-background3"
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="password_confirmation">
+            Confirmar nueva contraseña
+          </Label>
+          <Input
+            id="password_confirmation"
+            type="password"
+            value={passwordConfirmation}
+            onChange={(event) => setPasswordConfirmation(event.target.value)}
+            placeholder="Confirme la nueva contraseña"
+            required
+            className="border border-background6 bg-background3"
+          />
+        </div>
+      </div>
+
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button variant="outline">Cancelar</Button>
+        </DialogClose>
+        <Button
+          onClick={() => {
+            void handleSubmit()
+          }}
+          loading={isSubmitting}
+        >
+          Cambiar contraseña
         </Button>
       </DialogFooter>
     </DialogContent>

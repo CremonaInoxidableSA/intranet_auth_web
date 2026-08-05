@@ -135,11 +135,12 @@ export default function FormGrupo({
           <Label htmlFor="grupo">Nombre del Grupo</Label>
           <Input
             id="grupo"
+            disabled={isEditing}
             value={nombreGrupo}
             onChange={(e) => setNombreGrupo(e.target.value)}
             placeholder="Asigne un nombre único para este grupo"
             required
-            className="border border-background6 bg-background3"
+            className={`border border-background6 bg-background3 ${isEditing ? "cursor-not-allowed" : ""}`}
           />
         </div>
 

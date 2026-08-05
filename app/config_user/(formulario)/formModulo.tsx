@@ -141,11 +141,12 @@ export default function FormModulo({
           <Label htmlFor="modulo">Módulo</Label>
           <Input
             id="modulo"
+            disabled={isEditing}
             value={form.nombre}
             onChange={(e) => handleChange("nombre", e.target.value)}
             placeholder="Cree un módulo con nombre único"
             required
-            className="border border-background6 bg-background3"
+            className={`border border-background6 bg-background3 ${isEditing ? "cursor-not-allowed" : ""}`}
           />
         </div>
 

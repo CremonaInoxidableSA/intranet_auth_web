@@ -338,10 +338,11 @@ export default function FormSubmodulo({
           <Input
             id="nombre"
             value={form.nombre}
+            disabled={isEditing}
             onChange={(e) => handleChange("nombre", e.target.value)}
             placeholder="Ej: SUBMODULO_USUARIOS"
             required
-            className="border border-background6 bg-background3"
+            className={`border border-background6 bg-background3 ${isEditing ? "cursor-not-allowed" : ""}`}
           />
         </div>
 

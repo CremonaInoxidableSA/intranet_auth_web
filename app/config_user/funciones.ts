@@ -237,7 +237,7 @@ export function useConfiguracionUsuario() {
     async (usuario_id: string) => {
       try {
         const res = await fetchWithKeycloak(
-          `/api/usuarios/deshabilitar-usuarios?user_id=${encodeURIComponent(usuario_id)}`,
+          `/api/usuarios/deshabilitar?user_id=${encodeURIComponent(usuario_id)}`,
           {
             method: "PUT",
             headers: { Accept: "application/json" },
@@ -264,7 +264,7 @@ export function useConfiguracionUsuario() {
     async (usuario_id: string) => {
       try {
         const res = await fetchWithKeycloak(
-          `/api/usuarios/habilitar-usuarios?user_id=${encodeURIComponent(usuario_id)}`,
+          `/api/usuarios/habilitar?user_id=${encodeURIComponent(usuario_id)}`,
           {
             method: "PUT",
             headers: { Accept: "application/json" },

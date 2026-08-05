@@ -4,6 +4,7 @@ interface UsersExtraData {
   habilitado?: boolean
   apellidoNombre?: string
   change_password?: boolean
+  password?: string
 }
 
 // Data que se obtiene de la API al iniciar sesion
