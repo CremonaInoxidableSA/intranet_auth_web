@@ -205,16 +205,16 @@ export default function ConfiguracionUsuario() {
                   placeholder="Filtrar por nombre, apellido o email"
                   className="border border-background6 bg-background3"
                 />
-                <div className="flex gap-2">
+                <div className="flex w-full gap-2">
                   <Button
                     onClick={aplicarFiltroUsuarios}
-                    className="border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30"
+                    className="flex-1 border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30"
                   >
                     Filtrar
                   </Button>
                   <Button
                     onClick={limpiarFiltroUsuarios}
-                    className="border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
+                    className="flex-1 border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
                   >
                     Limpiar
                   </Button>
@@ -235,16 +235,16 @@ export default function ConfiguracionUsuario() {
                   placeholder="Filtrar por nombre"
                   className="border border-background6 bg-background3"
                 />
-                <div className="flex gap-2">
+                <div className="flex w-full gap-2">
                   <Button
                     onClick={aplicarFiltroGrupos}
-                    className="border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30"
+                    className="flex-1 border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30"
                   >
                     Filtrar
                   </Button>
                   <Button
                     onClick={limpiarFiltroGrupos}
-                    className="border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
+                    className="flex-1 border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
                   >
                     Limpiar
                   </Button>
@@ -265,16 +265,16 @@ export default function ConfiguracionUsuario() {
                   placeholder="Filtrar por nombre"
                   className="border border-background6 bg-background3"
                 />
-                <div className="flex gap-2">
+                <div className="flex w-full gap-2">
                   <Button
                     onClick={aplicarFiltroModulos}
-                    className="border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30"
+                    className="flex-1 border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30"
                   >
                     Filtrar
                   </Button>
                   <Button
                     onClick={limpiarFiltroModulos}
-                    className="border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
+                    className="flex-1 border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
                   >
                     Limpiar
                   </Button>
@@ -295,16 +295,16 @@ export default function ConfiguracionUsuario() {
                   placeholder="Filtrar por nombre"
                   className="border border-background6 bg-background3"
                 />
-                <div className="flex gap-2">
+                <div className="flex w-full gap-2">
                   <Button
                     onClick={aplicarFiltroSubmodulos}
-                    className="border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30"
+                    className="flex-1 border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30"
                   >
                     Filtrar
                   </Button>
                   <Button
                     onClick={limpiarFiltroSubmodulos}
-                    className="border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
+                    className="flex-1 border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
                   >
                     Limpiar
                   </Button>

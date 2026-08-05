@@ -101,13 +101,15 @@ export default function SeleccionarGrupos({ initialSelected, onSave }: Props) {
             className="border border-background6 bg-background3"
           />
           <Button
-            type="button"
             onClick={aplicarFiltro}
             className="border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30"
           >
             Filtrar
           </Button>
-          <Button type="button" variant="outline" onClick={limpiarFiltro}>
+          <Button
+            className="border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
+            onClick={limpiarFiltro}
+          >
             Limpiar
           </Button>
         </div>

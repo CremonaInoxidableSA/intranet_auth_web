@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
+import { Checkbox } from "@/components/ui/checkbox";
 
 type Props = {
   onModuloCreated?: () => void
@@ -23,6 +24,7 @@ type Props = {
     subdominio?: string
     path?: string
     icono?: string
+    habilitado?: boolean
   }
 }
 
@@ -36,6 +38,7 @@ export default function FormModulo({
     subdominio: "",
     path: "",
     icono: "",
+    habilitado: true,
   })
   const [identifier, setIdentifier] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -46,6 +49,7 @@ export default function FormModulo({
       subdominio: initialData?.subdominio ?? "",
       path: initialData?.path ?? "",
       icono: initialData?.icono ?? "",
+      habilitado: initialData?.habilitado ?? true,
     })
     setIdentifier(initialData?.nombre ?? initialData?.subdominio ?? "")
   }, [initialData])
@@ -93,13 +97,14 @@ export default function FormModulo({
                 subdominio: form.subdominio.trim(),
                 path: form.path.trim(),
                 icono: form.icono.trim(),
+                habilitado: form.habilitado ?? true,
               }
             : {
                 nombre: form.nombre.trim(),
                 subdominio: form.subdominio.trim(),
                 path: form.path.trim(),
                 icono: form.icono.trim(),
-                habilitado: true,
+                habilitado: form.habilitado ?? true,
               }
         ),
       })
@@ -186,6 +191,25 @@ export default function FormModulo({
           />
         </div>
       </div>
+
+      {!isEditing && (
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="moduloHabilitado"
+            checked={form.habilitado}
+            onCheckedChange={(checked) =>
+              setForm((prev) => ({
+                ...prev,
+                habilitado: !!checked,
+              }))
+            }
+          />
+          <Label htmlFor="moduloHabilitado" className="cursor-pointer">
+            El módulo se creará habilitado y podrá ser accedido. Desmarque esta
+            opción para crear un módulo deshabilitado.
+          </Label>
+        </div>
+      )}
 
       <DialogFooter>
         <DialogClose asChild>

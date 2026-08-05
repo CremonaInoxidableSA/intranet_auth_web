@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 const EXTERNAL_API_URL =
-  process.env.NEXT_PUBLIC_API_AUTH_URL + "/grupos/habilitar?modulo_nombre="
+  process.env.NEXT_PUBLIC_API_AUTH_URL + "/modulos/habilitar?modulo_nombre="
 
 export async function PUT(request: NextRequest) {
   const authHeader = request.headers.get("authorization")

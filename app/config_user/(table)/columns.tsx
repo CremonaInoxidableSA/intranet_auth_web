@@ -123,6 +123,7 @@ export const getUsuarioColumns = (
   {
     accessorKey: "grupos",
     header: "Grupos",
+    className: "hidden xl:table-cell",
     cell: ({ row }) =>
       row.grupos?.length ? row.grupos.map((grupo) => grupo).join(", ") : "—",
   },
@@ -150,22 +151,24 @@ export const getGrupoColumns = (
   {
     accessorKey: "nombre",
     header: "Nombre",
-    className: "font-medium",
   },
   {
     header: "Permisos",
+    className: "hidden xl:table-cell",
     cell: () => (
       <p className="items-center justify-start">Editar para ver permisos</p>
     ),
   },
   {
     header: "Modulos",
+    className: "hidden xl:table-cell",
     cell: () => (
       <p className="items-center justify-start">Editar para ver modulos</p>
     ),
   },
   {
     header: "Submodulos",
+    className: "hidden xl:table-cell",
     cell: () => (
       <p className="items-center justify-start">Editar para ver submodulos</p>
     ),
@@ -193,10 +196,10 @@ export const getModuloColumns = (
   {
     accessorKey: "nombre",
     header: "Nombre",
-    className: "font-medium",
   },
   {
     header: "URL",
+    className: "hidden xl:table-cell",
     cell: ({ row }) => (
       <p className="items-center justify-start">
         {row.subdominio ? `${row.subdominio}` : "—"}
@@ -205,6 +208,7 @@ export const getModuloColumns = (
   },
   {
     header: "Submodulos",
+    className: "hidden xl:table-cell",
     cell: () => (
       <p className="items-center justify-start">Editar para ver submodulos</p>
     ),
@@ -238,7 +242,7 @@ export const getModuloColumns = (
             {row.habilitado ? (
               <DropdownMenuItem
                 onClick={() => nombre && onDisableModulo(nombre)}
-                className="cursor-pointer flex-row items-center justify-start text-redcremona"
+                className="flex-1 cursor-pointer flex-row items-center justify-start text-redcremona"
               >
                 <CircleMinus className="h-4 w-4" />
                 <p className="items-center justify-start">Deshabilitar</p>
@@ -267,10 +271,10 @@ export const getSubmoduloColumns = (
   {
     accessorKey: "nombre",
     header: "Nombre",
-    className: "font-medium",
   },
   {
     header: "URL",
+    className: "hidden xl:table-cell",
     cell: ({ row }) => (
       <p className="items-center justify-start">
         {row.path ? `${row.path}` : "—"}
@@ -278,16 +282,17 @@ export const getSubmoduloColumns = (
     ),
   },
   {
-    header: "Habilitado",
-    cell: ({ row }) => (row.habilitado ? "Sí" : "No"),
-  },
-  {
     header: "Modulo Principal",
+    className: "hidden xl:table-cell",
     cell: ({ row }) => (
       <p className="items-center justify-start">
         {row.modulo_padre ? `${row.modulo_padre}` : "—"}
       </p>
     ),
+  },
+  {
+    header: "Habilitado",
+    cell: ({ row }) => (row.habilitado ? "Sí" : "No"),
   },
   {
     id: "actions",
