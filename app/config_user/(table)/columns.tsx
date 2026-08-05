@@ -36,6 +36,7 @@ import {
 } from "@/types/types"
 import { type DataTableColumn } from "./data-table"
 import { EditarContraseña } from "../(formulario)/formUsuario"
+import { useAuth } from "@/context/AuthProvider"
 
 function UserActionsCell({
   row,
@@ -50,6 +51,20 @@ function UserActionsCell({
 }) {
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = React.useState(false)
   const id = row.extra?.id
+  const { user } = useAuth()
+
+  const puedeCambiarContra =
+    user?.permisos?.some((p) => p.nombre === "PERMISO_CONTRASEÑA_USUARIOS") ??
+    false
+
+  const puedeHabilitarDeshabilitarUsuario =
+    (row.extra?.habilitado
+      ? user?.permisos?.some(
+          (p) => p.nombre === "PERMISO_DESHABILITAR_USUARIOS"
+        )
+      : user?.permisos?.some(
+          (p) => p.nombre === "PERMISO_HABILITAR_USUARIOS"
+        )) ?? false
 
   return (
     <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
@@ -72,37 +87,39 @@ function UserActionsCell({
               <span>Editar</span>
             </button>
           </DropdownMenuItem>
-          <DropdownMenuItem className="text-left" asChild>
-            <button
-              type="button"
-              onClick={() => setIsPasswordDialogOpen(true)}
-              className="flex w-full cursor-pointer flex-row items-center justify-start text-orangecremona"
-            >
-              <KeyRound className="mr-2 h-4 w-4" />
-              <span>Cambiar contraseña</span>
-            </button>
-          </DropdownMenuItem>
-          {row.extra?.habilitado ? (
-            <DropdownMenuItem asChild>
+          {puedeCambiarContra && (
+            <DropdownMenuItem className="text-left" asChild>
               <button
                 type="button"
-                onClick={() => id && onDisableUser(id)}
-                className="flex w-full cursor-pointer flex-row items-center justify-start text-redcremona"
+                onClick={() => setIsPasswordDialogOpen(true)}
+                className="flex w-full cursor-pointer flex-row items-center justify-start text-orangecremona"
               >
-                <CircleMinus className="mr-2 h-4 w-4" />
-                <span>Deshabilitar</span>
+                <KeyRound className="mr-2 h-4 w-4" />
+                <span>Cambiar contraseña</span>
               </button>
             </DropdownMenuItem>
-          ) : (
+          )}
+          {puedeHabilitarDeshabilitarUsuario && (
             <DropdownMenuItem asChild>
-              <button
-                type="button"
-                onClick={() => id && onEnableUser(id)}
-                className="flex w-full cursor-pointer flex-row items-center justify-start text-greencremona"
-              >
-                <CirclePlus className="mr-2 h-4 w-4" />
-                <span>Habilitar</span>
-              </button>
+              {row.extra?.habilitado ? (
+                <button
+                  type="button"
+                  onClick={() => id && onDisableUser(id)}
+                  className="flex w-full cursor-pointer flex-row items-center justify-start text-redcremona"
+                >
+                  <CircleMinus className="mr-2 h-4 w-4" />
+                  <span>Deshabilitar</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => id && onEnableUser(id)}
+                  className="flex w-full cursor-pointer flex-row items-center justify-start text-greencremona"
+                >
+                  <CirclePlus className="mr-2 h-4 w-4" />
+                  <span>Habilitar</span>
+                </button>
+              )}
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>

@@ -20,6 +20,7 @@ import { UsersData } from "@/types/types"
 import { TextScrollArea } from "@/components/components"
 import SeleccionarGrupos from "../(table)/seleccionarGrupos"
 import { CircleMinus, CirclePlus } from "lucide-react"
+import { useAuth } from "@/context/AuthProvider";
 
 type Props = {
   onUserCreated: () => void
@@ -57,6 +58,7 @@ export function EditarUsuario({
   const [cambiarContrasena, setCambiarContrasena] = useState(false)
   const [usuarioHabilitado, setUsuarioHabilitado] = useState(true)
   const [createPassword, setCreatePassword] = useState("")
+  const { user } = useAuth()
 
   const [form, setForm] = useState<
     UsersData<{
@@ -232,6 +234,15 @@ export function EditarUsuario({
     }
   }, [loading, userIdToEdit])
 
+  const puedeHabilitarDeshabilitarUsuario =
+    (form.extra?.habilitado
+      ? user?.permisos?.some(
+          (p) => p.nombre === "PERMISO_DESHABILITAR_USUARIOS"
+        )
+      : user?.permisos?.some(
+          (p) => p.nombre === "PERMISO_HABILITAR_USUARIOS"
+        )) ?? false
+
   if (loading) {
     return (
       <DialogContent className="z-100 bg-background3 sm:max-w-150">
@@ -283,31 +294,32 @@ export function EditarUsuario({
                   <p className="text-sm font-medium">
                     {form.extra?.habilitado ? "Sí" : "No"}
                   </p>
-                  {form.extra?.habilitado ? (
-                    <Button
-                      loading={isStatusUpdating}
-                      loadingText="Deshabilitando..."
-                      onClick={() => {
-                        void handleStatusToggle()
-                      }}
-                      className="flex cursor-pointer items-center border border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/70"
-                    >
-                      <CircleMinus className="h-4 w-4" />
-                      Deshabilitar
-                    </Button>
-                  ) : (
-                    <Button
-                      loading={isStatusUpdating}
-                      loadingText="Habilitando..."
-                      onClick={() => {
-                        void handleStatusToggle()
-                      }}
-                      className="flex cursor-pointer items-center border border-greencremona bg-greencremona/20 text-greencremona hover:bg-greencremona/70"
-                    >
-                      <CirclePlus className="h-4 w-4" />
-                      Habilitar
-                    </Button>
-                  )}
+                  {puedeHabilitarDeshabilitarUsuario &&
+                    (form.extra?.habilitado ? (
+                      <Button
+                        loading={isStatusUpdating}
+                        loadingText="Deshabilitando..."
+                        onClick={() => {
+                          void handleStatusToggle()
+                        }}
+                        className="flex cursor-pointer items-center border border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/70"
+                      >
+                        <CircleMinus className="h-4 w-4" />
+                        Deshabilitar
+                      </Button>
+                    ) : (
+                      <Button
+                        loading={isStatusUpdating}
+                        loadingText="Habilitando..."
+                        onClick={() => {
+                          void handleStatusToggle()
+                        }}
+                        className="flex cursor-pointer items-center border border-greencremona bg-greencremona/20 text-greencremona hover:bg-greencremona/70"
+                      >
+                        <CirclePlus className="h-4 w-4" />
+                        Habilitar
+                      </Button>
+                    ))}
                 </div>
               </div>
             </div>
