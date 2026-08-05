@@ -37,6 +37,8 @@ import {
 import { type DataTableColumn } from "./data-table"
 import { EditarContraseña } from "../(formulario)/formUsuario"
 import { useAuth } from "@/context/AuthProvider"
+import { usePermisos } from "@/context/usePermisos"
+import { PERMISOS } from "@/lib/permisos"
 
 function UserActionsCell({
   row,
@@ -51,20 +53,67 @@ function UserActionsCell({
 }) {
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = React.useState(false)
   const id = row.extra?.id
-  const { user } = useAuth()
+  
+    const { tienePermiso } = usePermisos()
 
-  const puedeCambiarContra =
-    user?.permisos?.some((p) => p.nombre === "PERMISO_CONTRASEÑA_USUARIOS") ??
-    false
+    const puedeHabilitarUsuario = tienePermiso(PERMISOS.HABILITAR_USUARIOS)
+    const puedeDeshabilitarUsuario = tienePermiso(PERMISOS.DESHABILITAR_USUARIOS)
 
-  const puedeHabilitarDeshabilitarUsuario =
-    (row.extra?.habilitado
-      ? user?.permisos?.some(
-          (p) => p.nombre === "PERMISO_DESHABILITAR_USUARIOS"
+    const puedeCambiarPass = tienePermiso(PERMISOS.CAMBIAR_CONTRASENA)
+
+    const renderBotonEstadoUsuario = () => {
+      if (!puedeHabilitarUsuario && !puedeDeshabilitarUsuario) {
+        return null
+      }
+
+      if (puedeDeshabilitarUsuario && row.extra?.habilitado) {
+        return (
+          <DropdownMenuItem asChild>
+            <button
+              onClick={() => id && onDisableUser(id)}
+              className="flex w-full cursor-pointer flex-row items-center justify-start text-redcremona"
+            >
+              <CircleMinus className="mr-2 h-4 w-4" />
+              <span>Deshabilitar</span>
+            </button>
+          </DropdownMenuItem>
         )
-      : user?.permisos?.some(
-          (p) => p.nombre === "PERMISO_HABILITAR_USUARIOS"
-        )) ?? false
+      }
+
+      if (puedeHabilitarUsuario && !row.extra?.habilitado) {
+        return (
+          <DropdownMenuItem asChild>
+            <button
+              onClick={() => id && onEnableUser(id)}
+              className="flex w-full cursor-pointer flex-row items-center justify-start text-greencremona"
+            >
+              <CirclePlus className="mr-2 h-4 w-4" />
+              <span>Habilitar</span>
+            </button>
+          </DropdownMenuItem>
+        )
+      }
+    }
+
+    const renderCambioPass = () => {
+      if (!puedeCambiarPass) {
+        return null
+      }
+
+      if (puedeCambiarPass) {
+        return (
+          <DropdownMenuItem className="text-left" asChild>
+              <button
+                onClick={() => setIsPasswordDialogOpen(true)}
+                className="flex w-full cursor-pointer flex-row items-center justify-start text-orangecremona"
+              >
+                <KeyRound className="mr-2 h-4 w-4" />
+                <span>Cambiar contraseña</span>
+              </button>
+            </DropdownMenuItem>
+        )
+      }
+    }
 
   return (
     <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
@@ -79,7 +128,6 @@ function UserActionsCell({
           <DropdownMenuLabel>Acciones</DropdownMenuLabel>
           <DropdownMenuItem asChild>
             <button
-              type="button"
               onClick={() => onEditUser(id)}
               className="flex w-full cursor-pointer flex-row items-center justify-start text-bluecremona"
             >
@@ -87,41 +135,8 @@ function UserActionsCell({
               <span>Editar</span>
             </button>
           </DropdownMenuItem>
-          {puedeCambiarContra && (
-            <DropdownMenuItem className="text-left" asChild>
-              <button
-                type="button"
-                onClick={() => setIsPasswordDialogOpen(true)}
-                className="flex w-full cursor-pointer flex-row items-center justify-start text-orangecremona"
-              >
-                <KeyRound className="mr-2 h-4 w-4" />
-                <span>Cambiar contraseña</span>
-              </button>
-            </DropdownMenuItem>
-          )}
-          {puedeHabilitarDeshabilitarUsuario && (
-            <DropdownMenuItem asChild>
-              {row.extra?.habilitado ? (
-                <button
-                  type="button"
-                  onClick={() => id && onDisableUser(id)}
-                  className="flex w-full cursor-pointer flex-row items-center justify-start text-redcremona"
-                >
-                  <CircleMinus className="mr-2 h-4 w-4" />
-                  <span>Deshabilitar</span>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => id && onEnableUser(id)}
-                  className="flex w-full cursor-pointer flex-row items-center justify-start text-greencremona"
-                >
-                  <CirclePlus className="mr-2 h-4 w-4" />
-                  <span>Habilitar</span>
-                </button>
-              )}
-            </DropdownMenuItem>
-          )}
+          {renderCambioPass()}
+          {renderBotonEstadoUsuario()}
         </DropdownMenuContent>
       </DropdownMenu>
       {id ? (
