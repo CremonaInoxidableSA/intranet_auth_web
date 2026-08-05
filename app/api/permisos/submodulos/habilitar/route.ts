@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const EXTERNAL_API_URL = process.env.NEXT_PUBLIC_API_AUTH_URL + "/modulos/crear"
+const EXTERNAL_API_URL =
+  process.env.NEXT_PUBLIC_API_AUTH_URL +
+  "/submodulos/habilitar?submodulo_nombre="
 
-export async function POST(request: NextRequest) {
+export async function PUT(request: NextRequest) {
   const authHeader = request.headers.get("authorization")
-  const payload = (await request.json().catch(() => null)) as Record<
-    string,
-    unknown
-  > | null
+  const submoduloNombre = request.nextUrl.searchParams.get("submodulo_nombre")
 
   const token = authHeader?.startsWith("Bearer ")
     ? authHeader.substring(7)
@@ -21,26 +20,21 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  if (!payload || typeof payload !== "object") {
+  if (!submoduloNombre) {
     return NextResponse.json(
-      { error: "Payload inválido para crear el modulo" },
+      { error: "Falta submodulo_nombre" },
       { status: 400 }
     )
   }
 
-  const normalizedPayload = {
-    ...(payload as Record<string, unknown>),
-    habilitado: (payload as Record<string, unknown>).habilitado ?? true,
-  }
+  const externalUrl = `${EXTERNAL_API_URL}${encodeURIComponent(submoduloNombre)}`
 
-  const externalResponse = await fetch(EXTERNAL_API_URL, {
-    method: "POST",
+  const externalResponse = await fetch(externalUrl, {
+    method: "PUT",
     headers: {
       Accept: "application/json",
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
     },
-    body: JSON.stringify(normalizedPayload),
   })
 
   const data = await externalResponse.json().catch(() => null)
@@ -48,7 +42,7 @@ export async function POST(request: NextRequest) {
   if (!externalResponse.ok) {
     return NextResponse.json(
       {
-        error: data?.detail ?? data?.message ?? "Error al crear el modulo",
+        error: data?.detail ?? data?.message ?? "Error al habilitar submódulo",
       },
       { status: externalResponse.status }
     )

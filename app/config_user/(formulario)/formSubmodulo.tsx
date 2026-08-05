@@ -145,11 +145,22 @@ export default function FormSubmodulo({
       return
     }
 
+    const recordIdentifier = isEditing
+      ? identifier || initialData?.nombre || nombreTrim
+      : undefined
+
+    const resolvedIdentifier = recordIdentifier?.trim() || ""
+
+    if (isEditing && !resolvedIdentifier) {
+      toast.error("No se pudo identificar el submódulo a editar")
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
       const endpoint = isEditing
-        ? `/api/permisos/submodulos/editar?submodulo_nombre=${encodeURIComponent(identifier || nombreTrim)}`
+        ? `/api/permisos/submodulos/editar?submodulo_nombre=${encodeURIComponent(resolvedIdentifier)}`
         : "/api/permisos/submodulos/crear"
       const method = isEditing ? "PUT" : "POST"
 

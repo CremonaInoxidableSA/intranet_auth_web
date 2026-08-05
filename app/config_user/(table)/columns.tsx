@@ -130,7 +130,9 @@ export const getGrupoColumns = (
 ]
 
 export const getModuloColumns = (
-  onEditModulo: (modulo: ModulosData) => void
+  onEditModulo: (modulo: ModulosData) => void,
+  onDisableModulo: (nombre: string) => void,
+  onEnableModulo: (nombre: string) => void
 ): DataTableColumn<ModulosData>[] => [
   {
     accessorKey: "nombre",
@@ -152,22 +154,59 @@ export const getModuloColumns = (
     ),
   },
   {
+    header: "Habilitado",
+    cell: ({ row }) => (row.habilitado ? "Sí" : "No"),
+  },
+  {
     id: "actions",
-    cell: ({ row }) => (
-      <Button
-        variant="ghost"
-        className="h-8 w-8"
-        onClick={() => onEditModulo(row)}
-      >
-        <span className="sr-only">Editar</span>
-        <PencilLine className="h-4 w-4" />
-      </Button>
-    ),
+    cell: ({ row }) => {
+      const nombre = row.nombre ?? ""
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8">
+              <span className="sr-only">Abrir menú</span>
+              <Ellipsis className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={() => onEditModulo(row)}
+              className="flex cursor-pointer flex-row items-center justify-start text-bluecremona"
+            >
+              <PencilLine className="h-4 w-4" />
+              <p className="items-center justify-start">Editar</p>
+            </DropdownMenuItem>
+            {row.habilitado ? (
+              <DropdownMenuItem
+                onClick={() => nombre && onDisableModulo(nombre)}
+                className="cursor-pointer flex-row items-center justify-start text-redcremona"
+              >
+                <CircleMinus className="h-4 w-4" />
+                <p className="items-center justify-start">Deshabilitar</p>
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem
+                onClick={() => nombre && onEnableModulo(nombre)}
+                className="cursor-pointer flex-row items-center justify-start text-greencremona"
+              >
+                <CirclePlus className="h-4 w-4" />
+                <p className="items-center justify-start">Habilitar</p>
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
+    },
   },
 ]
 
 export const getSubmoduloColumns = (
-  onEditSubmodulo: (submodulo: SubmodulosData) => void
+  onEditSubmodulo: (submodulo: SubmodulosData) => void,
+  onDisableSubmodulo: (nombre: string) => void,
+  onEnableSubmodulo: (nombre: string) => void
 ): DataTableColumn<SubmodulosData>[] => [
   {
     accessorKey: "nombre",
@@ -183,6 +222,10 @@ export const getSubmoduloColumns = (
     ),
   },
   {
+    header: "Habilitado",
+    cell: ({ row }) => (row.habilitado ? "Sí" : "No"),
+  },
+  {
     header: "Modulo Principal",
     cell: ({ row }) => (
       <p className="items-center justify-start">
@@ -192,15 +235,46 @@ export const getSubmoduloColumns = (
   },
   {
     id: "actions",
-    cell: ({ row }) => (
-      <Button
-        variant="ghost"
-        className="h-8 w-8"
-        onClick={() => onEditSubmodulo(row)}
-      >
-        <span className="sr-only">Editar</span>
-        <PencilLine className="h-4 w-4" />
-      </Button>
-    ),
+    cell: ({ row }) => {
+      const nombre = row.nombre ?? ""
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8">
+              <span className="sr-only">Abrir menú</span>
+              <Ellipsis className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={() => onEditSubmodulo(row)}
+              className="flex cursor-pointer flex-row items-center justify-start text-bluecremona"
+            >
+              <PencilLine className="h-4 w-4" />
+              <p className="items-center justify-start">Editar</p>
+            </DropdownMenuItem>
+            {row.habilitado ? (
+              <DropdownMenuItem
+                onClick={() => nombre && onDisableSubmodulo(nombre)}
+                className="cursor-pointer flex-row items-center justify-start text-redcremona"
+              >
+                <CircleMinus className="h-4 w-4" />
+                <p className="items-center justify-start">Deshabilitar</p>
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem
+                onClick={() => nombre && onEnableSubmodulo(nombre)}
+                className="cursor-pointer flex-row items-center justify-start text-greencremona"
+              >
+                <CirclePlus className="h-4 w-4" />
+                <p className="items-center justify-start">Habilitar</p>
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
+    },
   },
 ]

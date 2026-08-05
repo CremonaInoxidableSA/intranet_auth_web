@@ -65,11 +65,22 @@ export default function FormModulo({
       return
     }
 
+    const recordIdentifier = isEditing
+      ? identifier || initialData?.nombre || form.nombre.trim()
+      : undefined
+
+    const resolvedIdentifier = recordIdentifier?.trim() || ""
+
+    if (isEditing && !resolvedIdentifier) {
+      toast.error("No se pudo identificar el módulo a editar")
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
       const endpoint = isEditing
-        ? `/api/permisos/modulos/editar?modulo_nombre=${encodeURIComponent(identifier || form.nombre.trim())}`
+        ? `/api/permisos/modulos/editar?modulo_nombre=${encodeURIComponent(resolvedIdentifier)}`
         : "/api/permisos/modulos/crear"
       const method = isEditing ? "PUT" : "POST"
 
@@ -88,6 +99,7 @@ export default function FormModulo({
                 subdominio: form.subdominio.trim(),
                 path: form.path.trim(),
                 icono: form.icono.trim(),
+                habilitado: true,
               }
         ),
       })

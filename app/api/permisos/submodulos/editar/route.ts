@@ -13,10 +13,13 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   }
 
-  const userId = request.nextUrl.searchParams.get("submodulo_nombre")
+  const userId =
+    request.nextUrl.searchParams.get("submodulo_nombre") ??
+    request.nextUrl.searchParams.get("nombre")
+
   if (!userId) {
     return NextResponse.json(
-      { error: "Falta submodulo_nombre" },
+      { error: "Falta el identificador del submódulo" },
       { status: 400 }
     )
   }
@@ -26,10 +29,12 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Cuerpo inválido" }, { status: 400 })
   }
 
-  const externalUrl = `${EXTERNAL_API_URL}${userId}`
+  const externalUrl = new URL(EXTERNAL_API_URL)
+  externalUrl.searchParams.set("submodulo_nombre", userId)
+  externalUrl.searchParams.set("nombre", userId)
 
   try {
-    const response = await fetch(externalUrl, {
+    const response = await fetch(externalUrl.toString(), {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

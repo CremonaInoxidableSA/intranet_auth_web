@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   DialogClose,
@@ -19,10 +19,13 @@ import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 import { UsersData } from "@/types/types"
 import { TextScrollArea } from "@/components/components"
 import SeleccionarGrupos from "../(table)/seleccionarGrupos"
+import { CircleMinus, CirclePlus } from "lucide-react"
 
 type Props = {
   onUserCreated: () => void
   userIdToEdit?: string
+  onDisableUser?: (userId: string) => void
+  onEnableUser?: (userId: string) => void
 }
 
 const getEmptyForm = (userId?: string) => ({
@@ -39,10 +42,16 @@ const getEmptyForm = (userId?: string) => ({
   },
 })
 
-export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
+export default function EditarUsuario({
+  onUserCreated,
+  userIdToEdit,
+  onDisableUser,
+  onEnableUser,
+}: Props) {
   const isEditing = Boolean(userIdToEdit)
   const [loading, setLoading] = useState(isEditing)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isStatusUpdating, setIsStatusUpdating] = useState(false)
   const [gruposSeleccionados, setGruposSeleccionados] = useState<string[]>([])
   const [cambiarContrasena, setCambiarContrasena] = useState(false)
 
@@ -50,17 +59,20 @@ export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
     UsersData<{ id: string; habilitado: boolean; cambiar_contraseña: boolean }>
   >(getEmptyForm(userIdToEdit))
 
-  useEffect(() => {
-    if (!userIdToEdit) {
-      setForm(getEmptyForm())
-      setGruposSeleccionados([])
-      setCambiarContrasena(false)
-      setLoading(false)
-      return
-    }
+  const loadUserData = useCallback(
+    async (showLoading = false) => {
+      if (!userIdToEdit) {
+        setForm(getEmptyForm())
+        setGruposSeleccionados([])
+        setCambiarContrasena(false)
+        setLoading(false)
+        return
+      }
 
-    const fetchUserData = async () => {
-      setLoading(true)
+      if (showLoading) {
+        setLoading(true)
+      }
+
       try {
         const res = await fetchWithKeycloak(
           `/api/usuarios/detalles?user_id=${userIdToEdit}`,
@@ -94,12 +106,17 @@ export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
       } catch {
         toast.error("Error de conexión con la API")
       } finally {
-        setLoading(false)
+        if (showLoading) {
+          setLoading(false)
+        }
       }
-    }
+    },
+    [userIdToEdit]
+  )
 
-    fetchUserData()
-  }, [userIdToEdit])
+  useEffect(() => {
+    void loadUserData(true)
+  }, [loadUserData])
 
   const handleChange = (
     key: keyof Omit<
@@ -113,6 +130,31 @@ export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
     value: string
   ) => {
     setForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const handleStatusToggle = async () => {
+    if (!form.extra?.id) return
+
+    setIsStatusUpdating(true)
+
+    try {
+      if (form.extra.habilitado) {
+        await onDisableUser?.(form.extra.id)
+      } else {
+        await onEnableUser?.(form.extra.id)
+      }
+
+      await loadUserData(false)
+      toast.success(
+        form.extra.habilitado
+          ? "Usuario deshabilitado correctamente"
+          : "Usuario habilitado correctamente"
+      )
+    } catch {
+      toast.error("Error de conexión con la API")
+    } finally {
+      setIsStatusUpdating(false)
+    }
   }
 
   const handleSubmit = async () => {
@@ -205,16 +247,48 @@ export default function EditarUsuario({ onUserCreated, userIdToEdit }: Props) {
             {/* Campos no editables (solo lectura) */}
             <div className="flex flex-col gap-4">
               <div className="gap-1">
-                <Label className="text-sm text-muted-foreground">ID</Label>
+                <Label htmlFor="id" className="text-sm text-muted-foreground">
+                  ID
+                </Label>
                 <p className="text-sm font-medium">{form.extra?.id ?? "—"}</p>
               </div>
               <div className="gap-1">
-                <Label className="text-sm text-muted-foreground">
+                <Label
+                  htmlFor="habilitado"
+                  className="text-sm text-muted-foreground"
+                >
                   Habilitado
                 </Label>
-                <p className="text-sm font-medium">
-                  {form.extra?.habilitado ? "Sí" : "No"}
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium">
+                    {form.extra?.habilitado ? "Sí" : "No"}
+                  </p>
+                  {form.extra?.habilitado ? (
+                    <Button
+                      loading={isStatusUpdating}
+                      loadingText="Deshabilitando..."
+                      onClick={() => {
+                        void handleStatusToggle()
+                      }}
+                      className="flex cursor-pointer items-center border border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/70"
+                    >
+                      <CircleMinus className="h-4 w-4" />
+                      Deshabilitar
+                    </Button>
+                  ) : (
+                    <Button
+                      loading={isStatusUpdating}
+                      loadingText="Habilitando..."
+                      onClick={() => {
+                        void handleStatusToggle()
+                      }}
+                      className="flex cursor-pointer items-center border border-greencremona bg-greencremona/20 text-greencremona hover:bg-greencremona/70"
+                    >
+                      <CirclePlus className="h-4 w-4" />
+                      Habilitar
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
 

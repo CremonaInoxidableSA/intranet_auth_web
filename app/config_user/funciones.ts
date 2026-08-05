@@ -287,6 +287,116 @@ export function useConfiguracionUsuario() {
     [refetchUsuarios]
   )
 
+  const deshabilitarModulo = useCallback(
+    async (modulo_nombre: string) => {
+      try {
+        const res = await fetchWithKeycloak(
+          `/api/permisos/modulos/deshabilitar?modulo_nombre=${encodeURIComponent(modulo_nombre)}`,
+          {
+            method: "PUT",
+            headers: { Accept: "application/json" },
+          }
+        )
+
+        const result = await res.json().catch(() => null)
+        if (!res.ok) {
+          toast.error(
+            result?.error || result?.detail || "Error al deshabilitar el módulo"
+          )
+          return
+        }
+
+        await loadData()
+      } catch {
+        toast.error("Error de conexión con la API")
+      }
+    },
+    [loadData]
+  )
+
+  const habilitarModulo = useCallback(
+    async (modulo_nombre: string) => {
+      try {
+        const res = await fetchWithKeycloak(
+          `/api/permisos/modulos/habilitar?modulo_nombre=${encodeURIComponent(modulo_nombre)}`,
+          {
+            method: "PUT",
+            headers: { Accept: "application/json" },
+          }
+        )
+
+        const result = await res.json().catch(() => null)
+        if (!res.ok) {
+          toast.error(
+            result?.error || result?.detail || "Error al habilitar el módulo"
+          )
+          return
+        }
+
+        await loadData()
+      } catch {
+        toast.error("Error de conexión con la API")
+      }
+    },
+    [loadData]
+  )
+
+  const deshabilitarSubmodulo = useCallback(
+    async (submodulo_nombre: string) => {
+      try {
+        const res = await fetchWithKeycloak(
+          `/api/permisos/submodulos/deshabilitar?submodulo_nombre=${encodeURIComponent(submodulo_nombre)}`,
+          {
+            method: "PUT",
+            headers: { Accept: "application/json" },
+          }
+        )
+
+        const result = await res.json().catch(() => null)
+        if (!res.ok) {
+          toast.error(
+            result?.error ||
+              result?.detail ||
+              "Error al deshabilitar el submódulo"
+          )
+          return
+        }
+
+        await loadData()
+      } catch {
+        toast.error("Error de conexión con la API")
+      }
+    },
+    [loadData]
+  )
+
+  const habilitarSubmodulo = useCallback(
+    async (submodulo_nombre: string) => {
+      try {
+        const res = await fetchWithKeycloak(
+          `/api/permisos/submodulos/habilitar?submodulo_nombre=${encodeURIComponent(submodulo_nombre)}`,
+          {
+            method: "PUT",
+            headers: { Accept: "application/json" },
+          }
+        )
+
+        const result = await res.json().catch(() => null)
+        if (!res.ok) {
+          toast.error(
+            result?.error || result?.detail || "Error al habilitar el submódulo"
+          )
+          return
+        }
+
+        await loadData()
+      } catch {
+        toast.error("Error de conexión con la API")
+      }
+    },
+    [loadData]
+  )
+
   const editarUsuario = useCallback((id: string | undefined) => {
     setUserIdToEdit(id)
     setEditTarget(null)
@@ -415,12 +525,17 @@ export function useConfiguracionUsuario() {
   )
 
   const moduloColumns = useMemo(
-    () => getModuloColumns(editarModulo),
-    [editarModulo]
+    () => getModuloColumns(editarModulo, deshabilitarModulo, habilitarModulo),
+    [editarModulo, deshabilitarModulo, habilitarModulo]
   )
   const submoduloColumns = useMemo(
-    () => getSubmoduloColumns(editarSubmodulo),
-    [editarSubmodulo]
+    () =>
+      getSubmoduloColumns(
+        editarSubmodulo,
+        deshabilitarSubmodulo,
+        habilitarSubmodulo
+      ),
+    [editarSubmodulo, deshabilitarSubmodulo, habilitarSubmodulo]
   )
 
   const currentColumns = useMemo<DataTableColumn<DataItem>[]>(() => {

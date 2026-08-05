@@ -58,6 +58,8 @@ export default function ConfiguracionUsuario() {
     subTotalPages,
     subTotalSubmodulos,
     user,
+    deshabilitarUsuario,
+    habilitarUsuario,
     handleUserCreated,
     handleUserUpdated,
     aplicarFiltroUsuarios,
@@ -128,6 +130,8 @@ export default function ConfiguracionUsuario() {
         <EditarUsuario
           onUserCreated={handleUserUpdated}
           userIdToEdit={userIdToEdit}
+          onDisableUser={deshabilitarUsuario}
+          onEnableUser={habilitarUsuario}
         />
       )
     }

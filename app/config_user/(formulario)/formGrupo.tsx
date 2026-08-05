@@ -62,6 +62,17 @@ export default function FormGrupo({
       return
     }
 
+    const recordIdentifier = isEditing
+      ? identifier || initialData?.nombre || nombreGrupo.trim()
+      : undefined
+
+    const resolvedIdentifier = recordIdentifier?.trim() || ""
+
+    if (isEditing && !resolvedIdentifier) {
+      toast.error("No se pudo identificar el grupo a editar")
+      return
+    }
+
     const payload = isEditing
       ? {
           permisos: permisosSeleccionados,
@@ -79,7 +90,7 @@ export default function FormGrupo({
 
     try {
       const endpoint = isEditing
-        ? `/api/permisos/grupos/editar?grupo_nombre=${encodeURIComponent(identifier || nombreGrupo.trim())}`
+        ? `/api/permisos/grupos/editar?grupo_nombre=${encodeURIComponent(resolvedIdentifier)}`
         : "/api/permisos/grupos/crear"
       const method = isEditing ? "PUT" : "POST"
 

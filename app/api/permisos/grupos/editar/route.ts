@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const EXTERNAL_API_URL = process.env.NEXT_PUBLIC_API_AUTH_URL + "/grupos/editar?grupo_nombre="
+const EXTERNAL_API_URL =
+  process.env.NEXT_PUBLIC_API_AUTH_URL + "/grupos/editar?grupo_nombre="
 
 export async function PUT(request: NextRequest) {
   const authHeader = request.headers.get("authorization")
@@ -12,9 +13,15 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   }
 
-  const userId = request.nextUrl.searchParams.get("grupo_nombre")
+  const userId =
+    request.nextUrl.searchParams.get("grupo_nombre") ??
+    request.nextUrl.searchParams.get("nombre")
+
   if (!userId) {
-    return NextResponse.json({ error: "Falta grupo_nombre" }, { status: 400 })
+    return NextResponse.json(
+      { error: "Falta el identificador del grupo" },
+      { status: 400 }
+    )
   }
 
   const body = await request.json().catch(() => null)
@@ -22,10 +29,12 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Cuerpo inválido" }, { status: 400 })
   }
 
-  const externalUrl = `${EXTERNAL_API_URL}${userId}`
+  const externalUrl = new URL(EXTERNAL_API_URL)
+  externalUrl.searchParams.set("grupo_nombre", userId)
+  externalUrl.searchParams.set("nombre", userId)
 
   try {
-    const response = await fetch(externalUrl, {
+    const response = await fetch(externalUrl.toString(), {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
