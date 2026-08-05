@@ -17,7 +17,30 @@ export async function PUT(request: NextRequest) {
     )
   }
 
-  const body = await request.json()
+  const body = await request.json().catch(() => null)
+  if (!body || typeof body !== "object") {
+    return NextResponse.json(
+      { error: "Solicitud inválida: body JSON requerido" },
+      { status: 400 }
+    )
+  }
+
+  const password = body?.password
+  const password_confirmation = body?.password_confirmation
+
+  if (!password) {
+    return NextResponse.json(
+      { error: "Falta la nueva contraseña" },
+      { status: 400 }
+    )
+  }
+
+  if (!password_confirmation) {
+    return NextResponse.json(
+      { error: "Falta la confirmación de la nueva contraseña" },
+      { status: 400 }
+    )
+  }
 
   const externalResponse = await fetch(EXTERNAL_API_URL, {
     method: "PUT",
@@ -26,7 +49,10 @@ export async function PUT(request: NextRequest) {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify({
+      password,
+      password_confirmation,
+    }),
   })
 
   const data = await externalResponse.json().catch(() => null)

@@ -56,6 +56,7 @@ export function EditarUsuario({
   const [gruposSeleccionados, setGruposSeleccionados] = useState<string[]>([])
   const [cambiarContrasena, setCambiarContrasena] = useState(false)
   const [usuarioHabilitado, setUsuarioHabilitado] = useState(true)
+  const [createPassword, setCreatePassword] = useState("")
 
   const [form, setForm] = useState<
     UsersData<{
@@ -173,16 +174,23 @@ export function EditarUsuario({
       return
     }
 
-    const payload = {
+    if (!isEditing && !createPassword) {
+      toast.error("La contraseña es requerida para crear un usuario")
+      return
+    }
+
+    const payload: Record<string, unknown> = {
       email: form.email,
       nombre: form.nombre,
       apellido: form.apellido,
       legajo: Number(form.legajo),
       dni: Number(form.dni),
       grupos: gruposSeleccionados,
-      cambiar_contraseña: cambiarContrasena,
-      password: form.extra?.password,
       habilitado: form.extra?.habilitado ?? true,
+    }
+
+    if (!isEditing) {
+      payload.password = createPassword
     }
 
     setIsSubmitting(true)
@@ -371,6 +379,21 @@ export function EditarUsuario({
             />
           </div>
         </div>
+
+        {!isEditing && (
+          <div className="grid gap-2">
+            <Label htmlFor="password">Contraseña</Label>
+            <Input
+              id="password"
+              type="password"
+              value={createPassword}
+              onChange={(e) => setCreatePassword(e.target.value)}
+              placeholder="Ingrese la contraseña del usuario"
+              required
+              className="border border-background6 bg-background3"
+            />
+          </div>
+        )}
 
         {/* Grupos asignados */}
         <div className="grid gap-2">

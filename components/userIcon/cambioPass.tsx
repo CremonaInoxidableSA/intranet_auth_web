@@ -60,6 +60,21 @@ const CambioPass = ({ open, onOpenChange }: CambioPassProps) => {
       return
     }
 
+    if (!form.new_password_confirmation) {
+      toast.error("Confirme la nueva contraseña")
+      return
+    }
+
+    if (form.new_password !== form.new_password_confirmation) {
+      toast.error("Las contraseñas no coinciden")
+      return
+    }
+
+    if (form.new_password.length < 8) {
+      toast.error("La contraseña debe tener al menos 8 caracteres")
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -84,12 +99,12 @@ const CambioPass = ({ open, onOpenChange }: CambioPassProps) => {
 
       toast.success("Contraseña actualizada correctamente")
       handleClose()
+      await logout()
     } catch (error) {
       console.error("Error al cambiar contraseña:", error)
       toast.error("Error de comunicación con el servidor")
     } finally {
       setLoading(false)
-      await logout()
     }
   }
 

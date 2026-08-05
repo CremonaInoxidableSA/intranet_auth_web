@@ -5,6 +5,7 @@ interface UsersExtraData {
   apellidoNombre?: string
   change_password?: boolean
   password?: string
+  password_confirmation?: string
 }
 
 // Data que se obtiene de la API al iniciar sesion

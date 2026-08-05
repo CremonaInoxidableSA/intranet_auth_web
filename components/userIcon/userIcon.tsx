@@ -30,7 +30,8 @@ const UserIcon = () => {
     "Usuario"
 
   const canManageUsers =
-    user?.submodulos?.some((s) => s.nombre === "SUBMODULO_CONFIG_USER") ?? false
+    user?.submodulos?.some((s) => s.nombre === "PERMISO_CONTRASEÑA_USUARIOS") ??
+    false
 
   const closeSession = async () => {
     try {
