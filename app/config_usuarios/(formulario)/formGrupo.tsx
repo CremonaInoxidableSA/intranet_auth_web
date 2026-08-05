@@ -40,6 +40,7 @@ export default function FormGrupo({
   const [nombreGrupo, setNombreGrupo] = useState("")
   const [identifier, setIdentifier] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false)
   const [permisosSeleccionados, setPermisosSeleccionados] = useState<string[]>(
     []
   )
@@ -55,6 +56,43 @@ export default function FormGrupo({
     setModulosSeleccionados(initialData?.modulos ?? [])
     setSubmodulosSeleccionados(initialData?.submodulos ?? [])
   }, [initialData])
+
+  useEffect(() => {
+    if (!isEditing || !identifier) {
+      return
+    }
+
+    const loadDetalle = async () => {
+      setIsLoadingDetail(true)
+      try {
+        const response = await fetchWithKeycloak(
+          `/api/permisos/grupos/detalle?grupo_nombre=${encodeURIComponent(
+            identifier
+          )}`
+        )
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => null)
+          toast.error(
+            data?.error || data?.detail || "Error al cargar detalle del grupo"
+          )
+          return
+        }
+
+        const data = await response.json()
+        setNombreGrupo(data?.nombre ?? identifier)
+        setPermisosSeleccionados(data?.permisos ?? [])
+        setModulosSeleccionados(data?.modulos ?? [])
+        setSubmodulosSeleccionados(data?.submodulos ?? [])
+      } catch {
+        toast.error("Error de conexión al cargar detalle del grupo")
+      } finally {
+        setIsLoadingDetail(false)
+      }
+    }
+
+    void loadDetalle()
+  }, [identifier, isEditing])
 
   const handleSubmit = async () => {
     if (!nombreGrupo.trim()) {
@@ -117,6 +155,22 @@ export default function FormGrupo({
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  if (isEditing && isLoadingDetail) {
+    return (
+      <DialogContent className="z-100 bg-background3 sm:max-w-150">
+        <DialogHeader>
+          <DialogTitle>Cargando...</DialogTitle>
+          <DialogDescription>
+            Espere mientras cargan los datos del grupo.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex items-center justify-center py-8">
+          <p>Cargando...</p>
+        </div>
+      </DialogContent>
+    )
   }
 
   return (

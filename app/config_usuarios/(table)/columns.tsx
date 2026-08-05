@@ -33,6 +33,7 @@ import {
   GruposData,
   ModulosData,
   SubmodulosData,
+  PermisosData,
 } from "@/types/types"
 import { type DataTableColumn } from "./data-table"
 import { EditarContraseña } from "../(formulario)/formUsuario"
@@ -53,67 +54,67 @@ function UserActionsCell({
 }) {
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = React.useState(false)
   const id = row.extra?.id
-  
-    const { tienePermiso } = usePermisos()
 
-    const puedeHabilitarUsuario = tienePermiso(PERMISOS.HABILITAR_USUARIOS)
-    const puedeDeshabilitarUsuario = tienePermiso(PERMISOS.DESHABILITAR_USUARIOS)
+  const { tienePermiso } = usePermisos()
 
-    const puedeCambiarPass = tienePermiso(PERMISOS.CAMBIAR_CONTRASENA)
+  const puedeHabilitarUsuario = tienePermiso(PERMISOS.HABILITAR_USUARIOS)
+  const puedeDeshabilitarUsuario = tienePermiso(PERMISOS.DESHABILITAR_USUARIOS)
 
-    const renderBotonEstadoUsuario = () => {
-      if (!puedeHabilitarUsuario && !puedeDeshabilitarUsuario) {
-        return null
-      }
+  const puedeCambiarPass = tienePermiso(PERMISOS.CAMBIAR_CONTRASENA)
 
-      if (puedeDeshabilitarUsuario && row.extra?.habilitado) {
-        return (
-          <DropdownMenuItem asChild>
-            <button
-              onClick={() => id && onDisableUser(id)}
-              className="flex w-full cursor-pointer flex-row items-center justify-start text-redcremona"
-            >
-              <CircleMinus className="mr-2 h-4 w-4" />
-              <span>Deshabilitar</span>
-            </button>
-          </DropdownMenuItem>
-        )
-      }
-
-      if (puedeHabilitarUsuario && !row.extra?.habilitado) {
-        return (
-          <DropdownMenuItem asChild>
-            <button
-              onClick={() => id && onEnableUser(id)}
-              className="flex w-full cursor-pointer flex-row items-center justify-start text-greencremona"
-            >
-              <CirclePlus className="mr-2 h-4 w-4" />
-              <span>Habilitar</span>
-            </button>
-          </DropdownMenuItem>
-        )
-      }
+  const renderBotonEstadoUsuario = () => {
+    if (!puedeHabilitarUsuario && !puedeDeshabilitarUsuario) {
+      return null
     }
 
-    const renderCambioPass = () => {
-      if (!puedeCambiarPass) {
-        return null
-      }
-
-      if (puedeCambiarPass) {
-        return (
-          <DropdownMenuItem className="text-left" asChild>
-              <button
-                onClick={() => setIsPasswordDialogOpen(true)}
-                className="flex w-full cursor-pointer flex-row items-center justify-start text-orangecremona"
-              >
-                <KeyRound className="mr-2 h-4 w-4" />
-                <span>Cambiar contraseña</span>
-              </button>
-            </DropdownMenuItem>
-        )
-      }
+    if (puedeDeshabilitarUsuario && row.extra?.habilitado) {
+      return (
+        <DropdownMenuItem asChild>
+          <button
+            onClick={() => id && onDisableUser(id)}
+            className="flex w-full cursor-pointer flex-row items-center justify-start text-redcremona"
+          >
+            <CircleMinus className="mr-2 h-4 w-4" />
+            <span>Deshabilitar</span>
+          </button>
+        </DropdownMenuItem>
+      )
     }
+
+    if (puedeHabilitarUsuario && !row.extra?.habilitado) {
+      return (
+        <DropdownMenuItem asChild>
+          <button
+            onClick={() => id && onEnableUser(id)}
+            className="flex w-full cursor-pointer flex-row items-center justify-start text-greencremona"
+          >
+            <CirclePlus className="mr-2 h-4 w-4" />
+            <span>Habilitar</span>
+          </button>
+        </DropdownMenuItem>
+      )
+    }
+  }
+
+  const renderCambioPass = () => {
+    if (!puedeCambiarPass) {
+      return null
+    }
+
+    if (puedeCambiarPass) {
+      return (
+        <DropdownMenuItem className="text-left" asChild>
+          <button
+            onClick={() => setIsPasswordDialogOpen(true)}
+            className="flex w-full cursor-pointer flex-row items-center justify-start text-orangecremona"
+          >
+            <KeyRound className="mr-2 h-4 w-4" />
+            <span>Cambiar contraseña</span>
+          </button>
+        </DropdownMenuItem>
+      )
+    }
+  }
 
   return (
     <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
@@ -449,6 +450,87 @@ export const getGrupoColumns = (
         row={row}
         onEditGrupo={onEditGrupo}
         onDeleteGrupo={onDeleteGrupo}
+      />
+    ),
+  },
+]
+
+function PermisoActionsCell({
+  row,
+  onEditPermiso,
+  onDeletePermiso,
+}: {
+  row: PermisosData
+  onEditPermiso: (permiso: PermisosData) => void
+  onDeletePermiso: (nombre: string) => void
+}) {
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false)
+  const nombre = row.nombre ?? ""
+
+  return (
+    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8">
+            <span className="sr-only">Abrir menú</span>
+            <Ellipsis className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+          <DropdownMenuItem
+            onClick={() => onEditPermiso(row)}
+            className="flex cursor-pointer flex-row items-center justify-start text-bluecremona"
+          >
+            <PencilLine className="h-4 w-4" />
+            <span>Editar</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setIsDeleteDialogOpen(true)}
+            className="cursor-pointer flex-row items-center justify-start text-redcremona"
+          >
+            <Trash2 className="h-4 w-4" />
+            <span>Eliminar</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>¿Eliminar permiso?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Esta acción no se puede deshacer. Se eliminará permanentemente el
+            permiso {nombre}.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => nombre && onDeletePermiso(nombre)}
+            className="bg-redcremona hover:bg-redcremona/90"
+          >
+            Eliminar
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
+export const getPermisoColumns = (
+  onEditPermiso: (permiso: PermisosData) => void,
+  onDeletePermiso: (nombre: string) => void
+): DataTableColumn<PermisosData>[] => [
+  {
+    accessorKey: "nombre",
+    header: "Nombre",
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => (
+      <PermisoActionsCell
+        row={row}
+        onEditPermiso={onEditPermiso}
+        onDeletePermiso={onDeletePermiso}
       />
     ),
   },

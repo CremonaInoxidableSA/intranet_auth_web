@@ -27,7 +27,7 @@ import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 import { HoverInfo } from "@/components/components"
 import { fetchModulos, type Modulo } from "../(data)/modulos"
 import { SubmodulosData } from "@/types/types"
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@/components/ui/checkbox"
 
 const hoverInfoText = {
   nombre: 'El submódulo debe tener el formato "SUBMODULO_{nombre}"',
@@ -59,6 +59,7 @@ export default function FormSubmodulo({
   const [modulos, setModulos] = useState<Modulo[]>([])
   const [isLoadingModulos, setIsLoadingModulos] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false)
   const [isModuloSelectorOpen, setIsModuloSelectorOpen] = useState(false)
   const [moduloPadreDraft, setModuloPadreDraft] = useState("")
   const [identifier, setIdentifier] = useState("")
@@ -106,7 +107,52 @@ export default function FormSubmodulo({
     setIdentifier(initialData?.nombre ?? "")
   }, [initialData])
 
-  const handleChange = (field: keyof SubmodulosData, value: string | boolean) => {
+  useEffect(() => {
+    if (!isEditing || !identifier) {
+      return
+    }
+
+    const loadDetalle = async () => {
+      setIsLoadingDetail(true)
+      try {
+        const response = await fetchWithKeycloak(
+          `/api/permisos/submodulos/detalle?submodulo_nombre=${encodeURIComponent(
+            identifier
+          )}`
+        )
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => null)
+          toast.error(
+            data?.error ||
+              data?.detail ||
+              "Error al cargar detalle del submódulo"
+          )
+          return
+        }
+
+        const data = await response.json()
+        setForm({
+          modulo_padre: data?.modulo_padre ?? form.modulo_padre,
+          nombre: data?.nombre ?? form.nombre,
+          path: data?.path ?? form.path,
+          icono: data?.icono ?? form.icono,
+          habilitado: data?.habilitado ?? form.habilitado,
+        })
+      } catch {
+        toast.error("Error de conexión al cargar detalle del submódulo")
+      } finally {
+        setIsLoadingDetail(false)
+      }
+    }
+
+    void loadDetalle()
+  }, [identifier, isEditing])
+
+  const handleChange = (
+    field: keyof SubmodulosData,
+    value: string | boolean
+  ) => {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -197,6 +243,22 @@ export default function FormSubmodulo({
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  if (isEditing && isLoadingDetail) {
+    return (
+      <DialogContent className="z-100 bg-background3 sm:max-w-180">
+        <DialogHeader>
+          <DialogTitle>Cargando...</DialogTitle>
+          <DialogDescription>
+            Espere mientras cargan los datos del submódulo.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex items-center justify-center py-8">
+          <p>Cargando...</p>
+        </div>
+      </DialogContent>
+    )
   }
 
   return (
@@ -402,8 +464,8 @@ export default function FormSubmodulo({
             }
           />
           <Label htmlFor="submoduloHabilitado" className="cursor-pointer">
-            El submódulo se creará habilitado y podrá ser accedido. Desmarque esta
-            opción para crear un submódulo deshabilitado.
+            El submódulo se creará habilitado y podrá ser accedido. Desmarque
+            esta opción para crear un submódulo deshabilitado.
           </Label>
         </div>
       )}

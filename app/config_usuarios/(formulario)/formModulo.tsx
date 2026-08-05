@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@/components/ui/checkbox"
 import { ModulosData } from "@/types/types"
 
 type Props = {
@@ -36,6 +36,7 @@ export default function FormModulo({
     habilitado: true,
   })
   const [identifier, setIdentifier] = useState("")
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
@@ -48,6 +49,46 @@ export default function FormModulo({
     })
     setIdentifier(initialData?.nombre ?? initialData?.subdominio ?? "")
   }, [initialData])
+
+  useEffect(() => {
+    if (!isEditing || !identifier) {
+      return
+    }
+
+    const loadDetalle = async () => {
+      setIsLoadingDetail(true)
+      try {
+        const response = await fetchWithKeycloak(
+          `/api/permisos/modulos/detalle?modulo_nombre=${encodeURIComponent(
+            identifier
+          )}`
+        )
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => null)
+          toast.error(
+            data?.error || data?.detail || "Error al cargar detalle del módulo"
+          )
+          return
+        }
+
+        const data = await response.json()
+        setForm({
+          nombre: data?.nombre ?? form.nombre,
+          subdominio: data?.subdominio ?? form.subdominio,
+          path: data?.path ?? form.path,
+          icono: data?.icono ?? form.icono,
+          habilitado: data?.habilitado ?? form.habilitado,
+        })
+      } catch {
+        toast.error("Error de conexión al cargar detalle del módulo")
+      } finally {
+        setIsLoadingDetail(false)
+      }
+    }
+
+    void loadDetalle()
+  }, [identifier, isEditing])
 
   const handleChange = (field: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -121,6 +162,22 @@ export default function FormModulo({
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  if (isEditing && isLoadingDetail) {
+    return (
+      <DialogContent className="z-100 bg-background3 sm:max-w-150">
+        <DialogHeader>
+          <DialogTitle>Cargando...</DialogTitle>
+          <DialogDescription>
+            Espere mientras cargan los datos del módulo.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex items-center justify-center py-8">
+          <p>Cargando...</p>
+        </div>
+      </DialogContent>
+    )
   }
 
   return (

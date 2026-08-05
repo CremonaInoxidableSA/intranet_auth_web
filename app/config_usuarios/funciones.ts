@@ -6,18 +6,20 @@ import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 import { fetchUsuarios } from "./(data)/usuarios"
 import { fetchGrupos } from "./(data)/grupos"
 import { fetchModulos, type Modulo } from "./(data)/modulos"
+import { fetchPermisos } from "./(data)/permisos"
 import { fetchSubmodulos, type Submodulo } from "./(data)/submodulos"
 import { useAuth } from "@/context/AuthProvider"
-import { UsersData, GruposData } from "@/types/types"
+import { UsersData, GruposData, PermisosData } from "@/types/types"
 import { type DataTableColumn } from "./(table)/data-table"
 import {
   getUsuarioColumns,
   getGrupoColumns,
   getModuloColumns,
   getSubmoduloColumns,
+  getPermisoColumns,
 } from "./(table)/columns"
 
-type DataItem = UsersData | GruposData | Modulo | Submodulo
+type DataItem = UsersData | GruposData | Modulo | Submodulo | PermisosData
 
 type EditTarget = {
   tabId: number
@@ -27,12 +29,14 @@ type EditTarget = {
 
 export const TAB_USUARIOS = 1
 export const TAB_GRUPOS = 2
-export const TAB_MODULOS = 3
-export const TAB_SUBMODULOS = 4
+export const TAB_PERMISOS = 3
+export const TAB_MODULOS = 4
+export const TAB_SUBMODULOS = 5
 
 export const tablas = [
   { id: TAB_USUARIOS, nombre: "Lista de Usuarios" },
   { id: TAB_GRUPOS, nombre: "Lista de Grupos" },
+  { id: TAB_PERMISOS, nombre: "Lista de Permisos" },
   { id: TAB_MODULOS, nombre: "Lista de Modulos" },
   { id: TAB_SUBMODULOS, nombre: "Lista de Submodulos" },
 ]
@@ -49,6 +53,12 @@ export const botonesCreacion = [
     nombre: "Crear Grupo",
     extraClass:
       "border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30",
+  },
+  {
+    id: TAB_PERMISOS,
+    nombre: "Crear Permiso",
+    extraClass:
+      "border-purplecremona bg-purplecremona/20 text-purplecremona hover:bg-purplecremona/30",
   },
   {
     id: TAB_MODULOS,
@@ -96,6 +106,11 @@ export function useConfiguracionUsuario() {
   const [subFilter, setSubFilter] = useState<string | null>(null)
   const [subTotalPages, setSubTotalPages] = useState(1)
   const [subTotalSubmodulos, setSubTotalSubmodulos] = useState(0)
+  const [permPage, setPermPage] = useState(1)
+  const [permFilterInput, setPermFilterInput] = useState("")
+  const [permFilter, setPermFilter] = useState<string | null>(null)
+  const [permTotalPages, setPermTotalPages] = useState(1)
+  const [permTotalPermisos, setPermTotalPermisos] = useState(0)
 
   const createHeaders = (tabId: number): Record<string, string> => {
     if (tabId === TAB_USUARIOS) {
@@ -179,6 +194,16 @@ export function useConfiguracionUsuario() {
           setSubTotalSubmodulos(submodulos.paginacion.total_submodulos)
           break
         }
+        case TAB_PERMISOS: {
+          const permisos = await fetchPermisos(
+            { numeroPagina: permPage, filtro: permFilter },
+            currentHeaders
+          )
+          setData(permisos.data)
+          setPermTotalPages(permisos.paginacion.total_paginas)
+          setPermTotalPermisos(permisos.paginacion.total_permisos)
+          break
+        }
         default:
           setData([])
           setUserTotalPages(1)
@@ -203,6 +228,8 @@ export function useConfiguracionUsuario() {
     modFilter,
     subPage,
     subFilter,
+    permPage,
+    permFilter,
   ])
 
   useEffect(() => {
@@ -451,6 +478,35 @@ export function useConfiguracionUsuario() {
     [loadData]
   )
 
+  const eliminarPermiso = useCallback(
+    async (permiso_nombre: string) => {
+      try {
+        const res = await fetchWithKeycloak(
+          `/api/permisos/permisos/eliminar?permiso_nombre=${encodeURIComponent(
+            permiso_nombre
+          )}`,
+          {
+            method: "DELETE",
+            headers: { Accept: "application/json" },
+          }
+        )
+
+        const result = await res.json().catch(() => null)
+        if (!res.ok) {
+          toast.error(
+            result?.error || result?.detail || "Error al eliminar el permiso"
+          )
+          return
+        }
+
+        await loadData()
+      } catch {
+        toast.error("Error de conexión con la API")
+      }
+    },
+    [loadData]
+  )
+
   const eliminarModulo = useCallback(
     async (modulo_nombre: string) => {
       try {
@@ -533,12 +589,27 @@ export function useConfiguracionUsuario() {
     setIsEditDialogOpen(true)
   }, [])
 
+  const editarPermiso = useCallback((permiso: PermisosData) => {
+    setEditTarget({
+      tabId: TAB_PERMISOS,
+      item: permiso,
+      id: permiso.nombre,
+    })
+    setUserIdToEdit(undefined)
+    setIsEditDialogOpen(true)
+  }, [])
+
   const handleUserCreated = useCallback(async () => {
     await refetchUsuarios()
     setIsCreateDialogOpen(false)
   }, [refetchUsuarios])
 
   const handleGrupoCreated = useCallback(async () => {
+    await loadData()
+    setIsCreateDialogOpen(false)
+  }, [loadData])
+
+  const handleModuloCreated = useCallback(async () => {
     await loadData()
     setIsCreateDialogOpen(false)
   }, [loadData])
@@ -568,6 +639,17 @@ export function useConfiguracionUsuario() {
   }, [loadData])
 
   const handleSubmoduloUpdated = useCallback(async () => {
+    setIsEditDialogOpen(false)
+    setEditTarget(null)
+    await loadData()
+  }, [loadData])
+
+  const handlePermisoCreated = useCallback(async () => {
+    await loadData()
+    setIsCreateDialogOpen(false)
+  }, [loadData])
+
+  const handlePermisoUpdated = useCallback(async () => {
     setIsEditDialogOpen(false)
     setEditTarget(null)
     await loadData()
@@ -621,20 +703,32 @@ export function useConfiguracionUsuario() {
     setSubPage(1)
   }, [])
 
+  const aplicarFiltroPermisos = useCallback(() => {
+    setPermPage(1)
+    const parsedFiltro = permFilterInput.trim()
+    setPermFilter(parsedFiltro === "" ? null : parsedFiltro)
+  }, [permFilterInput])
+
+  const limpiarFiltroPermisos = useCallback(() => {
+    setPermFilterInput("")
+    setPermFilter(null)
+    setPermPage(1)
+  }, [])
+
   const usuarioColumns = useMemo(
     () =>
-      getUsuarioColumns(
-        editarUsuario,
-        deshabilitarUsuario,
-        habilitarUsuario,
-        eliminarUsuario
-      ),
+      getUsuarioColumns(editarUsuario, deshabilitarUsuario, habilitarUsuario),
     [editarUsuario, deshabilitarUsuario, habilitarUsuario, eliminarUsuario]
   )
 
   const grupoColumns = useMemo(
     () => getGrupoColumns(editarGrupo, eliminarGrupo),
     [editarGrupo, eliminarGrupo]
+  )
+
+  const permisoColumns = useMemo(
+    () => getPermisoColumns(editarPermiso, eliminarPermiso),
+    [editarPermiso, eliminarPermiso]
   )
 
   const moduloColumns = useMemo(
@@ -667,6 +761,8 @@ export function useConfiguracionUsuario() {
     switch (selectedTabId) {
       case TAB_GRUPOS:
         return grupoColumns as DataTableColumn<DataItem>[]
+      case TAB_PERMISOS:
+        return permisoColumns as DataTableColumn<DataItem>[]
       case TAB_MODULOS:
         return moduloColumns as DataTableColumn<DataItem>[]
       case TAB_SUBMODULOS:
@@ -678,6 +774,7 @@ export function useConfiguracionUsuario() {
     selectedTabId,
     usuarioColumns,
     grupoColumns,
+    permisoColumns,
     moduloColumns,
     submoduloColumns,
   ])
@@ -738,17 +835,30 @@ export function useConfiguracionUsuario() {
     limpiarFiltroUsuarios,
     aplicarFiltroGrupos,
     limpiarFiltroGrupos,
+    aplicarFiltroPermisos,
+    limpiarFiltroPermisos,
     aplicarFiltroModulos,
     limpiarFiltroModulos,
     aplicarFiltroSubmodulos,
     limpiarFiltroSubmodulos,
     handleGrupoCreated,
+    handleModuloCreated,
     handleSubmoduloCreated,
+    handlePermisoCreated,
     handleGrupoUpdated,
+    handlePermisoUpdated,
     handleModuloUpdated,
     handleSubmoduloUpdated,
     refetchUsuarios,
     currentColumns,
     currentCreateButton,
+    permPage,
+    setPermPage,
+    permFilterInput,
+    setPermFilterInput,
+    permFilter,
+    setPermFilter,
+    permTotalPages,
+    permTotalPermisos,
   }
 }

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Boton, TabsComp } from "@/components/components"
 import { EditarUsuario as FormUsuario } from "./(formulario)/formUsuario"
 import FormGrupo from "./(formulario)/formGrupo"
+import FormPermiso from "./(formulario)/formPermiso"
 import FormModulo from "./(formulario)/formModulo"
 import FormSubmodulo from "./(formulario)/formSubmodulo"
 import { EditarUsuario } from "./(formulario)/formUsuario"
@@ -16,6 +17,7 @@ import {
   tablas,
   TAB_USUARIOS,
   TAB_GRUPOS,
+  TAB_PERMISOS,
   TAB_MODULOS,
   TAB_SUBMODULOS,
 } from "./funciones"
@@ -45,6 +47,12 @@ export default function ConfiguracionUsuario() {
     setGroupFilterInput,
     groupTotalPages,
     groupTotalGrupos,
+    permPage,
+    setPermPage,
+    permFilterInput,
+    setPermFilterInput,
+    permTotalPages,
+    permTotalPermisos,
     modPage,
     setModPage,
     modFilterInput,
@@ -66,14 +74,19 @@ export default function ConfiguracionUsuario() {
     limpiarFiltroUsuarios,
     aplicarFiltroGrupos,
     limpiarFiltroGrupos,
+    aplicarFiltroPermisos,
+    limpiarFiltroPermisos,
     aplicarFiltroModulos,
     limpiarFiltroModulos,
     aplicarFiltroSubmodulos,
     limpiarFiltroSubmodulos,
     handleGrupoCreated,
-    handleSubmoduloCreated,
+    handleModuloCreated,
+    handlePermisoCreated,
     handleGrupoUpdated,
+    handlePermisoUpdated,
     handleModuloUpdated,
+    handleSubmoduloCreated,
     handleSubmoduloUpdated,
     currentColumns,
     currentCreateButton,
@@ -86,9 +99,11 @@ export default function ConfiguracionUsuario() {
       case TAB_GRUPOS:
         return <FormGrupo onGrupoCreated={handleGrupoCreated} />
       case TAB_MODULOS:
-        return <FormModulo onModuloCreated={handleGrupoCreated} />
+        return <FormModulo onModuloCreated={handleModuloCreated} />
       case TAB_SUBMODULOS:
         return <FormSubmodulo onSubmoduloCreated={handleSubmoduloCreated} />
+      case TAB_PERMISOS:
+        return <FormPermiso onPermisoCreated={handlePermisoCreated} />
       default:
         return null
     }
@@ -121,6 +136,16 @@ export default function ConfiguracionUsuario() {
           isEditing
           initialData={editTarget.item as SubmodulosData | undefined}
           onSubmoduloCreated={handleSubmoduloUpdated}
+        />
+      )
+    }
+
+    if (editTarget?.tabId === TAB_PERMISOS) {
+      return (
+        <FormPermiso
+          isEditing
+          initialData={editTarget.item as any}
+          onPermisoCreated={handlePermisoUpdated}
         />
       )
     }
@@ -244,6 +269,36 @@ export default function ConfiguracionUsuario() {
                   </Button>
                   <Button
                     onClick={limpiarFiltroGrupos}
+                    className="flex-1 border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
+                  >
+                    Limpiar
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          {selectedTabId === TAB_PERMISOS && (
+            <div className="flex w-full flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex w-full flex-col gap-2 xl:max-w-xl xl:flex-row">
+                <Input
+                  id="perm-filter-input"
+                  value={permFilterInput}
+                  onChange={(event) => setPermFilterInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") aplicarFiltroPermisos()
+                  }}
+                  placeholder="Filtrar por nombre de permiso"
+                  className="border border-background6 bg-background3"
+                />
+                <div className="flex w-full gap-2">
+                  <Button
+                    onClick={aplicarFiltroPermisos}
+                    className="flex-1 border-bluecremona bg-bluecremona/20 text-bluecremona hover:bg-bluecremona/30"
+                  >
+                    Filtrar
+                  </Button>
+                  <Button
+                    onClick={limpiarFiltroPermisos}
                     className="flex-1 border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
                   >
                     Limpiar
@@ -395,6 +450,40 @@ export default function ConfiguracionUsuario() {
                   onClick={() =>
                     setGroupPage((prev) =>
                       Math.min(prev + 1, Math.max(groupTotalPages, 1))
+                    )
+                  }
+                >
+                  Siguiente
+                </Button>
+              </div>
+            </div>
+          )}
+          {selectedTabId === TAB_PERMISOS && (
+            <div className="flex w-full flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+              <span className="text-sm font-semibold text-muted-foreground">
+                Total permisos: {permTotalPermisos}
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={permPage <= 1}
+                  onClick={() => setPermPage((prev) => Math.max(prev - 1, 1))}
+                >
+                  Anterior
+                </Button>
+                <span className="min-w-28 text-center text-sm">
+                  Página {permPage} de {Math.max(permTotalPages, 1)}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={permPage >= Math.max(permTotalPages, 1)}
+                  onClick={() =>
+                    setPermPage((prev) =>
+                      Math.min(prev + 1, Math.max(permTotalPages, 1))
                     )
                   }
                 >
