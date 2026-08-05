@@ -149,7 +149,7 @@ export default function FormGrupo({
             <Label>Permisos</Label>
             <Dialog>
               <DialogTrigger asChild>
-                <Button type="button" variant="outline" size="sm">
+                <Button size="sm">
                   {permisosSeleccionados.length > 0
                     ? "Editar permisos"
                     : "+ Agregar permisos"}
@@ -172,7 +172,7 @@ export default function FormGrupo({
             <Label>Módulos</Label>
             <Dialog>
               <DialogTrigger asChild>
-                <Button type="button" variant="outline" size="sm">
+                <Button size="sm">
                   {modulosSeleccionados.length > 0
                     ? "Editar módulos"
                     : "+ Agregar módulos"}

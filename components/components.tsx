@@ -391,3 +391,30 @@ export function HoverInfo({
     </HoverCard>
   )
 }
+
+//---------------------------------------Dialog---------------------------------------//
+export function DialogConfirmacion({
+  onConfirm,
+  onCancel,
+  confirmText = "Confirmar",
+  cancelText = "Cancelar",
+  children,
+}: {
+  onConfirm: () => void
+  onCancel: () => void
+  confirmText?: string
+  cancelText?: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">{children}</div>
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" onClick={onCancel}>
+          {cancelText}
+        </Button>
+        <Button onClick={onConfirm}>{confirmText}</Button>
+      </div>
+    </div>
+  )
+}

@@ -15,17 +15,12 @@ import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 import { Checkbox } from "@/components/ui/checkbox";
+import { ModulosData } from "@/types/types"
 
 type Props = {
   onModuloCreated?: () => void
   isEditing?: boolean
-  initialData?: {
-    nombre?: string
-    subdominio?: string
-    path?: string
-    icono?: string
-    habilitado?: boolean
-  }
+  initialData?: ModulosData
 }
 
 export default function FormModulo({

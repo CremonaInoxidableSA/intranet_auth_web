@@ -397,6 +397,114 @@ export function useConfiguracionUsuario() {
     [loadData]
   )
 
+  const eliminarUsuario = useCallback(
+    async (usuario_id: string) => {
+      try {
+        const res = await fetchWithKeycloak(
+          `/api/usuarios/eliminar?user_id=${encodeURIComponent(usuario_id)}`,
+          {
+            method: "DELETE",
+            headers: { Accept: "application/json" },
+          }
+        )
+
+        const result = await res.json().catch(() => null)
+        if (!res.ok) {
+          toast.error(
+            result?.error || result?.detail || "Error al eliminar el usuario"
+          )
+          return
+        }
+
+        await refetchUsuarios()
+      } catch {
+        toast.error("Error de conexión con la API")
+      }
+    },
+    [refetchUsuarios]
+  )
+
+  const eliminarGrupo = useCallback(
+    async (grupo_nombre: string) => {
+      try {
+        const res = await fetchWithKeycloak(
+          `/api/permisos/grupos/eliminar?grupo_nombre=${encodeURIComponent(grupo_nombre)}`,
+          {
+            method: "DELETE",
+            headers: { Accept: "application/json" },
+          }
+        )
+
+        const result = await res.json().catch(() => null)
+        if (!res.ok) {
+          toast.error(
+            result?.error || result?.detail || "Error al eliminar el grupo"
+          )
+          return
+        }
+
+        await loadData()
+      } catch {
+        toast.error("Error de conexión con la API")
+      }
+    },
+    [loadData]
+  )
+
+  const eliminarModulo = useCallback(
+    async (modulo_nombre: string) => {
+      try {
+        const res = await fetchWithKeycloak(
+          `/api/permisos/modulos/eliminar?modulo_nombre=${encodeURIComponent(modulo_nombre)}`,
+          {
+            method: "DELETE",
+            headers: { Accept: "application/json" },
+          }
+        )
+
+        const result = await res.json().catch(() => null)
+        if (!res.ok) {
+          toast.error(
+            result?.error || result?.detail || "Error al eliminar el módulo"
+          )
+          return
+        }
+
+        await loadData()
+      } catch {
+        toast.error("Error de conexión con la API")
+      }
+    },
+    [loadData]
+  )
+
+  const eliminarSubmodulo = useCallback(
+    async (submodulo_nombre: string) => {
+      try {
+        const res = await fetchWithKeycloak(
+          `/api/permisos/submodulos/eliminar?submodulo_nombre=${encodeURIComponent(submodulo_nombre)}`,
+          {
+            method: "DELETE",
+            headers: { Accept: "application/json" },
+          }
+        )
+
+        const result = await res.json().catch(() => null)
+        if (!res.ok) {
+          toast.error(
+            result?.error || result?.detail || "Error al eliminar el submódulo"
+          )
+          return
+        }
+
+        await loadData()
+      } catch {
+        toast.error("Error de conexión con la API")
+      }
+    },
+    [loadData]
+  )
+
   const editarUsuario = useCallback((id: string | undefined) => {
     setUserIdToEdit(id)
     setEditTarget(null)
@@ -515,27 +623,44 @@ export function useConfiguracionUsuario() {
 
   const usuarioColumns = useMemo(
     () =>
-      getUsuarioColumns(editarUsuario, deshabilitarUsuario, habilitarUsuario),
-    [editarUsuario, deshabilitarUsuario, habilitarUsuario]
+      getUsuarioColumns(
+        editarUsuario,
+        deshabilitarUsuario,
+        habilitarUsuario,
+        eliminarUsuario
+      ),
+    [editarUsuario, deshabilitarUsuario, habilitarUsuario, eliminarUsuario]
   )
 
   const grupoColumns = useMemo(
-    () => getGrupoColumns(editarGrupo),
-    [editarGrupo]
+    () => getGrupoColumns(editarGrupo, eliminarGrupo),
+    [editarGrupo, eliminarGrupo]
   )
 
   const moduloColumns = useMemo(
-    () => getModuloColumns(editarModulo, deshabilitarModulo, habilitarModulo),
-    [editarModulo, deshabilitarModulo, habilitarModulo]
+    () =>
+      getModuloColumns(
+        editarModulo,
+        deshabilitarModulo,
+        habilitarModulo,
+        eliminarModulo
+      ),
+    [editarModulo, deshabilitarModulo, habilitarModulo, eliminarModulo]
   )
   const submoduloColumns = useMemo(
     () =>
       getSubmoduloColumns(
         editarSubmodulo,
         deshabilitarSubmodulo,
-        habilitarSubmodulo
+        habilitarSubmodulo,
+        eliminarSubmodulo
       ),
-    [editarSubmodulo, deshabilitarSubmodulo, habilitarSubmodulo]
+    [
+      editarSubmodulo,
+      deshabilitarSubmodulo,
+      habilitarSubmodulo,
+      eliminarSubmodulo,
+    ]
   )
 
   const currentColumns = useMemo<DataTableColumn<DataItem>[]>(() => {

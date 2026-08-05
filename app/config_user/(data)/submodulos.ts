@@ -22,13 +22,15 @@ function toSubmoduloData(raw: {
   modulo_padre: string
   path: string
   icono: string
+  habilitado: boolean
 }): Submodulo {
-  const { nombre, modulo_padre, path, icono } = raw
+  const { nombre, modulo_padre, path, icono, habilitado } = raw
   return {
     nombre,
     modulo_padre,
     path,
     icono,
+    habilitado,
   }
 }
 

@@ -1,0 +1,45 @@
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
+
+const API_AUTH_URL =
+  process.env.NEXT_PUBLIC_API_AUTH_URL + "/modulos/eliminar?modulo_nombre="
+
+export async function DELETE(request: NextRequest) {
+  const authHeader = request.headers.get("authorization")
+  const moduloNombreParam = request.nextUrl.searchParams.get("modulo_nombre")
+
+  const token = authHeader?.startsWith("Bearer ")
+    ? authHeader.substring(7)
+    : null
+
+  if (!token) {
+    return NextResponse.json(
+      { error: "No autorizado: falta el token" },
+      { status: 401 }
+    )
+  }
+
+  const externalUrl = new URL(API_AUTH_URL)
+  externalUrl.searchParams.set("modulo_nombre", moduloNombreParam ?? "")
+
+  const externalResponse = await fetch(externalUrl.toString(), {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  const data = await externalResponse.json().catch(() => null)
+
+  if (!externalResponse.ok) {
+    return NextResponse.json(
+      {
+        error: data?.detail ?? data?.message ?? "Error al eliminar módulo",
+      },
+      { status: externalResponse.status }
+    )
+  }
+
+  return NextResponse.json(data, { status: externalResponse.status })
+}

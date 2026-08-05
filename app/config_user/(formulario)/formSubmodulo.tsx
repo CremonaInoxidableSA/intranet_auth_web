@@ -26,6 +26,8 @@ import { toast } from "sonner"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 import { HoverInfo } from "@/components/components"
 import { fetchModulos, type Modulo } from "../(data)/modulos"
+import { SubmodulosData } from "@/types/types"
+import { Checkbox } from "@/components/ui/checkbox";
 
 const hoverInfoText = {
   nombre: 'El submódulo debe tener el formato "SUBMODULO_{nombre}"',
@@ -34,29 +36,18 @@ const hoverInfoText = {
     "Nombre del icono que utilizará el submódulo. Debe buscarse en la librería de lucide-react o react-icons.",
 }
 
-type FormState = {
-  modulo_padre: string
-  nombre: string
-  path: string
-  icono: string
-}
-
 type Props = {
   onSubmoduloCreated?: () => void
   isEditing?: boolean
-  initialData?: {
-    modulo_padre?: string
-    nombre?: string
-    path?: string
-    icono?: string
-  }
+  initialData?: SubmodulosData
 }
 
-const initialForm: FormState = {
+const initialForm: SubmodulosData = {
   modulo_padre: "",
   nombre: "",
   path: "",
   icono: "",
+  habilitado: true,
 }
 
 export default function FormSubmodulo({
@@ -64,7 +55,7 @@ export default function FormSubmodulo({
   isEditing = false,
   initialData,
 }: Props) {
-  const [form, setForm] = useState<FormState>(initialForm)
+  const [form, setForm] = useState<SubmodulosData>(initialForm)
   const [modulos, setModulos] = useState<Modulo[]>([])
   const [isLoadingModulos, setIsLoadingModulos] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -110,16 +101,17 @@ export default function FormSubmodulo({
       nombre: initialData?.nombre ?? "",
       path: initialData?.path ?? "",
       icono: initialData?.icono ?? "",
+      habilitado: initialData?.habilitado ?? true,
     })
     setIdentifier(initialData?.nombre ?? "")
   }, [initialData])
 
-  const handleChange = (field: keyof FormState, value: string) => {
+  const handleChange = (field: keyof SubmodulosData, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
   const openModuloSelector = () => {
-    setModuloPadreDraft(form.modulo_padre)
+    setModuloPadreDraft(form?.modulo_padre ?? "")
     setIsModuloSelectorOpen(true)
   }
 
@@ -130,10 +122,11 @@ export default function FormSubmodulo({
 
   const handleSubmit = async () => {
     if (
-      !form.modulo_padre.trim() ||
-      !form.nombre.trim() ||
-      !form.path.trim() ||
-      !form.icono.trim()
+      !form?.modulo_padre?.trim() ||
+      !form?.nombre?.trim() ||
+      !form?.path?.trim() ||
+      !form?.icono?.trim() ||
+      form.habilitado === undefined
     ) {
       toast.error("Complete todos los campos")
       return
@@ -179,6 +172,7 @@ export default function FormSubmodulo({
                 nombre: nombreTrim,
                 path: form.path.trim(),
                 icono: form.icono.trim(),
+                habilitado: form.habilitado,
               }
         ),
       })
@@ -394,6 +388,25 @@ export default function FormSubmodulo({
           />
         </div>
       </div>
+
+      {!isEditing && (
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="submoduloHabilitado"
+            checked={form.habilitado}
+            onCheckedChange={(checked) =>
+              setForm((prev) => ({
+                ...prev,
+                habilitado: !!checked,
+              }))
+            }
+          />
+          <Label htmlFor="submoduloHabilitado" className="cursor-pointer">
+            El submódulo se creará habilitado y podrá ser accedido. Desmarque esta
+            opción para crear un submódulo deshabilitado.
+          </Label>
+        </div>
+      )}
 
       <DialogFooter>
         <DialogClose asChild>
