@@ -14,7 +14,6 @@ import { DataTable, type DataTableColumn } from "./(table)/data-table"
 import type { GruposData, ModulosData, SubmodulosData } from "@/types/types"
 import {
   useConfiguracionUsuario,
-  tablas,
   TAB_USUARIOS,
   TAB_GRUPOS,
   TAB_PERMISOS,
@@ -26,6 +25,7 @@ export default function ConfiguracionUsuario() {
   const {
     selectedTabId,
     setSelectedTabId,
+    tablas,
     data,
     isLoading,
     userIdToEdit,
@@ -169,51 +169,58 @@ export default function ConfiguracionUsuario() {
       <div className="flex w-full flex-1 flex-col gap-5">
         <div className="flex w-full flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex w-full flex-col gap-3 xl:w-auto">
-            <div className="hidden xl:block">
-              <TabsComp
-                data={tablas}
-                extraClass="xl:text-xl"
-                value={String(selectedTabId)}
-                onValueChange={(value) => setSelectedTabId(Number(value))}
-              />
-            </div>
-            <div className="block xl:hidden">
-              <label htmlFor="mobile-tab-select" className="sr-only">
-                Seleccionar lista
-              </label>
-              <select
-                id="mobile-tab-select"
-                value={String(selectedTabId)}
-                onChange={(event) =>
-                  setSelectedTabId(Number(event.target.value))
-                }
-                className="w-full rounded border border-background6 bg-background3 px-3 py-2 text-sm text-foreground transition outline-none focus:border-background5"
-              >
-                {tablas.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.nombre}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {tablas.length > 0 ? (
+              <>
+                <div className="hidden xl:block">
+                  <TabsComp
+                    data={tablas}
+                    extraClass="xl:text-xl"
+                    value={String(selectedTabId)}
+                    onValueChange={(value) => setSelectedTabId(Number(value))}
+                  />
+                </div>
+                <div className="block xl:hidden">
+                  <label htmlFor="mobile-tab-select" className="sr-only">
+                    Seleccionar lista
+                  </label>
+                  <select
+                    id="mobile-tab-select"
+                    value={String(selectedTabId)}
+                    onChange={(event) =>
+                      setSelectedTabId(Number(event.target.value))
+                    }
+                    className="w-full rounded border border-background6 bg-background3 px-3 py-2 text-sm text-foreground transition outline-none focus:border-background5"
+                  >
+                    {tablas.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No tiene permisos para visualizar modulos de configuracion.
+              </p>
+            )}
           </div>
 
-          <Dialog
-            open={isCreateDialogOpen}
-            onOpenChange={setIsCreateDialogOpen}
-          >
-            <DialogTrigger asChild>
-              <Boton
-                extraClass={`${
-                  currentCreateButton?.extraClass ??
-                  "border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/30"
-                } w-full xl:w-auto`}
-              >
-                {currentCreateButton?.nombre ?? "Crear Usuario"}
-              </Boton>
-            </DialogTrigger>
-            {renderCreateForm()}
-          </Dialog>
+          {currentCreateButton ? (
+            <Dialog
+              open={isCreateDialogOpen}
+              onOpenChange={setIsCreateDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Boton
+                  extraClass={`${currentCreateButton.extraClass} w-full xl:w-auto`}
+                >
+                  {currentCreateButton.nombre}
+                </Boton>
+              </DialogTrigger>
+              {renderCreateForm()}
+            </Dialog>
+          ) : null}
         </div>
 
         <div className="flex w-full flex-col gap-5">

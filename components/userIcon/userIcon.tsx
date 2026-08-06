@@ -16,7 +16,7 @@ import { UserAvatar } from "@/components/userIcon/userAvatar"
 import CambioPass from "@/components/userIcon/cambioPass"
 
 import { useAuth } from "@/context/AuthProvider"
-import { useSubmodulos } from "@/context/usePermisos"
+import { useAutorizacion } from "@/context/useAutorizacion"
 
 const UserIcon = () => {
   const router = useRouter()
@@ -30,9 +30,9 @@ const UserIcon = () => {
     `${user?.nombre ?? ""}${user?.nombre || user?.apellido ? " " : ""}${user?.apellido ?? ""}`.trim() ||
     "Usuario"
 
-  const { tieneAcceso } = useSubmodulos()
+  const { tieneAccesoSubmodulo } = useAutorizacion()
 
-  const canManageUsers = tieneAcceso("SUBMODULO_CONFIG_USUARIOS")
+  const canManageUsers = tieneAccesoSubmodulo("SUBMODULO_CONFIG_USUARIOS")
 
   const closeSession = async () => {
     try {
@@ -60,16 +60,31 @@ const UserIcon = () => {
     }
 
     if (canManageUsers) {
-      ;<Button
-        className="w-full cursor-pointer border border-bluecremona bg-bluecremona/10 hover:bg-bluecremona/30"
-        onClick={() => {
-          router.push("/config_user")
-          setOpen(false)
-        }}
-      >
-        <p className="font-medium text-bluecremona">Configurar usuarios</p>
-      </Button>
+      return (
+        <>
+          <Button
+            className="w-full cursor-pointer border border-bluecremona bg-bluecremona/10 hover:bg-bluecremona/30"
+            onClick={() => {
+              router.push("/config_user")
+              setOpen(false)
+            }}
+          >
+            <p className="font-medium text-bluecremona">Configurar usuarios</p>
+          </Button>
+          <Button
+            className="w-full cursor-pointer border border-bluecremona bg-bluecremona/10 hover:bg-bluecremona/30"
+            onClick={() => {
+              setOpen(false)
+              setTimeout(() => setChangePassOpen(true), 150)
+            }}
+          >
+            <p className="font-medium text-bluecremona">Cambiar contraseña</p>
+          </Button>
+        </>
+      )
     }
+
+    return null
   }
 
   return (

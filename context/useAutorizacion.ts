@@ -1,0 +1,107 @@
+"use client"
+
+import { useCallback, useMemo } from "react"
+import { useAuth } from "@/context/AuthProvider"
+import { AUTORIZACIONES, type Autorizacion } from "@/lib/permisos"
+
+type NombreConNombre = string | { nombre?: string } | null | undefined
+
+const toNombre = (value: NombreConNombre) => {
+  if (typeof value === "string") {
+    return value
+  }
+
+  return value?.nombre ?? ""
+}
+
+export function useAutorizacion() {
+  const { user } = useAuth()
+
+  const permisosSet = useMemo(
+    () =>
+      new Set(
+        (user?.permisos ?? [])
+          .map((permiso) => toNombre(permiso))
+          .filter(Boolean)
+      ),
+    [user?.permisos]
+  )
+
+  const submodulosSet = useMemo(
+    () =>
+      new Set(
+        (user?.submodulos ?? [])
+          .map((submodulo) => toNombre(submodulo))
+          .filter(Boolean)
+      ),
+    [user?.submodulos]
+  )
+
+  const tienePermiso = useCallback(
+    (nombre: Autorizacion) => permisosSet.has(nombre),
+    [permisosSet]
+  )
+  const tieneAlgunPermiso = useCallback(
+    (nombres: Autorizacion[]) =>
+      nombres.some((nombre) => permisosSet.has(nombre)),
+    [permisosSet]
+  )
+
+  const tieneAccesoSubmodulo = useCallback(
+    (nombre: string) => submodulosSet.has(nombre),
+    [submodulosSet]
+  )
+
+  const autorizacion = useMemo(
+    () => ({
+      usuarios: {
+        consultar: tienePermiso(AUTORIZACIONES.CONSULTAR_USUARIOS),
+        crear: tienePermiso(AUTORIZACIONES.CREAR_USUARIOS),
+        editar: tienePermiso(AUTORIZACIONES.EDITAR_USUARIOS),
+        eliminar: tienePermiso(AUTORIZACIONES.ELIMINAR_USUARIOS),
+        deshabilitar: tienePermiso(AUTORIZACIONES.DESHABILITAR_USUARIOS),
+        habilitar: tienePermiso(AUTORIZACIONES.HABILITAR_USUARIOS),
+        cambiarContrasena: tienePermiso(AUTORIZACIONES.CAMBIAR_CONTRASENA),
+      },
+      grupos: {
+        consultar: tienePermiso(AUTORIZACIONES.CONSULTAR_GRUPOS),
+        crear: tienePermiso(AUTORIZACIONES.CREAR_GRUPOS),
+        editar: tienePermiso(AUTORIZACIONES.EDITAR_GRUPOS),
+        eliminar: tienePermiso(AUTORIZACIONES.ELIMINAR_GRUPOS),
+      },
+      permisos: {
+        consultar: tienePermiso(AUTORIZACIONES.CONSULTAR_PERMISOS),
+        crear: tienePermiso(AUTORIZACIONES.CREAR_PERMISOS),
+        editar: tienePermiso(AUTORIZACIONES.EDITAR_PERMISOS),
+        eliminar: tienePermiso(AUTORIZACIONES.ELIMINAR_PERMISOS),
+      },
+      modulos: {
+        consultar: tienePermiso(AUTORIZACIONES.CONSULTAR_MODULOS),
+        crear: tienePermiso(AUTORIZACIONES.CREAR_MODULOS),
+        editar: tienePermiso(AUTORIZACIONES.EDITAR_MODULO),
+        eliminar: tienePermiso(AUTORIZACIONES.ELIMINAR_MODULO),
+        deshabilitar: tienePermiso(AUTORIZACIONES.DESHABILITAR_MODULO),
+        habilitar: tienePermiso(AUTORIZACIONES.HABILITAR_MODULO),
+      },
+      submodulos: {
+        consultar: tienePermiso(AUTORIZACIONES.CONSULTAR_SUBMODULOS),
+        crear: tienePermiso(AUTORIZACIONES.CREAR_SUBMODULOS),
+        editar: tienePermiso(AUTORIZACIONES.EDITAR_SUBMODULO),
+        eliminar: tienePermiso(AUTORIZACIONES.ELIMINAR_SUBMODULO),
+        deshabilitar: tienePermiso(AUTORIZACIONES.DESHABILITAR_SUBMODULO),
+        habilitar: tienePermiso(AUTORIZACIONES.HABILITAR_SUBMODULO),
+      },
+    }),
+    [tienePermiso]
+  )
+
+  return useMemo(
+    () => ({
+      tienePermiso,
+      tieneAlgunPermiso,
+      tieneAccesoSubmodulo,
+      autorizacion,
+    }),
+    [tienePermiso, tieneAlgunPermiso, tieneAccesoSubmodulo, autorizacion]
+  )
+}

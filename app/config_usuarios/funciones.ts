@@ -24,6 +24,7 @@ import {
   getSubmoduloColumns,
   getPermisoColumns,
 } from "./(table)/columns"
+import { useAutorizacion } from "@/context/useAutorizacion"
 
 type DataItem =
   | UsersData
@@ -87,6 +88,7 @@ export const botonesCreacion = [
 
 export function useConfiguracionUsuario() {
   const { user, loading: authLoading } = useAuth()
+  const { autorizacion } = useAutorizacion()
   const [selectedTabId, setSelectedTabId] = useState(tablas[0].id)
   const [data, setData] = useState<DataItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -123,6 +125,67 @@ export function useConfiguracionUsuario() {
   const [permTotalPages, setPermTotalPages] = useState(1)
   const [permTotalRecords, setPermTotalRecords] = useState(0)
 
+  const canViewTab = useCallback(
+    (tabId: number) => {
+      switch (tabId) {
+        case TAB_USUARIOS:
+          return autorizacion.usuarios.consultar
+        case TAB_GRUPOS:
+          return autorizacion.grupos.consultar
+        case TAB_PERMISOS:
+          return autorizacion.permisos.consultar
+        case TAB_MODULOS:
+          return autorizacion.modulos.consultar
+        case TAB_SUBMODULOS:
+          return autorizacion.submodulos.consultar
+        default:
+          return false
+      }
+    },
+    [autorizacion]
+  )
+
+  const canCreateInTab = useCallback(
+    (tabId: number) => {
+      switch (tabId) {
+        case TAB_USUARIOS:
+          return autorizacion.usuarios.crear
+        case TAB_GRUPOS:
+          return autorizacion.grupos.crear
+        case TAB_PERMISOS:
+          return autorizacion.permisos.crear
+        case TAB_MODULOS:
+          return autorizacion.modulos.crear
+        case TAB_SUBMODULOS:
+          return autorizacion.submodulos.crear
+        default:
+          return false
+      }
+    },
+    [autorizacion]
+  )
+
+  const tablasDisponibles = useMemo(
+    () => tablas.filter((tab) => canViewTab(tab.id)),
+    [canViewTab]
+  )
+
+  useEffect(() => {
+    if (tablasDisponibles.length === 0) {
+      setData([])
+      setIsLoading(false)
+      return
+    }
+
+    const tabActualVisible = tablasDisponibles.some(
+      (tab) => tab.id === selectedTabId
+    )
+
+    if (!tabActualVisible) {
+      setSelectedTabId(tablasDisponibles[0].id)
+    }
+  }, [selectedTabId, tablasDisponibles])
+
   const createHeaders = (tabId: number): Record<string, string> => {
     if (tabId === TAB_USUARIOS) {
       return { "Content-Type": "application/json" }
@@ -136,7 +199,13 @@ export function useConfiguracionUsuario() {
   )
 
   const refetchUsuarios = useCallback(async () => {
-    if (selectedTabId !== TAB_USUARIOS || authLoading) return
+    if (
+      selectedTabId !== TAB_USUARIOS ||
+      authLoading ||
+      !autorizacion.usuarios.consultar
+    ) {
+      return
+    }
 
     setIsLoading(true)
     setError(null)
@@ -157,9 +226,22 @@ export function useConfiguracionUsuario() {
     } finally {
       setIsLoading(false)
     }
-  }, [selectedTabId, authLoading, userPage, userFilter, currentHeaders])
+  }, [
+    selectedTabId,
+    authLoading,
+    userPage,
+    userFilter,
+    currentHeaders,
+    autorizacion.usuarios.consultar,
+  ])
 
   const loadData = useCallback(async () => {
+    if (!canViewTab(selectedTabId)) {
+      setData([])
+      setIsLoading(false)
+      return
+    }
+
     setIsLoading(true)
     setError(null)
 
@@ -229,6 +311,7 @@ export function useConfiguracionUsuario() {
       setIsLoading(false)
     }
   }, [
+    canViewTab,
     selectedTabId,
     currentHeaders,
     userPage,
@@ -273,6 +356,11 @@ export function useConfiguracionUsuario() {
 
   const deshabilitarUsuario = useCallback(
     async (usuario_id: string) => {
+      if (!autorizacion.usuarios.deshabilitar) {
+        toast.error("No autorizado para deshabilitar usuarios")
+        return
+      }
+
       try {
         const res = await fetchWithKeycloak(
           `/api/usuarios/deshabilitar?user_id=${encodeURIComponent(usuario_id)}`,
@@ -295,11 +383,16 @@ export function useConfiguracionUsuario() {
         toast.error("Error de conexión con la API")
       }
     },
-    [refetchUsuarios]
+    [refetchUsuarios, autorizacion.usuarios.deshabilitar]
   )
 
   const habilitarUsuario = useCallback(
     async (usuario_id: string) => {
+      if (!autorizacion.usuarios.habilitar) {
+        toast.error("No autorizado para habilitar usuarios")
+        return
+      }
+
       try {
         const res = await fetchWithKeycloak(
           `/api/usuarios/habilitar?user_id=${encodeURIComponent(usuario_id)}`,
@@ -322,11 +415,16 @@ export function useConfiguracionUsuario() {
         toast.error("Error de conexión con la API")
       }
     },
-    [refetchUsuarios]
+    [refetchUsuarios, autorizacion.usuarios.habilitar]
   )
 
   const deshabilitarModulo = useCallback(
     async (modulo_nombre: string) => {
+      if (!autorizacion.modulos.deshabilitar) {
+        toast.error("No autorizado para deshabilitar modulos")
+        return
+      }
+
       try {
         const res = await fetchWithKeycloak(
           `/api/permisos/modulos/deshabilitar?modulo_nombre=${encodeURIComponent(modulo_nombre)}`,
@@ -349,11 +447,16 @@ export function useConfiguracionUsuario() {
         toast.error("Error de conexión con la API")
       }
     },
-    [loadData]
+    [loadData, autorizacion.modulos.deshabilitar]
   )
 
   const habilitarModulo = useCallback(
     async (modulo_nombre: string) => {
+      if (!autorizacion.modulos.habilitar) {
+        toast.error("No autorizado para habilitar modulos")
+        return
+      }
+
       try {
         const res = await fetchWithKeycloak(
           `/api/permisos/modulos/habilitar?modulo_nombre=${encodeURIComponent(modulo_nombre)}`,
@@ -376,11 +479,16 @@ export function useConfiguracionUsuario() {
         toast.error("Error de conexión con la API")
       }
     },
-    [loadData]
+    [loadData, autorizacion.modulos.habilitar]
   )
 
   const deshabilitarSubmodulo = useCallback(
     async (submodulo_nombre: string) => {
+      if (!autorizacion.submodulos.deshabilitar) {
+        toast.error("No autorizado para deshabilitar submodulos")
+        return
+      }
+
       try {
         const res = await fetchWithKeycloak(
           `/api/permisos/submodulos/deshabilitar?submodulo_nombre=${encodeURIComponent(submodulo_nombre)}`,
@@ -405,11 +513,16 @@ export function useConfiguracionUsuario() {
         toast.error("Error de conexión con la API")
       }
     },
-    [loadData]
+    [loadData, autorizacion.submodulos.deshabilitar]
   )
 
   const habilitarSubmodulo = useCallback(
     async (submodulo_nombre: string) => {
+      if (!autorizacion.submodulos.habilitar) {
+        toast.error("No autorizado para habilitar submodulos")
+        return
+      }
+
       try {
         const res = await fetchWithKeycloak(
           `/api/permisos/submodulos/habilitar?submodulo_nombre=${encodeURIComponent(submodulo_nombre)}`,
@@ -432,11 +545,16 @@ export function useConfiguracionUsuario() {
         toast.error("Error de conexión con la API")
       }
     },
-    [loadData]
+    [loadData, autorizacion.submodulos.habilitar]
   )
 
   const eliminarUsuario = useCallback(
     async (usuario_id: string) => {
+      if (!autorizacion.usuarios.eliminar) {
+        toast.error("No autorizado para eliminar usuarios")
+        return
+      }
+
       try {
         const res = await fetchWithKeycloak(
           `/api/usuarios/eliminar?user_id=${encodeURIComponent(usuario_id)}`,
@@ -459,11 +577,16 @@ export function useConfiguracionUsuario() {
         toast.error("Error de conexión con la API")
       }
     },
-    [refetchUsuarios]
+    [refetchUsuarios, autorizacion.usuarios.eliminar]
   )
 
   const eliminarGrupo = useCallback(
     async (grupo_nombre: string) => {
+      if (!autorizacion.grupos.eliminar) {
+        toast.error("No autorizado para eliminar grupos")
+        return
+      }
+
       try {
         const res = await fetchWithKeycloak(
           `/api/permisos/grupos/eliminar?grupo_nombre=${encodeURIComponent(grupo_nombre)}`,
@@ -486,11 +609,16 @@ export function useConfiguracionUsuario() {
         toast.error("Error de conexión con la API")
       }
     },
-    [loadData]
+    [loadData, autorizacion.grupos.eliminar]
   )
 
   const eliminarPermiso = useCallback(
     async (permiso_nombre: string) => {
+      if (!autorizacion.permisos.eliminar) {
+        toast.error("No autorizado para eliminar permisos")
+        return
+      }
+
       try {
         const res = await fetchWithKeycloak(
           `/api/permisos/permisos/eliminar?permiso_nombre=${encodeURIComponent(
@@ -515,11 +643,16 @@ export function useConfiguracionUsuario() {
         toast.error("Error de conexión con la API")
       }
     },
-    [loadData]
+    [loadData, autorizacion.permisos.eliminar]
   )
 
   const eliminarModulo = useCallback(
     async (modulo_nombre: string) => {
+      if (!autorizacion.modulos.eliminar) {
+        toast.error("No autorizado para eliminar modulos")
+        return
+      }
+
       try {
         const res = await fetchWithKeycloak(
           `/api/permisos/modulos/eliminar?modulo_nombre=${encodeURIComponent(modulo_nombre)}`,
@@ -542,11 +675,16 @@ export function useConfiguracionUsuario() {
         toast.error("Error de conexión con la API")
       }
     },
-    [loadData]
+    [loadData, autorizacion.modulos.eliminar]
   )
 
   const eliminarSubmodulo = useCallback(
     async (submodulo_nombre: string) => {
+      if (!autorizacion.submodulos.eliminar) {
+        toast.error("No autorizado para eliminar submodulos")
+        return
+      }
+
       try {
         const res = await fetchWithKeycloak(
           `/api/permisos/submodulos/eliminar?submodulo_nombre=${encodeURIComponent(submodulo_nombre)}`,
@@ -569,46 +707,86 @@ export function useConfiguracionUsuario() {
         toast.error("Error de conexión con la API")
       }
     },
-    [loadData]
+    [loadData, autorizacion.submodulos.eliminar]
   )
 
-  const editarUsuario = useCallback((id: string | undefined) => {
-    setUserIdToEdit(id)
-    setEditTarget(null)
-    setIsEditDialogOpen(true)
-  }, [])
+  const editarUsuario = useCallback(
+    (id: string | undefined) => {
+      if (!autorizacion.usuarios.editar) {
+        toast.error("No autorizado para editar usuarios")
+        return
+      }
 
-  const editarGrupo = useCallback((grupo: GruposData) => {
-    setEditTarget({ tabId: TAB_GRUPOS, item: grupo, id: grupo.nombre })
-    setUserIdToEdit(undefined)
-    setIsEditDialogOpen(true)
-  }, [])
+      setUserIdToEdit(id)
+      setEditTarget(null)
+      setIsEditDialogOpen(true)
+    },
+    [autorizacion.usuarios.editar]
+  )
 
-  const editarModulo = useCallback((modulo: ModulosData) => {
-    setEditTarget({ tabId: TAB_MODULOS, item: modulo, id: modulo.nombre })
-    setUserIdToEdit(undefined)
-    setIsEditDialogOpen(true)
-  }, [])
+  const editarGrupo = useCallback(
+    (grupo: GruposData) => {
+      if (!autorizacion.grupos.editar) {
+        toast.error("No autorizado para editar grupos")
+        return
+      }
 
-  const editarSubmodulo = useCallback((submodulo: SubmodulosData) => {
-    setEditTarget({
-      tabId: TAB_SUBMODULOS,
-      item: submodulo,
-      id: submodulo.nombre,
-    })
-    setUserIdToEdit(undefined)
-    setIsEditDialogOpen(true)
-  }, [])
+      setEditTarget({ tabId: TAB_GRUPOS, item: grupo, id: grupo.nombre })
+      setUserIdToEdit(undefined)
+      setIsEditDialogOpen(true)
+    },
+    [autorizacion.grupos.editar]
+  )
 
-  const editarPermiso = useCallback((permiso: PermisosData) => {
-    setEditTarget({
-      tabId: TAB_PERMISOS,
-      item: permiso,
-      id: permiso.nombre,
-    })
-    setUserIdToEdit(undefined)
-    setIsEditDialogOpen(true)
-  }, [])
+  const editarModulo = useCallback(
+    (modulo: ModulosData) => {
+      if (!autorizacion.modulos.editar) {
+        toast.error("No autorizado para editar modulos")
+        return
+      }
+
+      setEditTarget({ tabId: TAB_MODULOS, item: modulo, id: modulo.nombre })
+      setUserIdToEdit(undefined)
+      setIsEditDialogOpen(true)
+    },
+    [autorizacion.modulos.editar]
+  )
+
+  const editarSubmodulo = useCallback(
+    (submodulo: SubmodulosData) => {
+      if (!autorizacion.submodulos.editar) {
+        toast.error("No autorizado para editar submodulos")
+        return
+      }
+
+      setEditTarget({
+        tabId: TAB_SUBMODULOS,
+        item: submodulo,
+        id: submodulo.nombre,
+      })
+      setUserIdToEdit(undefined)
+      setIsEditDialogOpen(true)
+    },
+    [autorizacion.submodulos.editar]
+  )
+
+  const editarPermiso = useCallback(
+    (permiso: PermisosData) => {
+      if (!autorizacion.permisos.editar) {
+        toast.error("No autorizado para editar permisos")
+        return
+      }
+
+      setEditTarget({
+        tabId: TAB_PERMISOS,
+        item: permiso,
+        id: permiso.nombre,
+      })
+      setUserIdToEdit(undefined)
+      setIsEditDialogOpen(true)
+    },
+    [autorizacion.permisos.editar]
+  )
 
   const handleUserCreated = useCallback(async () => {
     await refetchUsuarios()
@@ -726,47 +904,111 @@ export function useConfiguracionUsuario() {
     setPermPage(1)
   }, [])
 
-  const usuarioColumns = useMemo(
-    () =>
-      getUsuarioColumns(editarUsuario, deshabilitarUsuario, habilitarUsuario),
-    [editarUsuario, deshabilitarUsuario, habilitarUsuario, eliminarUsuario]
-  )
+  const usuarioColumns = useMemo(() => {
+    const showUserActions =
+      autorizacion.usuarios.editar ||
+      autorizacion.usuarios.habilitar ||
+      autorizacion.usuarios.deshabilitar ||
+      autorizacion.usuarios.cambiarContrasena ||
+      autorizacion.usuarios.eliminar
+
+    return getUsuarioColumns(
+      editarUsuario,
+      deshabilitarUsuario,
+      habilitarUsuario,
+      eliminarUsuario,
+      showUserActions
+    )
+  }, [
+    editarUsuario,
+    deshabilitarUsuario,
+    habilitarUsuario,
+    eliminarUsuario,
+    autorizacion.usuarios.editar,
+    autorizacion.usuarios.habilitar,
+    autorizacion.usuarios.deshabilitar,
+    autorizacion.usuarios.cambiarContrasena,
+    autorizacion.usuarios.eliminar,
+  ])
 
   const grupoColumns = useMemo(
-    () => getGrupoColumns(editarGrupo, eliminarGrupo),
-    [editarGrupo, eliminarGrupo]
+    () =>
+      getGrupoColumns(
+        editarGrupo,
+        eliminarGrupo,
+        autorizacion.grupos.editar || autorizacion.grupos.eliminar
+      ),
+    [
+      editarGrupo,
+      eliminarGrupo,
+      autorizacion.grupos.editar,
+      autorizacion.grupos.eliminar,
+    ]
   )
 
   const permisoColumns = useMemo(
-    () => getPermisoColumns(editarPermiso, eliminarPermiso),
-    [editarPermiso, eliminarPermiso]
-  )
-
-  const moduloColumns = useMemo(
     () =>
-      getModuloColumns(
-        editarModulo,
-        deshabilitarModulo,
-        habilitarModulo,
-        eliminarModulo
-      ),
-    [editarModulo, deshabilitarModulo, habilitarModulo, eliminarModulo]
-  )
-  const submoduloColumns = useMemo(
-    () =>
-      getSubmoduloColumns(
-        editarSubmodulo,
-        deshabilitarSubmodulo,
-        habilitarSubmodulo,
-        eliminarSubmodulo
+      getPermisoColumns(
+        editarPermiso,
+        eliminarPermiso,
+        autorizacion.permisos.editar || autorizacion.permisos.eliminar
       ),
     [
+      editarPermiso,
+      eliminarPermiso,
+      autorizacion.permisos.editar,
+      autorizacion.permisos.eliminar,
+    ]
+  )
+
+  const moduloColumns = useMemo(() => {
+    const showModuleActions =
+      autorizacion.modulos.editar ||
+      autorizacion.modulos.habilitar ||
+      autorizacion.modulos.deshabilitar ||
+      autorizacion.modulos.eliminar
+
+    return getModuloColumns(
+      editarModulo,
+      deshabilitarModulo,
+      habilitarModulo,
+      eliminarModulo,
+      showModuleActions
+    )
+  }, [
+    editarModulo,
+    deshabilitarModulo,
+    habilitarModulo,
+    eliminarModulo,
+    autorizacion.modulos.editar,
+    autorizacion.modulos.habilitar,
+    autorizacion.modulos.deshabilitar,
+    autorizacion.modulos.eliminar,
+  ])
+  const submoduloColumns = useMemo(() => {
+    const showSubmoduleActions =
+      autorizacion.submodulos.editar ||
+      autorizacion.submodulos.habilitar ||
+      autorizacion.submodulos.deshabilitar ||
+      autorizacion.submodulos.eliminar
+
+    return getSubmoduloColumns(
       editarSubmodulo,
       deshabilitarSubmodulo,
       habilitarSubmodulo,
       eliminarSubmodulo,
-    ]
-  )
+      showSubmoduleActions
+    )
+  }, [
+    editarSubmodulo,
+    deshabilitarSubmodulo,
+    habilitarSubmodulo,
+    eliminarSubmodulo,
+    autorizacion.submodulos.editar,
+    autorizacion.submodulos.habilitar,
+    autorizacion.submodulos.deshabilitar,
+    autorizacion.submodulos.eliminar,
+  ])
 
   const currentColumns = useMemo<DataTableColumn<DataItem>[]>(() => {
     switch (selectedTabId) {
@@ -791,12 +1033,13 @@ export function useConfiguracionUsuario() {
   ])
 
   const currentCreateButton = botonesCreacion.find(
-    (boton) => boton.id === selectedTabId
+    (boton) => boton.id === selectedTabId && canCreateInTab(boton.id)
   )
 
   return {
     selectedTabId,
     setSelectedTabId,
+    tablas: tablasDisponibles,
     data,
     isLoading,
     error,
@@ -861,6 +1104,7 @@ export function useConfiguracionUsuario() {
     handleModuloUpdated,
     handleSubmoduloUpdated,
     refetchUsuarios,
+    eliminarUsuario,
     currentColumns,
     currentCreateButton,
     permPage,

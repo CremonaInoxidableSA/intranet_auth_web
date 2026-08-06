@@ -37,48 +37,46 @@ import {
 } from "@/types/types"
 import { type DataTableColumn } from "./data-table"
 import { EditarContraseña } from "../(formulario)/formUsuario"
-import { useAuth } from "@/context/AuthProvider"
-import { usePermisos } from "@/context/usePermisos"
-import { PERMISOS } from "@/lib/permisos"
+import { useAutorizacion } from "@/context/useAutorizacion"
 
 function UserActionsCell({
   row,
   onEditUser,
   onDisableUser,
   onEnableUser,
+  onDeleteUser,
 }: {
   row: UsersData
   onEditUser: (id: string | undefined) => void
   onDisableUser: (id: string) => void
   onEnableUser: (id: string) => void
+  onDeleteUser?: (id: string) => void
 }) {
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = React.useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false)
   const id = row.id
 
-  const { tienePermiso } = usePermisos()
+  const { autorizacion } = useAutorizacion()
 
-  const puedeHabilitarUsuario = tienePermiso(PERMISOS.HABILITAR_USUARIOS)
-  const puedeDeshabilitarUsuario = tienePermiso(PERMISOS.DESHABILITAR_USUARIOS)
+  const puedeEditarUsuario = autorizacion.usuarios.editar
+  const puedeHabilitarUsuario = autorizacion.usuarios.habilitar
+  const puedeDeshabilitarUsuario = autorizacion.usuarios.deshabilitar
+  const puedeCambiarPass = autorizacion.usuarios.cambiarContrasena
+  const puedeEliminarUsuario = autorizacion.usuarios.eliminar
+  const puedeGestionarUsuario =
+    puedeEditarUsuario ||
+    puedeHabilitarUsuario ||
+    puedeDeshabilitarUsuario ||
+    puedeCambiarPass ||
+    puedeEliminarUsuario
 
-  const puedeCambiarPass = tienePermiso(PERMISOS.CAMBIAR_CONTRASENA)
+  if (!puedeGestionarUsuario) {
+    return null
+  }
 
-  const renderBotonEstadoUsuario = () => {
-    if (!puedeHabilitarUsuario && !puedeDeshabilitarUsuario) {
+  const renderHabilitar = () => {
+    if (!puedeHabilitarUsuario) {
       return null
-    }
-
-    if (puedeDeshabilitarUsuario && row.habilitado) {
-      return (
-        <DropdownMenuItem asChild>
-          <button
-            onClick={() => id && onDisableUser(id)}
-            className="flex w-full cursor-pointer flex-row items-center justify-start text-redcremona"
-          >
-            <CircleMinus className="mr-2 h-4 w-4" />
-            <span>Deshabilitar</span>
-          </button>
-        </DropdownMenuItem>
-      )
     }
 
     if (puedeHabilitarUsuario && !row.habilitado) {
@@ -86,10 +84,50 @@ function UserActionsCell({
         <DropdownMenuItem asChild>
           <button
             onClick={() => id && onEnableUser(id)}
-            className="flex w-full cursor-pointer flex-row items-center justify-start text-greencremona"
+            className="gap-2 flex w-full cursor-pointer flex-row items-center justify-start text-greencremona"
           >
-            <CirclePlus className="mr-2 h-4 w-4" />
+            <CirclePlus className="h-4 w-4" />
             <span>Habilitar</span>
+          </button>
+        </DropdownMenuItem>
+      )
+    }
+  }
+
+  const renderDeshabilitar = () => {
+    if (!puedeDeshabilitarUsuario) {
+      return null
+    }
+
+    if (row.habilitado) {
+      return (
+        <DropdownMenuItem asChild>
+          <button
+            onClick={() => id && onDisableUser(id)}
+            className="flex w-full cursor-pointer flex-row items-center justify-start gap-2 text-redcremona"
+          >
+            <CircleMinus className="h-4 w-4" />
+            <span>Deshabilitar</span>
+          </button>
+        </DropdownMenuItem>
+      )
+    }
+  }
+
+  const renderEliminar = () => {
+    if (!puedeEliminarUsuario) {
+      return null
+    }
+
+    if (puedeEliminarUsuario) {
+      return (
+        <DropdownMenuItem asChild>
+          <button
+            onClick={() => setIsDeleteDialogOpen(true)}
+            className="flex w-full cursor-pointer flex-row items-center justify-start text-redcremona"
+          >
+            <Trash2 className="h-4 w-4" />
+            <span>Eliminar</span>
           </button>
         </DropdownMenuItem>
       )
@@ -106,9 +144,9 @@ function UserActionsCell({
         <DropdownMenuItem className="text-left" asChild>
           <button
             onClick={() => setIsPasswordDialogOpen(true)}
-            className="flex w-full cursor-pointer flex-row items-center justify-start text-orangecremona"
+            className="flex w-full cursor-pointer flex-row items-center justify-start gap-2 text-orangecremona"
           >
-            <KeyRound className="mr-2 h-4 w-4" />
+            <KeyRound className="h-4 w-4" />
             <span>Cambiar contraseña</span>
           </button>
         </DropdownMenuItem>
@@ -117,36 +155,74 @@ function UserActionsCell({
   }
 
   return (
-    <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8">
-            <span className="sr-only">Abrir menú</span>
-            <Ellipsis className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-          <DropdownMenuItem asChild>
-            <button
-              onClick={() => onEditUser(id)}
-              className="flex w-full cursor-pointer flex-row items-center justify-start text-bluecremona"
+    <>
+      <Dialog
+        open={isPasswordDialogOpen}
+        onOpenChange={setIsPasswordDialogOpen}
+      >
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8">
+              <span className="sr-only">Abrir menú</span>
+              <Ellipsis className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+            {puedeEditarUsuario ? (
+              <DropdownMenuItem asChild>
+                <button
+                  onClick={() => onEditUser(id)}
+                  className="flex w-full cursor-pointer flex-row items-center justify-start gap-2 text-bluecremona"
+                >
+                  <PencilLine className="h-4 w-4" />
+                  <span>Editar</span>
+                </button>
+              </DropdownMenuItem>
+            ) : null}
+            {renderCambioPass()}
+            {renderHabilitar()}
+            {renderDeshabilitar()}
+            {renderEliminar()}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        {id ? (
+          <EditarContraseña
+            userId={id}
+            onPasswordChanged={() => setIsPasswordDialogOpen(false)}
+          />
+        ) : null}
+      </Dialog>
+
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar usuario?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente el
+              usuario {row.email || id || "seleccionado"}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (id) {
+                  onDeleteUser?.(id)
+                }
+                setIsDeleteDialogOpen(false)
+              }}
+              className="bg-redcremona hover:bg-redcremona/90"
             >
-              <PencilLine className="mr-2 h-4 w-4" />
-              <span>Editar</span>
-            </button>
-          </DropdownMenuItem>
-          {renderCambioPass()}
-          {renderBotonEstadoUsuario()}
-        </DropdownMenuContent>
-      </DropdownMenu>
-      {id ? (
-        <EditarContraseña
-          userId={id}
-          onPasswordChanged={() => setIsPasswordDialogOpen(false)}
-        />
-      ) : null}
-    </Dialog>
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
 
@@ -161,6 +237,14 @@ function GrupoActionsCell({
 }) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false)
   const nombre = row.nombre ?? ""
+  const { autorizacion } = useAutorizacion()
+
+  const puedeEditarGrupo = autorizacion.grupos.editar
+  const puedeEliminarGrupo = autorizacion.grupos.eliminar
+
+  if (!puedeEditarGrupo && !puedeEliminarGrupo) {
+    return null
+  }
 
   return (
     <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -173,20 +257,24 @@ function GrupoActionsCell({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => onEditGrupo(row)}
-            className="flex cursor-pointer flex-row items-center justify-start text-bluecremona"
-          >
-            <PencilLine className="h-4 w-4" />
-            <span>Editar</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => setIsDeleteDialogOpen(true)}
-            className="flex cursor-pointer flex-row items-center justify-start text-redcremona"
-          >
-            <Trash2 className="h-4 w-4" />
-            <span>Eliminar</span>
-          </DropdownMenuItem>
+          {puedeEditarGrupo ? (
+            <DropdownMenuItem
+              onClick={() => onEditGrupo(row)}
+              className="flex cursor-pointer flex-row items-center justify-start gap-2 text-bluecremona"
+            >
+              <PencilLine className="h-4 w-4" />
+              <span>Editar</span>
+            </DropdownMenuItem>
+          ) : null}
+          {puedeEliminarGrupo ? (
+            <DropdownMenuItem
+              onClick={() => setIsDeleteDialogOpen(true)}
+              className="flex cursor-pointer flex-row items-center justify-start gap-2 text-redcremona"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span>Eliminar</span>
+            </DropdownMenuItem>
+          ) : null}
         </DropdownMenuContent>
       </DropdownMenu>
       <AlertDialogContent>
@@ -226,6 +314,21 @@ function ModuloActionsCell({
 }) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false)
   const nombre = row.nombre ?? ""
+  const { autorizacion } = useAutorizacion()
+
+  const puedeEditarModulo = autorizacion.modulos.editar
+  const puedeDeshabilitarModulo = autorizacion.modulos.deshabilitar
+  const puedeHabilitarModulo = autorizacion.modulos.habilitar
+  const puedeEliminarModulo = autorizacion.modulos.eliminar
+
+  if (
+    !puedeEditarModulo &&
+    !puedeDeshabilitarModulo &&
+    !puedeHabilitarModulo &&
+    !puedeEliminarModulo
+  ) {
+    return null
+  }
 
   return (
     <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -238,14 +341,16 @@ function ModuloActionsCell({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => onEditModulo(row)}
-            className="flex cursor-pointer flex-row items-center justify-start text-bluecremona"
-          >
-            <PencilLine className="h-4 w-4" />
-            <p className="items-center justify-start">Editar</p>
-          </DropdownMenuItem>
-          {row.habilitado ? (
+          {puedeEditarModulo ? (
+            <DropdownMenuItem
+              onClick={() => onEditModulo(row)}
+              className="flex cursor-pointer flex-row items-center justify-start text-bluecremona"
+            >
+              <PencilLine className="h-4 w-4" />
+              <p className="items-center justify-start">Editar</p>
+            </DropdownMenuItem>
+          ) : null}
+          {row.habilitado && puedeDeshabilitarModulo ? (
             <DropdownMenuItem
               onClick={() => nombre && onDisableModulo(nombre)}
               className="flex-1 cursor-pointer flex-row items-center justify-start text-redcremona"
@@ -253,7 +358,8 @@ function ModuloActionsCell({
               <CircleMinus className="h-4 w-4" />
               <p className="items-center justify-start">Deshabilitar</p>
             </DropdownMenuItem>
-          ) : (
+          ) : null}
+          {!row.habilitado && puedeHabilitarModulo ? (
             <DropdownMenuItem
               onClick={() => nombre && onEnableModulo(nombre)}
               className="cursor-pointer flex-row items-center justify-start text-greencremona"
@@ -261,14 +367,16 @@ function ModuloActionsCell({
               <CirclePlus className="h-4 w-4" />
               <p className="items-center justify-start">Habilitar</p>
             </DropdownMenuItem>
-          )}
-          <DropdownMenuItem
-            onClick={() => setIsDeleteDialogOpen(true)}
-            className="cursor-pointer flex-row items-center justify-start text-redcremona"
-          >
-            <Trash2 className="h-4 w-4" />
-            <p className="items-center justify-start">Eliminar</p>
-          </DropdownMenuItem>
+          ) : null}
+          {puedeEliminarModulo ? (
+            <DropdownMenuItem
+              onClick={() => setIsDeleteDialogOpen(true)}
+              className="cursor-pointer flex-row items-center justify-start text-redcremona"
+            >
+              <Trash2 className="h-4 w-4" />
+              <p className="items-center justify-start">Eliminar</p>
+            </DropdownMenuItem>
+          ) : null}
         </DropdownMenuContent>
       </DropdownMenu>
       <AlertDialogContent>
@@ -308,6 +416,21 @@ function SubmoduloActionsCell({
 }) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false)
   const nombre = row.nombre ?? ""
+  const { autorizacion } = useAutorizacion()
+
+  const puedeEditarSubmodulo = autorizacion.submodulos.editar
+  const puedeDeshabilitarSubmodulo = autorizacion.submodulos.deshabilitar
+  const puedeHabilitarSubmodulo = autorizacion.submodulos.habilitar
+  const puedeEliminarSubmodulo = autorizacion.submodulos.eliminar
+
+  if (
+    !puedeEditarSubmodulo &&
+    !puedeDeshabilitarSubmodulo &&
+    !puedeHabilitarSubmodulo &&
+    !puedeEliminarSubmodulo
+  ) {
+    return null
+  }
 
   return (
     <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -320,14 +443,16 @@ function SubmoduloActionsCell({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => onEditSubmodulo(row)}
-            className="flex cursor-pointer flex-row items-center justify-start text-bluecremona"
-          >
-            <PencilLine className="h-4 w-4" />
-            <p className="items-center justify-start">Editar</p>
-          </DropdownMenuItem>
-          {row.habilitado ? (
+          {puedeEditarSubmodulo ? (
+            <DropdownMenuItem
+              onClick={() => onEditSubmodulo(row)}
+              className="flex cursor-pointer flex-row items-center justify-start text-bluecremona"
+            >
+              <PencilLine className="h-4 w-4" />
+              <p className="items-center justify-start">Editar</p>
+            </DropdownMenuItem>
+          ) : null}
+          {row.habilitado && puedeDeshabilitarSubmodulo ? (
             <DropdownMenuItem
               onClick={() => nombre && onDisableSubmodulo(nombre)}
               className="cursor-pointer flex-row items-center justify-start text-redcremona"
@@ -335,7 +460,8 @@ function SubmoduloActionsCell({
               <CircleMinus className="h-4 w-4" />
               <p className="items-center justify-start">Deshabilitar</p>
             </DropdownMenuItem>
-          ) : (
+          ) : null}
+          {!row.habilitado && puedeHabilitarSubmodulo ? (
             <DropdownMenuItem
               onClick={() => nombre && onEnableSubmodulo(nombre)}
               className="cursor-pointer flex-row items-center justify-start text-greencremona"
@@ -343,14 +469,16 @@ function SubmoduloActionsCell({
               <CirclePlus className="h-4 w-4" />
               <p className="items-center justify-start">Habilitar</p>
             </DropdownMenuItem>
-          )}
-          <DropdownMenuItem
-            onClick={() => setIsDeleteDialogOpen(true)}
-            className="cursor-pointer flex-row items-center justify-start text-redcremona"
-          >
-            <Trash2 className="h-4 w-4" />
-            <p className="items-center justify-start">Eliminar</p>
-          </DropdownMenuItem>
+          ) : null}
+          {puedeEliminarSubmodulo ? (
+            <DropdownMenuItem
+              onClick={() => setIsDeleteDialogOpen(true)}
+              className="cursor-pointer flex-row items-center justify-start text-redcremona"
+            >
+              <Trash2 className="h-4 w-4" />
+              <p className="items-center justify-start">Eliminar</p>
+            </DropdownMenuItem>
+          ) : null}
         </DropdownMenuContent>
       </DropdownMenu>
       <AlertDialogContent>
@@ -378,98 +506,116 @@ function SubmoduloActionsCell({
 export const getUsuarioColumns = (
   onEditUser: (id: string | undefined) => void,
   onDisableUser: (id: string) => void,
-  onEnableUser: (id: string) => void
-): DataTableColumn<UsersData>[] => [
-  {
-    accessorKey: "email",
-    header: "Email",
-    className: "hidden xl:table-cell",
-  },
-  {
-    header: "Apellido y Nombre",
-    cell: ({ row }) => row.apellidoNombre || "—",
-  },
-  {
-    accessorKey: "grupos",
-    header: "Grupos",
-    className: "hidden xl:table-cell",
-    cell: ({ row }) => {
-      const grupos = row.grupos?.filter(Boolean) ?? []
-
-      if (!grupos.length) {
-        return "—"
-      }
-
-      return grupos
-        .map((grupo) => {
-          if (typeof grupo === "string") {
-            return grupo
-          }
-
-          return grupo?.nombre ?? ""
-        })
-        .filter(Boolean)
-        .join(", ")
+  onEnableUser: (id: string) => void,
+  onDeleteUser?: (id: string) => void,
+  showActions = true
+): DataTableColumn<UsersData>[] => {
+  const columns: DataTableColumn<UsersData>[] = [
+    {
+      accessorKey: "email",
+      header: "Email",
+      className: "hidden xl:table-cell",
     },
-  },
-  {
-    header: "Habilitado",
-    className: "hidden xl:table-cell",
-    cell: ({ row }) => (row.habilitado ? "Sí" : "No"),
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => (
-      <UserActionsCell
-        row={row}
-        onEditUser={onEditUser}
-        onDisableUser={onDisableUser}
-        onEnableUser={onEnableUser}
-      />
-    ),
-  },
-]
+    {
+      header: "Apellido y Nombre",
+      cell: ({ row }) => row.apellidoNombre || "—",
+    },
+    {
+      accessorKey: "grupos",
+      header: "Grupos",
+      className: "hidden xl:table-cell",
+      cell: ({ row }) => {
+        const grupos = row.grupos?.filter(Boolean) ?? []
+
+        if (!grupos.length) {
+          return "—"
+        }
+
+        return grupos
+          .map((grupo) => {
+            if (typeof grupo === "string") {
+              return grupo
+            }
+
+            return grupo?.nombre ?? ""
+          })
+          .filter(Boolean)
+          .join(", ")
+      },
+    },
+    {
+      header: "Habilitado",
+      className: "hidden xl:table-cell",
+      cell: ({ row }) => (row.habilitado ? "Sí" : "No"),
+    },
+  ]
+
+  if (showActions) {
+    columns.push({
+      id: "actions",
+      cell: ({ row }) => (
+        <UserActionsCell
+          row={row}
+          onEditUser={onEditUser}
+          onDisableUser={onDisableUser}
+          onEnableUser={onEnableUser}
+          onDeleteUser={onDeleteUser}
+        />
+      ),
+    })
+  }
+
+  return columns
+}
 
 export const getGrupoColumns = (
   onEditGrupo: (grupo: GruposData) => void,
-  onDeleteGrupo: (nombre: string) => void
-): DataTableColumn<GruposData>[] => [
-  {
-    accessorKey: "nombre",
-    header: "Nombre",
-  },
-  {
-    header: "Permisos",
-    className: "hidden xl:table-cell",
-    cell: () => (
-      <p className="items-center justify-start">Editar para ver permisos</p>
-    ),
-  },
-  {
-    header: "Modulos",
-    className: "hidden xl:table-cell",
-    cell: () => (
-      <p className="items-center justify-start">Editar para ver modulos</p>
-    ),
-  },
-  {
-    header: "Submodulos",
-    className: "hidden xl:table-cell",
-    cell: () => (
-      <p className="items-center justify-start">Editar para ver submodulos</p>
-    ),
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => (
-      <GrupoActionsCell
-        row={row}
-        onEditGrupo={onEditGrupo}
-        onDeleteGrupo={onDeleteGrupo}
-      />
-    ),
-  },
-]
+  onDeleteGrupo: (nombre: string) => void,
+  showActions = true
+): DataTableColumn<GruposData>[] => {
+  const columns: DataTableColumn<GruposData>[] = [
+    {
+      accessorKey: "nombre",
+      header: "Nombre",
+    },
+    {
+      header: "Permisos",
+      className: "hidden xl:table-cell",
+      cell: () => (
+        <p className="items-center justify-start">Editar para ver permisos</p>
+      ),
+    },
+    {
+      header: "Modulos",
+      className: "hidden xl:table-cell",
+      cell: () => (
+        <p className="items-center justify-start">Editar para ver modulos</p>
+      ),
+    },
+    {
+      header: "Submodulos",
+      className: "hidden xl:table-cell",
+      cell: () => (
+        <p className="items-center justify-start">Editar para ver submodulos</p>
+      ),
+    },
+  ]
+
+  if (showActions) {
+    columns.push({
+      id: "actions",
+      cell: ({ row }) => (
+        <GrupoActionsCell
+          row={row}
+          onEditGrupo={onEditGrupo}
+          onDeleteGrupo={onDeleteGrupo}
+        />
+      ),
+    })
+  }
+
+  return columns
+}
 
 function PermisoActionsCell({
   row,
@@ -482,6 +628,14 @@ function PermisoActionsCell({
 }) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false)
   const nombre = row.nombre ?? ""
+  const { autorizacion } = useAutorizacion()
+
+  const puedeEditarPermiso = autorizacion.permisos.editar
+  const puedeEliminarPermiso = autorizacion.permisos.eliminar
+
+  if (!puedeEditarPermiso && !puedeEliminarPermiso) {
+    return null
+  }
 
   return (
     <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -494,20 +648,24 @@ function PermisoActionsCell({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => onEditPermiso(row)}
-            className="flex cursor-pointer flex-row items-center justify-start text-bluecremona"
-          >
-            <PencilLine className="h-4 w-4" />
-            <span>Editar</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => setIsDeleteDialogOpen(true)}
-            className="cursor-pointer flex-row items-center justify-start text-redcremona"
-          >
-            <Trash2 className="h-4 w-4" />
-            <span>Eliminar</span>
-          </DropdownMenuItem>
+          {puedeEditarPermiso ? (
+            <DropdownMenuItem
+              onClick={() => onEditPermiso(row)}
+              className="flex cursor-pointer flex-row items-center justify-start text-bluecremona"
+            >
+              <PencilLine className="h-4 w-4" />
+              <span>Editar</span>
+            </DropdownMenuItem>
+          ) : null}
+          {puedeEliminarPermiso ? (
+            <DropdownMenuItem
+              onClick={() => setIsDeleteDialogOpen(true)}
+              className="cursor-pointer flex-row items-center justify-start text-redcremona"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span>Eliminar</span>
+            </DropdownMenuItem>
+          ) : null}
         </DropdownMenuContent>
       </DropdownMenu>
       <AlertDialogContent>
@@ -534,110 +692,134 @@ function PermisoActionsCell({
 
 export const getPermisoColumns = (
   onEditPermiso: (permiso: PermisosData) => void,
-  onDeletePermiso: (nombre: string) => void
-): DataTableColumn<PermisosData>[] => [
-  {
-    accessorKey: "nombre",
-    header: "Nombre",
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => (
-      <PermisoActionsCell
-        row={row}
-        onEditPermiso={onEditPermiso}
-        onDeletePermiso={onDeletePermiso}
-      />
-    ),
-  },
-]
+  onDeletePermiso: (nombre: string) => void,
+  showActions = true
+): DataTableColumn<PermisosData>[] => {
+  const columns: DataTableColumn<PermisosData>[] = [
+    {
+      accessorKey: "nombre",
+      header: "Nombre",
+    },
+  ]
+
+  if (showActions) {
+    columns.push({
+      id: "actions",
+      cell: ({ row }) => (
+        <PermisoActionsCell
+          row={row}
+          onEditPermiso={onEditPermiso}
+          onDeletePermiso={onDeletePermiso}
+        />
+      ),
+    })
+  }
+
+  return columns
+}
 
 export const getModuloColumns = (
   onEditModulo: (modulo: ModulosData) => void,
   onDisableModulo: (nombre: string) => void,
   onEnableModulo: (nombre: string) => void,
-  onDeleteModulo: (nombre: string) => void
-): DataTableColumn<ModulosData>[] => [
-  {
-    accessorKey: "nombre",
-    header: "Nombre",
-  },
-  {
-    header: "URL",
-    className: "hidden xl:table-cell",
-    cell: ({ row }) => (
-      <p className="items-center justify-start">
-        {row.subdominio ? `${row.subdominio}` : "—"}
-      </p>
-    ),
-  },
-  {
-    header: "Submodulos",
-    className: "hidden xl:table-cell",
-    cell: () => (
-      <p className="items-center justify-start">Editar para ver submodulos</p>
-    ),
-  },
-  {
-    header: "Habilitado",
-    cell: ({ row }) => (row.habilitado ? "Sí" : "No"),
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => (
-      <ModuloActionsCell
-        row={row}
-        onEditModulo={onEditModulo}
-        onDisableModulo={onDisableModulo}
-        onEnableModulo={onEnableModulo}
-        onDeleteModulo={onDeleteModulo}
-      />
-    ),
-  },
-]
+  onDeleteModulo: (nombre: string) => void,
+  showActions = true
+): DataTableColumn<ModulosData>[] => {
+  const columns: DataTableColumn<ModulosData>[] = [
+    {
+      accessorKey: "nombre",
+      header: "Nombre",
+    },
+    {
+      header: "URL",
+      className: "hidden xl:table-cell",
+      cell: ({ row }) => (
+        <p className="items-center justify-start">
+          {row.subdominio ? `${row.subdominio}` : "—"}
+        </p>
+      ),
+    },
+    {
+      header: "Submodulos",
+      className: "hidden xl:table-cell",
+      cell: () => (
+        <p className="items-center justify-start">Editar para ver submodulos</p>
+      ),
+    },
+    {
+      header: "Habilitado",
+      cell: ({ row }) => (row.habilitado ? "Sí" : "No"),
+    },
+  ]
+
+  if (showActions) {
+    columns.push({
+      id: "actions",
+      cell: ({ row }) => (
+        <ModuloActionsCell
+          row={row}
+          onEditModulo={onEditModulo}
+          onDisableModulo={onDisableModulo}
+          onEnableModulo={onEnableModulo}
+          onDeleteModulo={onDeleteModulo}
+        />
+      ),
+    })
+  }
+
+  return columns
+}
 
 export const getSubmoduloColumns = (
   onEditSubmodulo: (submodulo: SubmodulosData) => void,
   onDisableSubmodulo: (nombre: string) => void,
   onEnableSubmodulo: (nombre: string) => void,
-  onDeleteSubmodulo: (nombre: string) => void
-): DataTableColumn<SubmodulosData>[] => [
-  {
-    accessorKey: "nombre",
-    header: "Nombre",
-  },
-  {
-    header: "URL",
-    className: "hidden xl:table-cell",
-    cell: ({ row }) => (
-      <p className="items-center justify-start">
-        {row.path ? `${row.path}` : "—"}
-      </p>
-    ),
-  },
-  {
-    header: "Modulo Principal",
-    className: "hidden xl:table-cell",
-    cell: ({ row }) => (
-      <p className="items-center justify-start">
-        {row.modulo_padre ? `${row.modulo_padre}` : "—"}
-      </p>
-    ),
-  },
-  {
-    header: "Habilitado",
-    cell: ({ row }) => (row.habilitado ? "Sí" : "No"),
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => (
-      <SubmoduloActionsCell
-        row={row}
-        onEditSubmodulo={onEditSubmodulo}
-        onDisableSubmodulo={onDisableSubmodulo}
-        onEnableSubmodulo={onEnableSubmodulo}
-        onDeleteSubmodulo={onDeleteSubmodulo}
-      />
-    ),
-  },
-]
+  onDeleteSubmodulo: (nombre: string) => void,
+  showActions = true
+): DataTableColumn<SubmodulosData>[] => {
+  const columns: DataTableColumn<SubmodulosData>[] = [
+    {
+      accessorKey: "nombre",
+      header: "Nombre",
+    },
+    {
+      header: "URL",
+      className: "hidden xl:table-cell",
+      cell: ({ row }) => (
+        <p className="items-center justify-start">
+          {row.path ? `${row.path}` : "—"}
+        </p>
+      ),
+    },
+    {
+      header: "Modulo Principal",
+      className: "hidden xl:table-cell",
+      cell: ({ row }) => (
+        <p className="items-center justify-start">
+          {row.modulo_padre ? `${row.modulo_padre}` : "—"}
+        </p>
+      ),
+    },
+    {
+      header: "Habilitado",
+      cell: ({ row }) => (row.habilitado ? "Sí" : "No"),
+    },
+  ]
+
+  if (showActions) {
+    columns.push({
+      id: "actions",
+      cell: ({ row }) => (
+        <SubmoduloActionsCell
+          row={row}
+          onEditSubmodulo={onEditSubmodulo}
+          onDisableSubmodulo={onDisableSubmodulo}
+          onEnableSubmodulo={onEnableSubmodulo}
+          onDeleteSubmodulo={onDeleteSubmodulo}
+        />
+      ),
+    })
+  }
+
+  return columns
+}

@@ -20,8 +20,7 @@ import { UsersData } from "@/types/types"
 import { TextScrollArea } from "@/components/components"
 import SeleccionarGrupos from "../(table)/seleccionarGrupos"
 import { CircleMinus, CirclePlus } from "lucide-react"
-import { usePermisos } from "@/context/usePermisos"
-import { PERMISOS } from "@/lib/permisos"
+import { useAutorizacion } from "@/context/useAutorizacion"
 
 type Props = {
   onUserCreated: () => void
@@ -125,16 +124,16 @@ export function EditarUsuario({
     [userIdToEdit]
   )
 
-  const { tienePermiso } = usePermisos()
-
-  const puedeHabilitarUsuario = tienePermiso(PERMISOS.HABILITAR_USUARIOS)
+  const { autorizacion } = useAutorizacion()
+  const puedeHabilitarUsuario = autorizacion.usuarios.habilitar
+  const puedeDeshabilitarUsuario = autorizacion.usuarios.deshabilitar
 
   const renderBotonEstadoUsuario = () => {
-    if (!isEditing || !puedeHabilitarUsuario) {
+    if (!isEditing) {
       return null
     }
 
-    if (form.habilitado) {
+    if (form.habilitado && puedeDeshabilitarUsuario) {
       return (
         <Button
           loading={isStatusUpdating}
@@ -150,19 +149,23 @@ export function EditarUsuario({
       )
     }
 
-    return (
-      <Button
-        loading={isStatusUpdating}
-        loadingText="Habilitando..."
-        onClick={() => {
-          void handleStatusToggle()
-        }}
-        className="flex cursor-pointer items-center border border-greencremona bg-greencremona/20 text-greencremona hover:bg-greencremona/70"
-      >
-        <CirclePlus className="h-4 w-4" />
-        Habilitar
-      </Button>
-    )
+    if (!form.habilitado && puedeHabilitarUsuario) {
+      return (
+        <Button
+          loading={isStatusUpdating}
+          loadingText="Habilitando..."
+          onClick={() => {
+            void handleStatusToggle()
+          }}
+          className="flex cursor-pointer items-center border border-greencremona bg-greencremona/20 text-greencremona hover:bg-greencremona/70"
+        >
+          <CirclePlus className="h-4 w-4" />
+          Habilitar
+        </Button>
+      )
+    }
+
+    return null
   }
 
   useEffect(() => {
