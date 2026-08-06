@@ -31,10 +31,6 @@ export default function SeleccionarGrupos({ initialSelected, onSave }: Props) {
   const [filtro, setFiltro] = useState<string | null>(null)
   const [seleccionados, setSeleccionados] = useState<string[]>(initialSelected)
 
-  useEffect(() => {
-    setSeleccionados(initialSelected)
-  }, [])
-
   const cargarGrupos = useCallback(async () => {
     setLoading(true)
     try {

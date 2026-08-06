@@ -132,13 +132,15 @@ export default function FormSubmodulo({
         }
 
         const data = await response.json()
-        setForm({
-          modulo_padre: data?.modulo_padre ?? form.modulo_padre,
-          nombre: data?.nombre ?? form.nombre,
-          path: data?.path ?? form.path,
-          icono: data?.icono ?? form.icono,
-          habilitado: data?.habilitado ?? form.habilitado,
-        })
+        setForm((prev) => ({
+          modulo_padre:
+            data?.modulo_padre ?? prev.modulo_padre ?? initialForm.modulo_padre,
+          nombre: data?.nombre ?? prev.nombre ?? initialForm.nombre,
+          path: data?.path ?? prev.path ?? initialForm.path,
+          icono: data?.icono ?? prev.icono ?? initialForm.icono,
+          habilitado:
+            data?.habilitado ?? prev.habilitado ?? initialForm.habilitado,
+        }))
       } catch {
         toast.error("Error de conexión al cargar detalle del submódulo")
       } finally {

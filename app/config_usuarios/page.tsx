@@ -1,10 +1,12 @@
 "use client"
 
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Boton, TabsComp } from "@/components/components"
-import { EditarUsuario as FormUsuario } from "./(formulario)/formUsuario"
 import FormGrupo from "./(formulario)/formGrupo"
 import FormPermiso from "./(formulario)/formPermiso"
 import FormModulo from "./(formulario)/formModulo"
@@ -12,6 +14,10 @@ import FormSubmodulo from "./(formulario)/formSubmodulo"
 import { EditarUsuario } from "./(formulario)/formUsuario"
 import { DataTable, type DataTableColumn } from "./(table)/data-table"
 import type { GruposData, ModulosData, SubmodulosData } from "@/types/types"
+import { AlertaToaster } from "@/components/components"
+import { useAuth } from "@/context/AuthProvider"
+import { useAutorizacion } from "@/context/useAutorizacion"
+import { AUTORIZACIONES } from "@/lib/permisos"
 import {
   useConfiguracionUsuario,
   TAB_USUARIOS,
@@ -22,6 +28,27 @@ import {
 } from "./funciones"
 
 export default function ConfiguracionUsuario() {
+  const router = useRouter()
+  const { loading } = useAuth()
+  const { tieneAccesoSubmodulo } = useAutorizacion()
+
+  const canAccessConfigUsuarios = tieneAccesoSubmodulo(
+    AUTORIZACIONES.CONFIG_USUARIOS
+  )
+
+  useEffect(() => {
+    if (loading) {
+      return
+    }
+
+    if (!canAccessConfigUsuarios) {
+      toast.error("No tiene acceso a Configuracion de usuarios.", {
+        id: "config-usuarios-sin-acceso",
+      })
+      router.replace("/")
+    }
+  }, [canAccessConfigUsuarios, loading, router])
+
   const {
     selectedTabId,
     setSelectedTabId,
@@ -92,10 +119,14 @@ export default function ConfiguracionUsuario() {
     currentCreateButton,
   } = useConfiguracionUsuario()
 
+  if (!loading && !canAccessConfigUsuarios) {
+    return null
+  }
+
   const renderCreateForm = () => {
     switch (selectedTabId) {
       case TAB_USUARIOS:
-        return <FormUsuario onUserCreated={handleUserCreated} />
+        return <EditarUsuario onUserCreated={handleUserCreated} />
       case TAB_GRUPOS:
         return <FormGrupo onGrupoCreated={handleGrupoCreated} />
       case TAB_MODULOS:
@@ -200,9 +231,15 @@ export default function ConfiguracionUsuario() {
                 </div>
               </>
             ) : (
-              <p className="text-sm text-muted-foreground">
-                No tiene permisos para visualizar modulos de configuracion.
-              </p>
+              <>
+                <AlertaToaster
+                  message="No tiene permisos para visualizar modulos de configuracion."
+                  toastId="config-usuarios-sin-permisos"
+                />
+                <p className="text-sm text-muted-foreground">
+                  No tiene permisos para visualizar modulos de configuracion.
+                </p>
+              </>
             )}
           </div>
 

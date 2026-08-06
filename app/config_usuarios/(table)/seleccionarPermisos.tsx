@@ -34,10 +34,6 @@ export default function SeleccionarPermisos({
   const [filtro, setFiltro] = useState<string | null>(null)
   const [seleccionados, setSeleccionados] = useState<string[]>(initialSelected)
 
-  useEffect(() => {
-    setSeleccionados(initialSelected)
-  }, [])
-
   const cargarPermisos = useCallback(async () => {
     setLoading(true)
     try {

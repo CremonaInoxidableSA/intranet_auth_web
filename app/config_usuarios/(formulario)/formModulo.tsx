@@ -23,18 +23,20 @@ type Props = {
   initialData?: ModulosData
 }
 
+const initialForm: ModulosData = {
+  nombre: "",
+  subdominio: "",
+  path: "",
+  icono: "",
+  habilitado: true,
+}
+
 export default function FormModulo({
   onModuloCreated,
   isEditing = false,
   initialData,
 }: Props) {
-  const [form, setForm] = useState<ModulosData>({
-    nombre: "",
-    subdominio: "",
-    path: "",
-    icono: "",
-    habilitado: true,
-  })
+  const [form, setForm] = useState<ModulosData>(initialForm)
   const [identifier, setIdentifier] = useState("")
   const [isLoadingDetail, setIsLoadingDetail] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -73,13 +75,15 @@ export default function FormModulo({
         }
 
         const data = await response.json()
-        setForm({
-          nombre: data?.nombre ?? form.nombre,
-          subdominio: data?.subdominio ?? form.subdominio,
-          path: data?.path ?? form.path,
-          icono: data?.icono ?? form.icono,
-          habilitado: data?.habilitado ?? form.habilitado,
-        })
+        setForm((prev) => ({
+          nombre: data?.nombre ?? prev.nombre ?? initialForm.nombre,
+          subdominio:
+            data?.subdominio ?? prev.subdominio ?? initialForm.subdominio,
+          path: data?.path ?? prev.path ?? initialForm.path,
+          icono: data?.icono ?? prev.icono ?? initialForm.icono,
+          habilitado:
+            data?.habilitado ?? prev.habilitado ?? initialForm.habilitado,
+        }))
       } catch {
         toast.error("Error de conexión al cargar detalle del módulo")
       } finally {

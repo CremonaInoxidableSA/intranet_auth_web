@@ -36,11 +36,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const initTriggered = useRef(false)
 
-  const parseStringArray = (value: unknown): string[] => {
-    if (!Array.isArray(value)) return []
-    return value.filter((item): item is string => typeof item === "string")
-  }
-
   const getUserDetails = useCallback(async (): Promise<UsersData> => {
     const response = await fetchWithKeycloak("/api/personal/detalles", {
       method: "GET",

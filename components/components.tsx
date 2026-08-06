@@ -28,6 +28,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { toast } from "sonner"
 
 import { Check, ChevronDown, PencilLine, Trash2 } from "lucide-react"
 
@@ -421,4 +422,21 @@ export function DialogConfirmacion({
       </div>
     </div>
   )
+}
+
+//---------------------------------------Toaster---------------------------------------//
+export function AlertaToaster({
+  message,
+  toastId,
+}: {
+  message: string
+  toastId?: string
+}) {
+  React.useEffect(() => {
+    toast.error(message, {
+      id: toastId,
+    })
+  }, [message, toastId])
+
+  return null
 }
