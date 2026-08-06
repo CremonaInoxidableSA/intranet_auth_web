@@ -1,8 +1,8 @@
 "use client"
 import { useMemo } from "react"
 import { useAuth } from "@/context/AuthProvider"
-import type { PermisoNombre } from "@/lib/permisos"
-import { SubmoduloNombre } from "@/lib/modulos"
+import type { Autorizacion } from "@/lib/permisos"
+import { SubmoduloData } from "@/types/types"
 
 export function usePermisos() {
   const { user } = useAuth()
@@ -12,7 +12,7 @@ export function usePermisos() {
     [user?.permisos]
   )
 
-  const tienePermiso = (nombre: PermisoNombre) => permisosSet.has(nombre)
+  const tienePermiso = (nombre: Autorizacion) => permisosSet.has(nombre)
 
   return { tienePermiso }
 }
@@ -25,7 +25,7 @@ export function useSubmodulos() {
     [user?.submodulos]
   )
 
-  const tieneAcceso = (nombre: SubmoduloNombre) => permisosSet.has(nombre)
+  const tieneAcceso = (nombre: SubmoduloData) => permisosSet.has(nombre)
 
   return { tieneAcceso }
 }
