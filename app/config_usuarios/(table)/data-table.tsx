@@ -38,6 +38,57 @@ export type DataTableProps<TData> = {
   showPageInfo?: boolean
 }
 
+type PaginationProps = {
+  pageIndex: number
+  pageCount: number
+  canPreviousPage: boolean
+  canNextPage: boolean
+  currentPageDataLength: number
+  totalDataLength: number
+  showPageInfo: boolean
+  onPageChange: (newPageIndex: number) => void
+}
+
+const Pagination = ({
+  pageIndex,
+  pageCount,
+  canPreviousPage,
+  canNextPage,
+  currentPageDataLength,
+  totalDataLength,
+  showPageInfo,
+  onPageChange,
+}: PaginationProps) => {
+  return (
+    <div className="flex items-center justify-between py-4">
+      {showPageInfo && (
+        <span className="text-sm text-muted-foreground">
+          Mostrando {currentPageDataLength} de {totalDataLength} registros
+          {pageCount > 1 && ` · Página ${pageIndex + 1} de ${pageCount}`}
+        </span>
+      )}
+      <div className="flex items-center space-x-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(pageIndex - 1)}
+          disabled={!canPreviousPage}
+        >
+          Anterior
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(pageIndex + 1)}
+          disabled={!canNextPage}
+        >
+          Siguiente
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 export function DataTable<TData extends Record<string, unknown>>({
   columns,
   data,
@@ -74,42 +125,26 @@ export function DataTable<TData extends Record<string, unknown>>({
     setPageIndex(Math.max(0, Math.min(newPageIndex, pageCount - 1)))
   }
 
-  const Pagination = () => {
+  const renderPagination = () => {
     if (disableClientPagination) return null
 
     return (
-      <div className="flex items-center justify-between py-4">
-        {showPageInfo && (
-          <span className="text-sm text-muted-foreground">
-            Mostrando {currentPageData.length} de {safeData.length} registros
-            {pageCount > 1 && ` · Página ${pageIndex + 1} de ${pageCount}`}
-          </span>
-        )}
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(pageIndex - 1)}
-            disabled={!canPreviousPage}
-          >
-            Anterior
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(pageIndex + 1)}
-            disabled={!canNextPage}
-          >
-            Siguiente
-          </Button>
-        </div>
-      </div>
+      <Pagination
+        pageIndex={pageIndex}
+        pageCount={pageCount}
+        canPreviousPage={canPreviousPage}
+        canNextPage={canNextPage}
+        currentPageDataLength={currentPageData.length}
+        totalDataLength={safeData.length}
+        showPageInfo={showPageInfo}
+        onPageChange={handlePageChange}
+      />
     )
   }
 
   return (
     <div className={`flex flex-col ${extraClass}`}>
-      {paginationPosition === "top" && <Pagination />}
+      {paginationPosition === "top" && renderPagination()}
 
       <div className="overflow-hidden rounded border">
         <Table>
@@ -192,8 +227,8 @@ export function DataTable<TData extends Record<string, unknown>>({
         </Table>
       </div>
 
-      {paginationPosition === "bottom" && <Pagination />}
-      {paginationPosition === "both" && <Pagination />}
+      {paginationPosition === "bottom" && renderPagination()}
+      {paginationPosition === "both" && renderPagination()}
     </div>
   )
 }

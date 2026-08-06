@@ -36,21 +36,20 @@ export default function FormModulo({
   isEditing = false,
   initialData,
 }: Props) {
-  const [form, setForm] = useState<ModulosData>(initialForm)
-  const [identifier, setIdentifier] = useState("")
+  const [form, setForm] = useState<ModulosData>(() => ({
+    nombre: initialData?.nombre ?? "",
+    subdominio: initialData?.subdominio ?? "",
+    path: initialData?.path ?? "",
+    icono: initialData?.icono ?? "",
+    habilitado: initialData?.habilitado ?? true,
+  }))
+
+  const [identifier] = useState(
+    initialData?.nombre ?? initialData?.subdominio ?? ""
+  )
+
   const [isLoadingDetail, setIsLoadingDetail] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  useEffect(() => {
-    setForm({
-      nombre: initialData?.nombre ?? "",
-      subdominio: initialData?.subdominio ?? "",
-      path: initialData?.path ?? "",
-      icono: initialData?.icono ?? "",
-      habilitado: initialData?.habilitado ?? true,
-    })
-    setIdentifier(initialData?.nombre ?? initialData?.subdominio ?? "")
-  }, [initialData])
 
   useEffect(() => {
     if (!isEditing || !identifier) {
@@ -75,15 +74,17 @@ export default function FormModulo({
         }
 
         const data = await response.json()
-        setForm((prev) => ({
-          nombre: data?.nombre ?? prev.nombre ?? initialForm.nombre,
-          subdominio:
-            data?.subdominio ?? prev.subdominio ?? initialForm.subdominio,
-          path: data?.path ?? prev.path ?? initialForm.path,
-          icono: data?.icono ?? prev.icono ?? initialForm.icono,
-          habilitado:
-            data?.habilitado ?? prev.habilitado ?? initialForm.habilitado,
-        }))
+        if (data) {
+          setForm((prev) => ({
+            nombre: data?.nombre ?? prev.nombre ?? initialForm.nombre,
+            subdominio:
+              data?.subdominio ?? prev.subdominio ?? initialForm.subdominio,
+            path: data?.path ?? prev.path ?? initialForm.path,
+            icono: data?.icono ?? prev.icono ?? initialForm.icono,
+            habilitado:
+              data?.habilitado ?? prev.habilitado ?? initialForm.habilitado,
+          }))
+        }
       } catch {
         toast.error("Error de conexión al cargar detalle del módulo")
       } finally {

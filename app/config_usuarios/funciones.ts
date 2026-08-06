@@ -89,7 +89,10 @@ export const botonesCreacion = [
 export function useConfiguracionUsuario() {
   const { user, loading: authLoading } = useAuth()
   const { autorizacion } = useAutorizacion()
-  const [selectedTabId, setSelectedTabId] = useState(tablas[0].id)
+
+  // Valor "crudo" seteado por el usuario al clickear una pestaña.
+  const [rawSelectedTabId, setSelectedTabId] = useState(tablas[0].id)
+
   const [data, setData] = useState<DataItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -170,21 +173,20 @@ export function useConfiguracionUsuario() {
     [canViewTab]
   )
 
-  useEffect(() => {
+  // Antes esto vivía en un useEffect que llamaba a setSelectedTabId de forma
+  // sincrónica (causaba el error de lint "set-state-in-effect" por las
+  // cascading renders). Ahora se deriva directamente en el render.
+  const selectedTabId = useMemo(() => {
     if (tablasDisponibles.length === 0) {
-      setData([])
-      setIsLoading(false)
-      return
+      return rawSelectedTabId
     }
 
     const tabActualVisible = tablasDisponibles.some(
-      (tab) => tab.id === selectedTabId
+      (tab) => tab.id === rawSelectedTabId
     )
 
-    if (!tabActualVisible) {
-      setSelectedTabId(tablasDisponibles[0].id)
-    }
-  }, [selectedTabId, tablasDisponibles])
+    return tabActualVisible ? rawSelectedTabId : tablasDisponibles[0].id
+  }, [rawSelectedTabId, tablasDisponibles])
 
   const createHeaders = (tabId: number): Record<string, string> => {
     if (tabId === TAB_USUARIOS) {

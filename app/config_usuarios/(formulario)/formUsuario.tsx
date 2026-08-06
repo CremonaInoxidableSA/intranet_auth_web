@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   DialogClose,
@@ -67,62 +67,9 @@ export function EditarUsuario({
   const [isStatusUpdating, setIsStatusUpdating] = useState(false)
   const [gruposSeleccionados, setGruposSeleccionados] = useState<string[]>([])
   const [createPassword, setCreatePassword] = useState("")
+  const [initialLoadDone, setInitialLoadDone] = useState(false)
 
   const [form, setForm] = useState<UsersData>(getEmptyForm(userIdToEdit))
-
-  const loadUserData = useCallback(
-    async (showLoading = false) => {
-      if (!userIdToEdit) {
-        setForm(getEmptyForm())
-        setGruposSeleccionados([])
-        setLoading(false)
-        return
-      }
-
-      if (showLoading) {
-        setLoading(true)
-      }
-
-      try {
-        const res = await fetchWithKeycloak(
-          `/api/usuarios/detalles?user_id=${userIdToEdit}`,
-          {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-          }
-        )
-
-        const data = await res.json()
-        if (!res.ok) {
-          toast.error(data.detail || "Error al cargar datos de usuario")
-          return
-        }
-
-        const gruposNormalizados = normalizeGrupoNames(data.grupos ?? [])
-
-        setForm({
-          id: data.id ?? userIdToEdit,
-          email: data.email ?? "",
-          nombre: data.nombre ?? "",
-          apellido: data.apellido ?? "",
-          legajo: data.legajo ?? undefined,
-          dni: data.dni ?? undefined,
-          grupos: gruposNormalizados,
-          habilitado: data.habilitado ?? false,
-          cambiar_password: data.cambiar_password ?? false,
-          password: data.password ?? "",
-        })
-        setGruposSeleccionados(gruposNormalizados)
-      } catch {
-        toast.error("Error de conexión con la API")
-      } finally {
-        if (showLoading) {
-          setLoading(false)
-        }
-      }
-    },
-    [userIdToEdit]
-  )
 
   const { autorizacion } = useAutorizacion()
   const puedeHabilitarUsuario = autorizacion.usuarios.habilitar
@@ -169,8 +116,52 @@ export function EditarUsuario({
   }
 
   useEffect(() => {
-    void loadUserData(true)
-  }, [loadUserData])
+    if (!isEditing || !userIdToEdit || initialLoadDone) {
+      return
+    }
+
+    const fetchData = async () => {
+      setLoading(true)
+      try {
+        const res = await fetchWithKeycloak(
+          `/api/usuarios/detalles?user_id=${userIdToEdit}`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          }
+        )
+
+        const data = await res.json()
+        if (!res.ok) {
+          toast.error(data.detail || "Error al cargar datos de usuario")
+          return
+        }
+
+        const gruposNormalizados = normalizeGrupoNames(data.grupos ?? [])
+
+        setForm({
+          id: data.id ?? userIdToEdit,
+          email: data.email ?? "",
+          nombre: data.nombre ?? "",
+          apellido: data.apellido ?? "",
+          legajo: data.legajo ?? undefined,
+          dni: data.dni ?? undefined,
+          grupos: gruposNormalizados,
+          habilitado: data.habilitado ?? false,
+          cambiar_password: data.cambiar_password ?? false,
+          password: data.password ?? "",
+        })
+        setGruposSeleccionados(gruposNormalizados)
+        setInitialLoadDone(true)
+      } catch {
+        toast.error("Error de conexión con la API")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [isEditing, userIdToEdit, initialLoadDone])
 
   const handleChange = (
     key: keyof Omit<UsersData, "grupos">,
@@ -191,7 +182,32 @@ export function EditarUsuario({
         await onEnableUser?.(form.id)
       }
 
-      await loadUserData(false)
+      const res = await fetchWithKeycloak(
+        `/api/usuarios/detalles?user_id=${userIdToEdit}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        }
+      )
+
+      const data = await res.json()
+      if (res.ok) {
+        const gruposNormalizados = normalizeGrupoNames(data.grupos ?? [])
+        setForm({
+          id: data.id ?? userIdToEdit,
+          email: data.email ?? "",
+          nombre: data.nombre ?? "",
+          apellido: data.apellido ?? "",
+          legajo: data.legajo ?? undefined,
+          dni: data.dni ?? undefined,
+          grupos: gruposNormalizados,
+          habilitado: data.habilitado ?? false,
+          cambiar_password: data.cambiar_password ?? false,
+          password: data.password ?? "",
+        })
+        setGruposSeleccionados(gruposNormalizados)
+      }
+
       toast.success(
         form.habilitado
           ? "Usuario deshabilitado correctamente"
@@ -301,7 +317,6 @@ export function EditarUsuario({
       <div className="grid gap-4">
         {isEditing && (
           <>
-            {/* Campos no editables (solo lectura) */}
             <div className="flex flex-col gap-4">
               <div className="gap-1">
                 <Label htmlFor="id" className="text-sm text-muted-foreground">
@@ -329,7 +344,6 @@ export function EditarUsuario({
           </>
         )}
 
-        {/* Campos editables */}
         <div className="grid gap-2">
           <Label htmlFor="email">Correo electrónico</Label>
           <Input
@@ -408,7 +422,6 @@ export function EditarUsuario({
           </div>
         )}
 
-        {/* Grupos asignados */}
         <div className="grid gap-2">
           <div className="flex items-center justify-between">
             <Label>Grupos</Label>
@@ -432,7 +445,6 @@ export function EditarUsuario({
           />
         </div>
 
-        {/* Checkbox para cambiar contraseña */}
         <div className="flex items-center gap-2">
           <Checkbox
             id="cambiarContrasena"

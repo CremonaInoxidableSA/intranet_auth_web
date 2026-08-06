@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -34,26 +34,26 @@ export default function SeleccionarSubmodulos({
   const [filtro, setFiltro] = useState<string | null>(null)
   const [seleccionados, setSeleccionados] = useState<string[]>(initialSelected)
 
-  const cargarSubmodulos = useCallback(async () => {
-    setLoading(true)
-    try {
-      const headers = { Accept: "application/json" }
-      const result = await fetchSubmodulos(
-        { numeroPagina: pagina, filtro },
-        headers
-      )
-      setSubmodulos(result.data)
-      setTotalPaginas(result.paginacion?.total_paginas || 1)
-    } catch {
-      toast.error("No se pudieron cargar los submódulos")
-    } finally {
-      setLoading(false)
-    }
-  }, [pagina, filtro])
-
   useEffect(() => {
+    const cargarSubmodulos = async () => {
+      setLoading(true)
+      try {
+        const headers = { Accept: "application/json" }
+        const result = await fetchSubmodulos(
+          { numeroPagina: pagina, filtro },
+          headers
+        )
+        setSubmodulos(result.data)
+        setTotalPaginas(result.paginacion?.total_paginas || 1)
+      } catch {
+        toast.error("No se pudieron cargar los submódulos")
+      } finally {
+        setLoading(false)
+      }
+    }
+
     cargarSubmodulos()
-  }, [cargarSubmodulos])
+  }, [pagina, filtro])
 
   const toggle = (nombre: string) => {
     setSeleccionados((prev) =>

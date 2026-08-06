@@ -40,25 +40,19 @@ export default function FormGrupo({
   isEditing = false,
   initialData,
 }: Props) {
-  const [nombreGrupo, setNombreGrupo] = useState("")
-  const [identifier, setIdentifier] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoadingDetail, setIsLoadingDetail] = useState(false)
+  const [nombreGrupo, setNombreGrupo] = useState(initialData?.nombre ?? "")
+  const [identifier] = useState(initialData?.nombre ?? "")
   const [permisosSeleccionados, setPermisosSeleccionados] = useState<string[]>(
-    []
+    toNameList(initialData?.permisos)
   )
-  const [modulosSeleccionados, setModulosSeleccionados] = useState<string[]>([])
+  const [modulosSeleccionados, setModulosSeleccionados] = useState<string[]>(
+    toNameList(initialData?.modulos)
+  )
   const [submodulosSeleccionados, setSubmodulosSeleccionados] = useState<
     string[]
-  >([])
-
-  useEffect(() => {
-    setNombreGrupo(initialData?.nombre ?? "")
-    setIdentifier(initialData?.nombre ?? "")
-    setPermisosSeleccionados(toNameList(initialData?.permisos))
-    setModulosSeleccionados(toNameList(initialData?.modulos))
-    setSubmodulosSeleccionados(toNameList(initialData?.submodulos))
-  }, [initialData])
+  >(toNameList(initialData?.submodulos))
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false)
 
   useEffect(() => {
     if (!isEditing || !identifier) {
@@ -83,10 +77,12 @@ export default function FormGrupo({
         }
 
         const data = await response.json()
-        setNombreGrupo(data?.nombre ?? identifier)
-        setPermisosSeleccionados(toNameList(data?.permisos))
-        setModulosSeleccionados(toNameList(data?.modulos))
-        setSubmodulosSeleccionados(toNameList(data?.submodulos))
+        if (data) {
+          setNombreGrupo(data?.nombre ?? identifier)
+          setPermisosSeleccionados(toNameList(data?.permisos))
+          setModulosSeleccionados(toNameList(data?.modulos))
+          setSubmodulosSeleccionados(toNameList(data?.submodulos))
+        }
       } catch {
         toast.error("Error de conexión al cargar detalle del grupo")
       } finally {

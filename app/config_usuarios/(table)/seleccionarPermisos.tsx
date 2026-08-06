@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -34,26 +34,26 @@ export default function SeleccionarPermisos({
   const [filtro, setFiltro] = useState<string | null>(null)
   const [seleccionados, setSeleccionados] = useState<string[]>(initialSelected)
 
-  const cargarPermisos = useCallback(async () => {
-    setLoading(true)
-    try {
-      const headers = { Accept: "application/json" }
-      const result = await fetchPermisos(
-        { numeroPagina: pagina, filtro },
-        headers
-      )
-      setPermisos(result.data)
-      setTotalPaginas(result.paginacion?.total_paginas || 1)
-    } catch {
-      toast.error("No se pudieron cargar los permisos")
-    } finally {
-      setLoading(false)
-    }
-  }, [pagina, filtro])
-
   useEffect(() => {
+    const cargarPermisos = async () => {
+      setLoading(true)
+      try {
+        const headers = { Accept: "application/json" }
+        const result = await fetchPermisos(
+          { numeroPagina: pagina, filtro },
+          headers
+        )
+        setPermisos(result.data)
+        setTotalPaginas(result.paginacion?.total_paginas || 1)
+      } catch {
+        toast.error("No se pudieron cargar los permisos")
+      } finally {
+        setLoading(false)
+      }
+    }
+
     cargarPermisos()
-  }, [cargarPermisos])
+  }, [pagina, filtro])
 
   const toggle = (nombre: string) => {
     setSeleccionados((prev) =>

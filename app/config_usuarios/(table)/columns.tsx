@@ -84,7 +84,7 @@ function UserActionsCell({
         <DropdownMenuItem asChild>
           <button
             onClick={() => id && onEnableUser(id)}
-            className="gap-2 flex w-full cursor-pointer flex-row items-center justify-start text-greencremona"
+            className="flex w-full cursor-pointer flex-row items-center justify-start gap-2 text-greencremona"
           >
             <CirclePlus className="h-4 w-4" />
             <span>Habilitar</span>

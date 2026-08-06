@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -31,26 +31,26 @@ export default function SeleccionarGrupos({ initialSelected, onSave }: Props) {
   const [filtro, setFiltro] = useState<string | null>(null)
   const [seleccionados, setSeleccionados] = useState<string[]>(initialSelected)
 
-  const cargarGrupos = useCallback(async () => {
-    setLoading(true)
-    try {
-      const headers = { Accept: "application/json" }
-      const result = await fetchGrupos(
-        { numeroPagina: pagina, filtro },
-        headers
-      )
-      setGrupos(result.data)
-      setTotalPaginas(result.paginacion?.total_paginas || 1)
-    } catch {
-      toast.error("No se pudieron cargar los grupos")
-    } finally {
-      setLoading(false)
-    }
-  }, [pagina, filtro])
-
   useEffect(() => {
+    const cargarGrupos = async () => {
+      setLoading(true)
+      try {
+        const headers = { Accept: "application/json" }
+        const result = await fetchGrupos(
+          { numeroPagina: pagina, filtro },
+          headers
+        )
+        setGrupos(result.data)
+        setTotalPaginas(result.paginacion?.total_paginas || 1)
+      } catch {
+        toast.error("No se pudieron cargar los grupos")
+      } finally {
+        setLoading(false)
+      }
+    }
+
     cargarGrupos()
-  }, [cargarGrupos])
+  }, [pagina, filtro])
 
   const toggle = (nombre: string) => {
     setSeleccionados((prev) =>

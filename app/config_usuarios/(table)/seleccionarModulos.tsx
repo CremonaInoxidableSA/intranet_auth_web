@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -31,26 +31,26 @@ export default function SeleccionarModulos({ initialSelected, onSave }: Props) {
   const [filtro, setFiltro] = useState<string | null>(null)
   const [seleccionados, setSeleccionados] = useState<string[]>(initialSelected)
 
-  const cargarModulos = useCallback(async () => {
-    setLoading(true)
-    try {
-      const headers = { Accept: "application/json" }
-      const result = await fetchModulos(
-        { numeroPagina: pagina, filtro },
-        headers
-      )
-      setModulos(result.data)
-      setTotalPaginas(result.paginacion?.total_paginas || 1)
-    } catch {
-      toast.error("No se pudieron cargar los módulos")
-    } finally {
-      setLoading(false)
-    }
-  }, [pagina, filtro])
-
   useEffect(() => {
+    const cargarModulos = async () => {
+      setLoading(true)
+      try {
+        const headers = { Accept: "application/json" }
+        const result = await fetchModulos(
+          { numeroPagina: pagina, filtro },
+          headers
+        )
+        setModulos(result.data)
+        setTotalPaginas(result.paginacion?.total_paginas || 1)
+      } catch {
+        toast.error("No se pudieron cargar los módulos")
+      } finally {
+        setLoading(false)
+      }
+    }
+
     cargarModulos()
-  }, [cargarModulos])
+  }, [pagina, filtro])
 
   const toggle = (nombre: string) => {
     setSeleccionados((prev) =>

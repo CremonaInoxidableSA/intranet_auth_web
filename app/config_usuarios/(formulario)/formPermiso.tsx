@@ -26,15 +26,10 @@ export default function FormPermiso({
   isEditing = false,
   initialData,
 }: Props) {
-  const [nombre, setNombre] = useState("")
-  const [identifier, setIdentifier] = useState("")
+  const [nombre, setNombre] = useState(initialData?.nombre ?? "")
+  const [identifier] = useState(initialData?.nombre ?? "")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingDetail, setIsLoadingDetail] = useState(false)
-
-  useEffect(() => {
-    setNombre(initialData?.nombre ?? "")
-    setIdentifier(initialData?.nombre ?? "")
-  }, [initialData])
 
   useEffect(() => {
     if (!isEditing || !identifier) {
@@ -57,7 +52,9 @@ export default function FormPermiso({
         }
 
         const data = await response.json()
-        setNombre(data?.nombre ?? identifier)
+        if (data?.nombre) {
+          setNombre(data.nombre)
+        }
       } catch {
         toast.error("Error de conexión al cargar detalle del permiso")
       } finally {

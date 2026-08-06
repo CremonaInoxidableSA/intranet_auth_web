@@ -55,14 +55,20 @@ export default function FormSubmodulo({
   isEditing = false,
   initialData,
 }: Props) {
-  const [form, setForm] = useState<SubmodulosData>(initialForm)
+  const [form, setForm] = useState<SubmodulosData>(() => ({
+    modulo_padre: initialData?.modulo_padre ?? "",
+    nombre: initialData?.nombre ?? "",
+    path: initialData?.path ?? "",
+    icono: initialData?.icono ?? "",
+    habilitado: initialData?.habilitado ?? true,
+  }))
   const [modulos, setModulos] = useState<ModulosData[]>([])
   const [isLoadingModulos, setIsLoadingModulos] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingDetail, setIsLoadingDetail] = useState(false)
   const [isModuloSelectorOpen, setIsModuloSelectorOpen] = useState(false)
   const [moduloPadreDraft, setModuloPadreDraft] = useState("")
-  const [identifier, setIdentifier] = useState("")
+  const [identifier] = useState(initialData?.nombre ?? "")
 
   useEffect(() => {
     let isMounted = true
@@ -95,17 +101,6 @@ export default function FormSubmodulo({
       isMounted = false
     }
   }, [])
-
-  useEffect(() => {
-    setForm({
-      modulo_padre: initialData?.modulo_padre ?? "",
-      nombre: initialData?.nombre ?? "",
-      path: initialData?.path ?? "",
-      icono: initialData?.icono ?? "",
-      habilitado: initialData?.habilitado ?? true,
-    })
-    setIdentifier(initialData?.nombre ?? "")
-  }, [initialData])
 
   useEffect(() => {
     if (!isEditing || !identifier) {

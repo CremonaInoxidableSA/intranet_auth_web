@@ -13,7 +13,12 @@ import FormModulo from "./(formulario)/formModulo"
 import FormSubmodulo from "./(formulario)/formSubmodulo"
 import { EditarUsuario } from "./(formulario)/formUsuario"
 import { DataTable, type DataTableColumn } from "./(table)/data-table"
-import type { GruposData, ModulosData, SubmodulosData } from "@/types/types"
+import type {
+  GruposData,
+  ModulosData,
+  SubmodulosData,
+  PermisosData,
+} from "@/types/types"
 import { AlertaToaster } from "@/components/components"
 import { useAuth } from "@/context/AuthProvider"
 import { useAutorizacion } from "@/context/useAutorizacion"
@@ -175,7 +180,7 @@ export default function ConfiguracionUsuario() {
       return (
         <FormPermiso
           isEditing
-          initialData={editTarget.item as any}
+          initialData={editTarget.item as PermisosData | undefined}
           onPermisoCreated={handlePermisoUpdated}
         />
       )

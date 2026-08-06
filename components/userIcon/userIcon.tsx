@@ -65,7 +65,7 @@ const UserIcon = () => {
           <Button
             className="w-full cursor-pointer border border-bluecremona bg-bluecremona/10 hover:bg-bluecremona/30"
             onClick={() => {
-              router.push("/config_user")
+              router.push("/config_usuarios")
               setOpen(false)
             }}
           >
