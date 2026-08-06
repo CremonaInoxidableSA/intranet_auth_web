@@ -25,8 +25,8 @@ import {
 import { toast } from "sonner"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 import { HoverInfo } from "@/components/components"
-import { fetchModulos, type Modulo } from "../(data)/modulos"
-import { SubmodulosData } from "@/types/types"
+import { fetchModulos } from "../(data)/modulos"
+import { SubmodulosData, ModulosData } from "@/types/types"
 import { Checkbox } from "@/components/ui/checkbox"
 
 const hoverInfoText = {
@@ -56,7 +56,7 @@ export default function FormSubmodulo({
   initialData,
 }: Props) {
   const [form, setForm] = useState<SubmodulosData>(initialForm)
-  const [modulos, setModulos] = useState<Modulo[]>([])
+  const [modulos, setModulos] = useState<ModulosData[]>([])
   const [isLoadingModulos, setIsLoadingModulos] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingDetail, setIsLoadingDetail] = useState(false)

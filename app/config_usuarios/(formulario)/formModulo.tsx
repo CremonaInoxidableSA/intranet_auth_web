@@ -28,7 +28,7 @@ export default function FormModulo({
   isEditing = false,
   initialData,
 }: Props) {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<ModulosData>({
     nombre: "",
     subdominio: "",
     path: "",
@@ -96,10 +96,10 @@ export default function FormModulo({
 
   const handleSubmit = async () => {
     if (
-      !form.nombre.trim() ||
-      !form.subdominio.trim() ||
-      !form.path.trim() ||
-      !form.icono.trim()
+      !form?.nombre?.trim() ||
+      !form?.subdominio?.trim() ||
+      !form?.path?.trim() ||
+      !form?.icono?.trim()
     ) {
       toast.error("Complete todos los campos")
       return

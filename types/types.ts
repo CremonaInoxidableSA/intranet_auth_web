@@ -1,31 +1,6 @@
-// Data extra de los usuarios que se utiliza para la gestion de usuarios
-interface UsersExtraData {
-  id?: string
-  habilitado?: boolean
-  apellidoNombre?: string
-  change_password?: boolean
-  password?: string
-  password_confirmation?: string
-}
-
-// Data que se obtiene de la API al iniciar sesion
-export interface UsersData<T = UsersExtraData> {
-  email?: string
+export interface PermisosData {
   nombre?: string
-  apellido?: string
-  legajo?: number
-  dni?: number
-
-  grupos?: GruposData[]
-  submodulos?: SubmodulosData[]
-  modulos?: ModulosData[]
-  permisos?: PermisosData[]
-
-  extra?: T
-}
-
-export interface GruposData {
-  nombre?: string
+  descripcion?: string
 }
 
 export interface ModulosData {
@@ -37,31 +12,98 @@ export interface ModulosData {
 }
 
 export interface SubmodulosData {
-  modulo_padre?: string
   nombre?: string
+  modulo_padre?: string
   path?: string
   icono?: string
   habilitado?: boolean
 }
 
-export interface PermisosData {
+export interface GruposData {
   nombre?: string
+  permisos?: (string | PermisosData)[]
+  modulos?: (string | ModulosData)[]
+  submodulos?: (string | SubmodulosData)[]
 }
+
+export interface UsersData {
+  id?: string
+  email?: string
+  nombre?: string
+  apellido?: string
+  legajo?: number
+  dni?: number
+  habilitado?: boolean
+  cambiar_password?: boolean
+  password?: string
+  password_confirmation?: string
+  grupos?: (string | GruposData)[]
+  modulos?: (string | ModulosData)[]
+  submodulos?: (string | SubmodulosData)[]
+  permisos?: (string | PermisosData)[]
+
+  apellidoNombre?: string
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// TIPOS PARA OPERACIONES CRUD
+// ─────────────────────────────────────────────────────────────────────────
+
+// Para listados y detalles (lo que devuelve la API)
+export type ApiResponse<T> = T
+
+export interface ApiListResult<T, P = Paginacion> {
+  data: T[]
+  paginacion: P
+}
+
+export interface FetchParams {
+  numeroPagina?: number
+  filtro?: string | null
+}
+
+// Para paginación
+export interface Paginacion {
+  total_paginas: number
+  total_registros: number
+}
+
+// Para respuestas de listado paginado
+export interface ListadoPaginado<T, P = Paginacion> {
+  data: T[]
+  paginacion: P
+}
+
+// Para respuestas simples de detalle
+export type DetalleResponse<T> = T
+
+// Para respuestas de operaciones (crear/editar/eliminar)
+export interface OperacionResponse {
+  detail: string
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// UTILITY TYPES para validación en diferentes contextos
+// ─────────────────────────────────────────────────────────────────────────
+
+// Para operaciones de creación (requiere campos mínimos)
+export type Crear<T> = Required<Pick<T, keyof T>>
+
+// Para operaciones de edición (todos opcionales excepto identificador)
+export type Editar<T> = Partial<T>
+
+// Para listados (solo los campos que normalmente se muestran)
+export type Listar<T> = Pick<T, keyof T>
+
+// ─────────────────────────────────────────────────────────────────────────
+// CONTEXTOS DE AUTENTICACIÓN Y COMPONENTES
+// ─────────────────────────────────────────────────────────────────────────
 
 export interface AuthContextType {
   user: UsersData | null
-
   loading: boolean
-
-  login: () => Promise<ApiResponse>
+  login: () => Promise<OperacionResponse>
   logout: () => Promise<boolean>
-}
-
-export interface ApiResponse {
-  success: boolean
-  data?: unknown
-  error?: string
-  message?: string
 }
 
 export interface UserAvatarProps {
@@ -72,33 +114,13 @@ export interface UserAvatarProps {
   textClass?: string
 }
 
-// Info de paginación, reusable en cualquier listado paginado
-export interface PaginacionBase {
-  total_paginas: number
+// ─────────────────────────────────────────────────────────────────────────
+// MAPEO DE MÓDULOS PERSONALES (caso específico)
+// ─────────────────────────────────────────────────────────────────────────
+
+export interface ModuloPersonal {
+  url: string
+  icono: string
 }
 
-export interface Paginacion extends PaginacionBase {
-  total_usuarios: number
-}
-
-export interface GruposPaginacion extends PaginacionBase {
-  total_grupos: number
-}
-
-export interface ModulosPaginacion extends PaginacionBase {
-  total_modulos: number
-}
-
-export interface SubmodulosPaginacion extends PaginacionBase {
-  total_submodulos: number
-}
-
-export interface PermisosPaginacion extends PaginacionBase {
-  total_permisos: number
-}
-
-// Respuesta genérica de un endpoint de listado paginado
-export interface ApiListResult<T, P extends PaginacionBase = Paginacion> {
-  data: T[]
-  paginacion: P
-}
+export type ModulosPersonales = Record<string, ModuloPersonal>

@@ -1,16 +1,14 @@
-import { ApiListResult, ModulosData, ModulosPaginacion } from "@/types/types"
+import {
+  ApiListResult,
+  FetchParams,
+  ModulosData,
+  Paginacion,
+} from "@/types/types"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 
-export type Modulo = ModulosData
-
-type FetchModulosParams = {
-  numeroPagina?: number
-  filtro?: string | null
-}
-
-const PAGINACION_VACIA: ModulosPaginacion = {
+const PAGINACION_VACIA: Paginacion = {
   total_paginas: 1,
-  total_modulos: 0,
+  total_registros: 0,
 }
 
 function toModuloData(raw: {
@@ -18,7 +16,7 @@ function toModuloData(raw: {
   subdominio: string
   path: string
   icono: string
-}): Modulo {
+}): ModulosData {
   const { nombre, subdominio, path, icono } = raw
   return {
     nombre,
@@ -29,9 +27,9 @@ function toModuloData(raw: {
 }
 
 export async function fetchModulos(
-  { numeroPagina = 1, filtro }: FetchModulosParams = {},
+  { numeroPagina = 1, filtro }: FetchParams = {},
   headers: Record<string, string> = { "Content-Type": "application/json" }
-): Promise<ApiListResult<Modulo, ModulosPaginacion>> {
+): Promise<ApiListResult<ModulosData>> {
   const query = new URLSearchParams({
     numero_pagina: String(numeroPagina),
     filtro: filtro?.trim() || "0",

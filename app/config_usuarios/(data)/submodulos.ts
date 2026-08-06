@@ -1,20 +1,14 @@
 import {
   ApiListResult,
+  FetchParams,
   SubmodulosData,
-  SubmodulosPaginacion,
+  Paginacion,
 } from "@/types/types"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 
-export type Submodulo = SubmodulosData
-
-type FetchSubmodulosParams = {
-  numeroPagina?: number
-  filtro?: string | null
-}
-
-const PAGINACION_VACIA: SubmodulosPaginacion = {
+const PAGINACION_VACIA: Paginacion = {
   total_paginas: 1,
-  total_submodulos: 0,
+  total_registros: 0,
 }
 
 function toSubmoduloData(raw: {
@@ -23,7 +17,7 @@ function toSubmoduloData(raw: {
   path: string
   icono: string
   habilitado: boolean
-}): Submodulo {
+}): SubmodulosData {
   const { nombre, modulo_padre, path, icono, habilitado } = raw
   return {
     nombre,
@@ -35,9 +29,9 @@ function toSubmoduloData(raw: {
 }
 
 export async function fetchSubmodulos(
-  { numeroPagina = 1, filtro }: FetchSubmodulosParams = {},
+  { numeroPagina = 1, filtro }: FetchParams = {},
   headers: Record<string, string> = { "Content-Type": "application/json" }
-): Promise<ApiListResult<Submodulo, SubmodulosPaginacion>> {
+): Promise<ApiListResult<SubmodulosData>> {
   const query = new URLSearchParams({
     numero_pagina: String(numeroPagina),
     filtro: filtro?.trim() || "0",

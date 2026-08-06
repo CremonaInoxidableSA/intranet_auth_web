@@ -1,14 +1,14 @@
-import { ApiListResult, PermisosData, PermisosPaginacion } from "@/types/types"
+import {
+  ApiListResult,
+  FetchParams,
+  PermisosData,
+  Paginacion,
+} from "@/types/types"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 
-type FetchPermisosParams = {
-  numeroPagina?: number
-  filtro?: string | null
-}
-
-const PAGINACION_VACIA: PermisosPaginacion = {
+const PAGINACION_VACIA: Paginacion = {
   total_paginas: 1,
-  total_permisos: 0,
+  total_registros: 0,
 }
 
 function toPermisoData(raw: { nombre: string }): PermisosData {
@@ -19,9 +19,9 @@ function toPermisoData(raw: { nombre: string }): PermisosData {
 }
 
 export async function fetchPermisos(
-  { numeroPagina = 1, filtro }: FetchPermisosParams = {},
+  { numeroPagina = 1, filtro }: FetchParams = {},
   headers: Record<string, string> = { "Content-Type": "application/json" }
-): Promise<ApiListResult<PermisosData, PermisosPaginacion>> {
+): Promise<ApiListResult<PermisosData>> {
   const query = new URLSearchParams({
     numero_pagina: String(numeroPagina),
     filtro: filtro?.trim() || "0",

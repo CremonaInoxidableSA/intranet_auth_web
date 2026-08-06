@@ -9,7 +9,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Dialog, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog } from "@/components/ui/dialog"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,7 +53,7 @@ function UserActionsCell({
   onEnableUser: (id: string) => void
 }) {
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = React.useState(false)
-  const id = row.extra?.id
+  const id = row.id
 
   const { tienePermiso } = usePermisos()
 
@@ -67,7 +67,7 @@ function UserActionsCell({
       return null
     }
 
-    if (puedeDeshabilitarUsuario && row.extra?.habilitado) {
+    if (puedeDeshabilitarUsuario && row.habilitado) {
       return (
         <DropdownMenuItem asChild>
           <button
@@ -81,7 +81,7 @@ function UserActionsCell({
       )
     }
 
-    if (puedeHabilitarUsuario && !row.extra?.habilitado) {
+    if (puedeHabilitarUsuario && !row.habilitado) {
       return (
         <DropdownMenuItem asChild>
           <button
@@ -387,19 +387,35 @@ export const getUsuarioColumns = (
   },
   {
     header: "Apellido y Nombre",
-    cell: ({ row }) => row.extra?.apellidoNombre || "—",
+    cell: ({ row }) => row.apellidoNombre || "—",
   },
   {
     accessorKey: "grupos",
     header: "Grupos",
     className: "hidden xl:table-cell",
-    cell: ({ row }) =>
-      row.grupos?.length ? row.grupos.map((grupo) => grupo).join(", ") : "—",
+    cell: ({ row }) => {
+      const grupos = row.grupos?.filter(Boolean) ?? []
+
+      if (!grupos.length) {
+        return "—"
+      }
+
+      return grupos
+        .map((grupo) => {
+          if (typeof grupo === "string") {
+            return grupo
+          }
+
+          return grupo?.nombre ?? ""
+        })
+        .filter(Boolean)
+        .join(", ")
+    },
   },
   {
     header: "Habilitado",
     className: "hidden xl:table-cell",
-    cell: ({ row }) => (row.extra?.habilitado ? "Sí" : "No"),
+    cell: ({ row }) => (row.habilitado ? "Sí" : "No"),
   },
   {
     id: "actions",

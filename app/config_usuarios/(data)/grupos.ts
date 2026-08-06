@@ -1,12 +1,12 @@
-import { ApiListResult, GruposData, GruposPaginacion } from "@/types/types"
+import {
+  ApiListResult,
+  FetchParams,
+  GruposData,
+  Paginacion,
+} from "@/types/types"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 
-type FetchGruposParams = {
-  numeroPagina?: number
-  filtro?: string | null
-}
-
-const PAGINACION_VACIA: GruposPaginacion = { total_paginas: 1, total_grupos: 0 }
+const PAGINACION_VACIA: Paginacion = { total_paginas: 1, total_registros: 0 }
 
 function toGruposData(raw: { nombre: string }): GruposData {
   const { nombre } = raw
@@ -16,9 +16,9 @@ function toGruposData(raw: { nombre: string }): GruposData {
 }
 
 export async function fetchGrupos(
-  { numeroPagina = 1, filtro }: FetchGruposParams = {},
+  { numeroPagina = 1, filtro }: FetchParams = {},
   headers: Record<string, string> = { "Content-Type": "application/json" }
-): Promise<ApiListResult<GruposData, GruposPaginacion>> {
+): Promise<ApiListResult<GruposData>> {
   const query = new URLSearchParams({
     numero_pagina: String(numeroPagina),
     filtro: filtro?.trim() || "0",

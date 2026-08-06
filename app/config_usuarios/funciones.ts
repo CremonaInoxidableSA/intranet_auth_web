@@ -5,11 +5,17 @@ import { toast } from "sonner"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 import { fetchUsuarios } from "./(data)/usuarios"
 import { fetchGrupos } from "./(data)/grupos"
-import { fetchModulos, type Modulo } from "./(data)/modulos"
+import { fetchModulos } from "./(data)/modulos"
 import { fetchPermisos } from "./(data)/permisos"
-import { fetchSubmodulos, type Submodulo } from "./(data)/submodulos"
+import { fetchSubmodulos } from "./(data)/submodulos"
 import { useAuth } from "@/context/AuthProvider"
-import { UsersData, GruposData, PermisosData } from "@/types/types"
+import {
+  UsersData,
+  GruposData,
+  PermisosData,
+  SubmodulosData,
+  ModulosData,
+} from "@/types/types"
 import { type DataTableColumn } from "./(table)/data-table"
 import {
   getUsuarioColumns,
@@ -19,7 +25,12 @@ import {
   getPermisoColumns,
 } from "./(table)/columns"
 
-type DataItem = UsersData | GruposData | Modulo | Submodulo | PermisosData
+type DataItem =
+  | UsersData
+  | GruposData
+  | ModulosData
+  | SubmodulosData
+  | PermisosData
 
 type EditTarget = {
   tabId: number
@@ -90,27 +101,27 @@ export function useConfiguracionUsuario() {
   const [userFilterInput, setUserFilterInput] = useState("")
   const [userFilter, setUserFilter] = useState<string | null>(null)
   const [userTotalPages, setUserTotalPages] = useState(1)
-  const [userTotalUsers, setUserTotalUsers] = useState(0)
+  const [userTotalRecords, setUserTotalRecords] = useState(0)
   const [groupPage, setGroupPage] = useState(1)
   const [groupFilterInput, setGroupFilterInput] = useState("")
   const [groupFilter, setGroupFilter] = useState<string | null>(null)
   const [groupTotalPages, setGroupTotalPages] = useState(1)
-  const [groupTotalGrupos, setGroupTotalGrupos] = useState(0)
+  const [groupTotalRecords, setGroupTotalRecords] = useState(0)
   const [modPage, setModPage] = useState(1)
   const [modFilterInput, setModFilterInput] = useState("")
   const [modFilter, setModFilter] = useState<string | null>(null)
   const [modTotalPages, setModTotalPages] = useState(1)
-  const [modTotalModulos, setModTotalModulos] = useState(0)
+  const [modTotalRecords, setModTotalRecords] = useState(0)
   const [subPage, setSubPage] = useState(1)
   const [subFilterInput, setSubFilterInput] = useState("")
   const [subFilter, setSubFilter] = useState<string | null>(null)
   const [subTotalPages, setSubTotalPages] = useState(1)
-  const [subTotalSubmodulos, setSubTotalSubmodulos] = useState(0)
+  const [subTotalRecords, setSubTotalRecords] = useState(0)
   const [permPage, setPermPage] = useState(1)
   const [permFilterInput, setPermFilterInput] = useState("")
   const [permFilter, setPermFilter] = useState<string | null>(null)
   const [permTotalPages, setPermTotalPages] = useState(1)
-  const [permTotalPermisos, setPermTotalPermisos] = useState(0)
+  const [permTotalRecords, setPermTotalRecords] = useState(0)
 
   const createHeaders = (tabId: number): Record<string, string> => {
     if (tabId === TAB_USUARIOS) {
@@ -137,12 +148,12 @@ export function useConfiguracionUsuario() {
       )
       setData(usersResponse.data)
       setUserTotalPages(usersResponse.paginacion.total_paginas)
-      setUserTotalUsers(usersResponse.paginacion.total_usuarios)
+      setUserTotalRecords(usersResponse.paginacion.total_registros)
     } catch {
       setError("Error al cargar los datos")
       setData([])
       setUserTotalPages(1)
-      setUserTotalUsers(0)
+      setUserTotalRecords(0)
     } finally {
       setIsLoading(false)
     }
@@ -161,7 +172,7 @@ export function useConfiguracionUsuario() {
           )
           setData(usersResponse.data)
           setUserTotalPages(usersResponse.paginacion.total_paginas)
-          setUserTotalUsers(usersResponse.paginacion.total_usuarios)
+          setUserTotalRecords(usersResponse.paginacion.total_registros)
           break
         }
         case TAB_GRUPOS: {
@@ -171,7 +182,7 @@ export function useConfiguracionUsuario() {
           )
           setData(grupos.data)
           setGroupTotalPages(grupos.paginacion.total_paginas)
-          setGroupTotalGrupos(grupos.paginacion.total_grupos)
+          setGroupTotalRecords(grupos.paginacion.total_registros)
           break
         }
         case TAB_MODULOS: {
@@ -181,7 +192,7 @@ export function useConfiguracionUsuario() {
           )
           setData(modulos.data)
           setModTotalPages(modulos.paginacion.total_paginas)
-          setModTotalModulos(modulos.paginacion.total_modulos)
+          setModTotalRecords(modulos.paginacion.total_registros)
           break
         }
         case TAB_SUBMODULOS: {
@@ -191,7 +202,7 @@ export function useConfiguracionUsuario() {
           )
           setData(submodulos.data)
           setSubTotalPages(submodulos.paginacion.total_paginas)
-          setSubTotalSubmodulos(submodulos.paginacion.total_submodulos)
+          setSubTotalRecords(submodulos.paginacion.total_registros)
           break
         }
         case TAB_PERMISOS: {
@@ -201,19 +212,19 @@ export function useConfiguracionUsuario() {
           )
           setData(permisos.data)
           setPermTotalPages(permisos.paginacion.total_paginas)
-          setPermTotalPermisos(permisos.paginacion.total_permisos)
+          setPermTotalRecords(permisos.paginacion.total_registros)
           break
         }
         default:
           setData([])
           setUserTotalPages(1)
-          setUserTotalUsers(0)
+          setUserTotalRecords(0)
       }
     } catch {
       setError("Error al cargar los datos")
       setData([])
       setUserTotalPages(1)
-      setUserTotalUsers(0)
+      setUserTotalRecords(0)
     } finally {
       setIsLoading(false)
     }
@@ -573,13 +584,13 @@ export function useConfiguracionUsuario() {
     setIsEditDialogOpen(true)
   }, [])
 
-  const editarModulo = useCallback((modulo: Modulo) => {
+  const editarModulo = useCallback((modulo: ModulosData) => {
     setEditTarget({ tabId: TAB_MODULOS, item: modulo, id: modulo.nombre })
     setUserIdToEdit(undefined)
     setIsEditDialogOpen(true)
   }, [])
 
-  const editarSubmodulo = useCallback((submodulo: Submodulo) => {
+  const editarSubmodulo = useCallback((submodulo: SubmodulosData) => {
     setEditTarget({
       tabId: TAB_SUBMODULOS,
       item: submodulo,
@@ -802,28 +813,28 @@ export function useConfiguracionUsuario() {
     setUserFilterInput,
     userFilter,
     userTotalPages,
-    userTotalUsers,
+    userTotalRecords,
     groupPage,
     setGroupPage,
     groupFilterInput,
     setGroupFilterInput,
     groupFilter,
     groupTotalPages,
-    groupTotalGrupos,
+    groupTotalRecords,
     modPage,
     setModPage,
     modFilterInput,
     setModFilterInput,
     modFilter,
     modTotalPages,
-    modTotalModulos,
+    modTotalRecords,
     subPage,
     setSubPage,
     subFilterInput,
     setSubFilterInput,
     subFilter,
     subTotalPages,
-    subTotalSubmodulos,
+    subTotalRecords,
     user,
     authLoading,
     deshabilitarUsuario,
@@ -859,6 +870,6 @@ export function useConfiguracionUsuario() {
     permFilter,
     setPermFilter,
     permTotalPages,
-    permTotalPermisos,
+    permTotalRecords,
   }
 }

@@ -20,17 +20,20 @@ import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 import SeleccionarModulos from "../(table)/seleccionarModulos"
 import SeleccionarPermisos from "../(table)/seleccionarPermisos"
 import SeleccionarSubmodulos from "../(table)/seleccionarSubmodulos"
+import { GruposData } from "@/types/types"
 
 type Props = {
   onGrupoCreated?: () => void
   isEditing?: boolean
-  initialData?: {
-    nombre?: string
-    permisos?: string[]
-    modulos?: string[]
-    submodulos?: string[]
-  }
+  initialData?: GruposData
 }
+
+const toNameList = (
+  items: Array<string | { nombre?: string }> | undefined
+): string[] =>
+  (items ?? [])
+    .map((item) => (typeof item === "string" ? item : (item.nombre ?? "")))
+    .filter(Boolean)
 
 export default function FormGrupo({
   onGrupoCreated,
@@ -52,9 +55,9 @@ export default function FormGrupo({
   useEffect(() => {
     setNombreGrupo(initialData?.nombre ?? "")
     setIdentifier(initialData?.nombre ?? "")
-    setPermisosSeleccionados(initialData?.permisos ?? [])
-    setModulosSeleccionados(initialData?.modulos ?? [])
-    setSubmodulosSeleccionados(initialData?.submodulos ?? [])
+    setPermisosSeleccionados(toNameList(initialData?.permisos))
+    setModulosSeleccionados(toNameList(initialData?.modulos))
+    setSubmodulosSeleccionados(toNameList(initialData?.submodulos))
   }, [initialData])
 
   useEffect(() => {
@@ -81,9 +84,9 @@ export default function FormGrupo({
 
         const data = await response.json()
         setNombreGrupo(data?.nombre ?? identifier)
-        setPermisosSeleccionados(data?.permisos ?? [])
-        setModulosSeleccionados(data?.modulos ?? [])
-        setSubmodulosSeleccionados(data?.submodulos ?? [])
+        setPermisosSeleccionados(toNameList(data?.permisos))
+        setModulosSeleccionados(toNameList(data?.modulos))
+        setSubmodulosSeleccionados(toNameList(data?.submodulos))
       } catch {
         toast.error("Error de conexión al cargar detalle del grupo")
       } finally {

@@ -40,31 +40,31 @@ export default function ConfiguracionUsuario() {
     userFilterInput,
     setUserFilterInput,
     userTotalPages,
-    userTotalUsers,
+    userTotalRecords,
     groupPage,
     setGroupPage,
     groupFilterInput,
     setGroupFilterInput,
     groupTotalPages,
-    groupTotalGrupos,
+    groupTotalRecords,
     permPage,
     setPermPage,
     permFilterInput,
     setPermFilterInput,
     permTotalPages,
-    permTotalPermisos,
+    permTotalRecords,
     modPage,
     setModPage,
     modFilterInput,
     setModFilterInput,
     modTotalPages,
-    modTotalModulos,
+    modTotalRecords,
     subPage,
     setSubPage,
     subFilterInput,
     setSubFilterInput,
     subTotalPages,
-    subTotalSubmodulos,
+    subTotalRecords,
     user,
     deshabilitarUsuario,
     habilitarUsuario,
@@ -150,7 +150,7 @@ export default function ConfiguracionUsuario() {
       )
     }
 
-    if (userIdToEdit !== undefined && user?.extra?.id !== undefined) {
+    if (userIdToEdit !== undefined && user?.id !== undefined) {
       return (
         <EditarUsuario
           onUserCreated={handleUserUpdated}
@@ -393,7 +393,7 @@ export default function ConfiguracionUsuario() {
           {selectedTabId === TAB_USUARIOS && (
             <div className="flex w-full flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
               <span className="text-sm font-semibold text-muted-foreground">
-                Total usuarios: {userTotalUsers}
+                Total usuarios: {userTotalRecords}
               </span>
               <div className="flex items-center gap-2">
                 <Button
@@ -427,7 +427,7 @@ export default function ConfiguracionUsuario() {
           {selectedTabId === TAB_GRUPOS && (
             <div className="flex w-full flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
               <span className="text-sm font-semibold text-muted-foreground">
-                Total grupos: {groupTotalGrupos}
+                Total grupos: {groupTotalRecords}
               </span>
               <div className="flex items-center gap-2">
                 <Button
@@ -461,7 +461,7 @@ export default function ConfiguracionUsuario() {
           {selectedTabId === TAB_PERMISOS && (
             <div className="flex w-full flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
               <span className="text-sm font-semibold text-muted-foreground">
-                Total permisos: {permTotalPermisos}
+                Total permisos: {permTotalRecords}
               </span>
               <div className="flex items-center gap-2">
                 <Button
@@ -495,7 +495,7 @@ export default function ConfiguracionUsuario() {
           {selectedTabId === TAB_MODULOS && (
             <div className="flex w-full flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
               <span className="text-sm font-semibold text-muted-foreground">
-                Total módulos: {modTotalModulos}
+                Total módulos: {modTotalRecords}
               </span>
               <div className="flex items-center gap-2">
                 <Button
@@ -529,7 +529,7 @@ export default function ConfiguracionUsuario() {
           {selectedTabId === TAB_SUBMODULOS && (
             <div className="flex w-full flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
               <span className="text-sm font-semibold text-muted-foreground">
-                Total submódulos: {subTotalSubmodulos}
+                Total submódulos: {subTotalRecords}
               </span>
               <div className="flex items-center gap-2">
                 <Button

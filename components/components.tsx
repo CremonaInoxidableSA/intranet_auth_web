@@ -242,7 +242,7 @@ export const TextScrollArea = React.memo(function TextScrollArea({
   extras,
   onTagClick,
 }: {
-  tags: string[]
+  tags: Array<string | { nombre?: string } | null | undefined>
   subtitles?: string[]
   selectedIndex?: number
   extraClass?: string
@@ -279,25 +279,29 @@ export const TextScrollArea = React.memo(function TextScrollArea({
             const tag = tags[index]
             const subtitle = subtitles?.[index]
             const isSelected = selectedIndex === index
+            const displayTag =
+              typeof tag === "string" ? tag : (tag?.nombre ?? "")
+            const key = displayTag || `tag-${index}`
+
             return (
-              <div key={tag} className="mr-4">
+              <div key={key} className="mr-4">
                 <span
                   className={`flex flex-row items-center rounded px-2 hover:bg-foreground/10 ${isSelected ? "bg-foreground/10" : ""}`}
                 >
                   <div
-                    onClick={() => onTagClick?.(tag, index)}
+                    onClick={() => onTagClick?.(displayTag, index)}
                     className="flex flex-1 cursor-pointer py-2"
                   >
                     <div className="flex flex-col">
                       <span className={isSelected ? "font-semibold" : ""}>
-                        {tag}
+                        {displayTag || "Sin nombre"}
                       </span>
                       {subtitle && (
                         <span className="text-xs opacity-50">{subtitle}</span>
                       )}
                     </div>
                   </div>
-                  <div>{extras?.(tag, index)}</div>
+                  <div>{extras?.(displayTag, index)}</div>
                 </span>
                 {index < tags.length - 1 && <Separator className="my-2" />}
               </div>

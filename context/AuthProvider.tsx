@@ -10,7 +10,15 @@ import {
   useCallback,
 } from "react"
 
-import { AuthContextType, ApiResponse, UsersData, PermisosData, SubmodulosData, ModulosData, GruposData } from "@/types/types"
+import {
+  AuthContextType,
+  OperacionResponse,
+  UsersData,
+  PermisosData,
+  SubmodulosData,
+  ModulosData,
+  GruposData,
+} from "@/types/types"
 
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 
@@ -106,17 +114,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ? (data.permisos as PermisosData[])
         : [],
 
-      extra: {
-        id: typeof data.id === "string" ? data.id : "",
-        habilitado:
-          typeof data.habilitado === "boolean" ? data.habilitado : false,
-        apellidoNombre:
-          typeof data.apellidoNombre === "string" ? data.apellidoNombre : "",
-        change_password:
-          typeof data.change_password === "boolean"
-            ? data.change_password
-            : false,
-      },
+      id: typeof data.id === "string" ? data.id : "",
+      habilitado:
+        typeof data.habilitado === "boolean" ? data.habilitado : false,
+      apellidoNombre:
+        typeof data.apellidoNombre === "string" ? data.apellidoNombre : "",
+      cambiar_password:
+        typeof data.cambiar_password === "boolean"
+          ? data.cambiar_password
+          : false,
     }
   }, [])
 
@@ -148,19 +154,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [initKeycloak])
 
-  const login = async (): Promise<ApiResponse> => {
+  const login = async (): Promise<OperacionResponse> => {
     try {
       setLoading(true)
       await keycloakLogin()
 
-      return { success: true }
+      return { detail: "Login successful" }
     } catch (error) {
       console.error("Keycloak login error", error)
       setLoading(false)
 
       return {
-        success: false,
-        error: "Error al iniciar sesión con Keycloak",
+        detail: "Error al iniciar sesión con Keycloak",
       }
     }
   }

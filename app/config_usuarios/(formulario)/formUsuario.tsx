@@ -20,8 +20,8 @@ import { UsersData } from "@/types/types"
 import { TextScrollArea } from "@/components/components"
 import SeleccionarGrupos from "../(table)/seleccionarGrupos"
 import { CircleMinus, CirclePlus } from "lucide-react"
-import { usePermisos } from "@/context/usePermisos";
-import { PERMISOS } from "@/lib/permisos";
+import { usePermisos } from "@/context/usePermisos"
+import { PERMISOS } from "@/lib/permisos"
 
 type Props = {
   onUserCreated: () => void
@@ -30,19 +30,30 @@ type Props = {
   onEnableUser?: (userId: string) => void
 }
 
-const getEmptyForm = (userId?: string) => ({
+const normalizeGrupoNames = (
+  grupos: Array<string | { nombre?: string } | null | undefined>
+) =>
+  (grupos ?? [])
+    .map((grupo) => {
+      if (typeof grupo === "string") {
+        return grupo
+      }
+
+      return grupo?.nombre ?? ""
+    })
+    .filter(Boolean)
+
+const getEmptyForm = (userId?: string): UsersData => ({
+  id: userId ?? "",
   email: "",
   nombre: "",
   apellido: "",
   legajo: undefined,
   dni: undefined,
   grupos: [],
-  extra: {
-    id: userId ?? "",
-    habilitado: false,
-    cambiar_contraseña: false,
-    password: "",
-  },
+  habilitado: true,
+  cambiar_password: false,
+  password: "",
 })
 
 export function EditarUsuario({
@@ -56,25 +67,15 @@ export function EditarUsuario({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isStatusUpdating, setIsStatusUpdating] = useState(false)
   const [gruposSeleccionados, setGruposSeleccionados] = useState<string[]>([])
-  const [cambiarContrasena, setCambiarContrasena] = useState(false)
-  const [usuarioHabilitado, setUsuarioHabilitado] = useState(true)
   const [createPassword, setCreatePassword] = useState("")
 
-  const [form, setForm] = useState<
-    UsersData<{
-      id: string
-      habilitado: boolean
-      cambiar_contraseña: boolean
-      password: string
-    }>
-  >(getEmptyForm(userIdToEdit))
+  const [form, setForm] = useState<UsersData>(getEmptyForm(userIdToEdit))
 
   const loadUserData = useCallback(
     async (showLoading = false) => {
       if (!userIdToEdit) {
         setForm(getEmptyForm())
         setGruposSeleccionados([])
-        setCambiarContrasena(false)
         setLoading(false)
         return
       }
@@ -98,23 +99,21 @@ export function EditarUsuario({
           return
         }
 
+        const gruposNormalizados = normalizeGrupoNames(data.grupos ?? [])
+
         setForm({
+          id: data.id ?? userIdToEdit,
           email: data.email ?? "",
           nombre: data.nombre ?? "",
           apellido: data.apellido ?? "",
           legajo: data.legajo ?? undefined,
           dni: data.dni ?? undefined,
-          grupos: data.grupos ?? [],
-          extra: {
-            id: data.id ?? userIdToEdit,
-            habilitado: data.habilitado ?? false,
-            cambiar_contraseña: data.cambiar_contraseña ?? false,
-            password: data.password ?? "",
-          },
+          grupos: gruposNormalizados,
+          habilitado: data.habilitado ?? false,
+          cambiar_password: data.cambiar_password ?? false,
+          password: data.password ?? "",
         })
-        setGruposSeleccionados(data.grupos ?? [])
-        setCambiarContrasena(data.cambiar_contraseña ?? false)
-        setUsuarioHabilitado(data.habilitado ?? false)
+        setGruposSeleccionados(gruposNormalizados)
       } catch {
         toast.error("Error de conexión con la API")
       } finally {
@@ -135,7 +134,7 @@ export function EditarUsuario({
       return null
     }
 
-    if (form.extra?.habilitado) {
+    if (form.habilitado) {
       return (
         <Button
           loading={isStatusUpdating}
@@ -171,35 +170,27 @@ export function EditarUsuario({
   }, [loadUserData])
 
   const handleChange = (
-    key: keyof Omit<
-      UsersData<{
-        id: string
-        habilitado: boolean
-        cambiar_contraseña: boolean
-        password: string
-      }>,
-      "extra" | "grupos"
-    >,
-    value: string
+    key: keyof Omit<UsersData, "grupos">,
+    value: string | number | boolean
   ) => {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
   const handleStatusToggle = async () => {
-    if (!form.extra?.id) return
+    if (!form.id) return
 
     setIsStatusUpdating(true)
 
     try {
-      if (form.extra.habilitado) {
-        await onDisableUser?.(form.extra.id)
+      if (form.habilitado) {
+        await onDisableUser?.(form.id)
       } else {
-        await onEnableUser?.(form.extra.id)
+        await onEnableUser?.(form.id)
       }
 
       await loadUserData(false)
       toast.success(
-        form.extra.habilitado
+        form.habilitado
           ? "Usuario deshabilitado correctamente"
           : "Usuario habilitado correctamente"
       )
@@ -228,7 +219,8 @@ export function EditarUsuario({
       legajo: Number(form.legajo),
       dni: Number(form.dni),
       grupos: gruposSeleccionados,
-      habilitado: form.extra?.habilitado ?? true,
+      habilitado: form.habilitado ?? true,
+      cambiar_password: form.cambiar_password ?? false,
     }
 
     if (!isEditing) {
@@ -312,7 +304,7 @@ export function EditarUsuario({
                 <Label htmlFor="id" className="text-sm text-muted-foreground">
                   ID
                 </Label>
-                <p className="text-sm font-medium">{form.extra?.id ?? "—"}</p>
+                <p className="text-sm font-medium">{form.id ?? "—"}</p>
               </div>
               <div className="flex items-center justify-between">
                 <div>
@@ -323,7 +315,7 @@ export function EditarUsuario({
                     Habilitado
                   </Label>
                   <p className="text-sm font-medium">
-                    {form.extra?.habilitado ? "Sí" : "No"}
+                    {form.habilitado ? "Sí" : "No"}
                   </p>
                 </div>
                 {renderBotonEstadoUsuario()}
@@ -441,8 +433,13 @@ export function EditarUsuario({
         <div className="flex items-center gap-2">
           <Checkbox
             id="cambiarContrasena"
-            checked={cambiarContrasena}
-            onCheckedChange={(checked) => setCambiarContrasena(!!checked)}
+            checked={form.cambiar_password ?? false}
+            onCheckedChange={(checked) =>
+              setForm((prev) => ({
+                ...prev,
+                cambiar_password: !!checked,
+              }))
+            }
           />
           <Label htmlFor="cambiarContrasena" className="cursor-pointer">
             Forzar cambio de contraseña en el próximo inicio de sesión
@@ -452,8 +449,13 @@ export function EditarUsuario({
           <div className="flex items-center gap-2">
             <Checkbox
               id="usuarioHabilitado"
-              checked={usuarioHabilitado}
-              onCheckedChange={(checked) => setUsuarioHabilitado(!!checked)}
+              checked={form.habilitado ?? true}
+              onCheckedChange={(checked) =>
+                setForm((prev) => ({
+                  ...prev,
+                  habilitado: !!checked,
+                }))
+              }
             />
             <Label htmlFor="usuarioHabilitado" className="cursor-pointer">
               El usuario se creara habilitado y podrá iniciar sesión. Desmarque

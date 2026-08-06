@@ -17,9 +17,9 @@ export async function GET(request: NextRequest) {
   }
 
   const authHeader = request.headers.get("authorization")
-  const grupoParam = request.nextUrl.searchParams.get("nombre_grupo")
+  const grupoParam = request.nextUrl.searchParams.get("grupo_nombre")
   const externalUrl = new URL(externalApiUrl)
-  externalUrl.searchParams.set("nombre_grupo", grupoParam ?? "")
+  externalUrl.searchParams.set("grupo_nombre", grupoParam ?? "")
 
   const token = authHeader?.startsWith("Bearer ")
     ? authHeader.substring(7)
