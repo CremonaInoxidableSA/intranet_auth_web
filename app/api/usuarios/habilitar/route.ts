@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const EXTERNAL_API_URL =
-  process.env.NEXT_PUBLIC_API_AUTH_URL + "/usuarios/habilitar"
+import { getExternalApiUrl } from "@/app/api/_utils/authApi"
+
+const EXTERNAL_API_URL = getExternalApiUrl("/usuarios/habilitar")
 
 export async function PUT(request: NextRequest) {
+  if (!EXTERNAL_API_URL) {
+    return NextResponse.json(
+      { error: "Configuracion faltante: NEXT_PUBLIC_API_AUTH_URL" },
+      { status: 500 }
+    )
+  }
   const authHeader = request.headers.get("authorization")
   const userIdParam = request.nextUrl.searchParams.get("user_id")
 

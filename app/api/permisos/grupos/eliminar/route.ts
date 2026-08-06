@@ -1,10 +1,18 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const API_AUTH_URL =
-  process.env.NEXT_PUBLIC_API_AUTH_URL + "/grupos/eliminar?grupo_nombre="
+import { getExternalApiUrl } from "@/app/api/_utils/authApi"
+
+const EXTERNAL_API_URL = getExternalApiUrl("/grupos/eliminar")
 
 export async function DELETE(request: NextRequest) {
+  if (!EXTERNAL_API_URL) {
+    return NextResponse.json(
+      { error: "Configuracion faltante: NEXT_PUBLIC_API_AUTH_URL" },
+      { status: 500 }
+    )
+  }
+
   const authHeader = request.headers.get("authorization")
   const grupoNombreParam = request.nextUrl.searchParams.get("grupo_nombre")
 
@@ -19,7 +27,7 @@ export async function DELETE(request: NextRequest) {
     )
   }
 
-  const externalUrl = new URL(API_AUTH_URL)
+  const externalUrl = new URL(EXTERNAL_API_URL)
   externalUrl.searchParams.set("grupo_nombre", grupoNombreParam ?? "")
 
   const externalResponse = await fetch(externalUrl.toString(), {

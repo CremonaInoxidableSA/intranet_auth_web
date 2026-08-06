@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { getExternalApiUrl } from "@/app/api/_utils/authApi"
 
-const API_AUTH_URL = process.env.NEXT_PUBLIC_API_AUTH_URL
-
-const getExternalApiUrl = () =>
-  API_AUTH_URL ? `${API_AUTH_URL}/submodulos/detalles` : null
+const EXTERNAL_API_URL = getExternalApiUrl("/submodulos/detalle")
 
 export async function GET(request: NextRequest) {
-  const externalApiUrl = getExternalApiUrl()
+  const externalApiUrl = EXTERNAL_API_URL
 
   if (!externalApiUrl) {
     return NextResponse.json(
@@ -18,8 +16,6 @@ export async function GET(request: NextRequest) {
 
   const authHeader = request.headers.get("authorization")
   const submoduloParam = request.nextUrl.searchParams.get("submodulo_nombre")
-  const externalUrl = new URL(externalApiUrl)
-  externalUrl.searchParams.set("submodulo_nombre", submoduloParam ?? "")
 
   const token = authHeader?.startsWith("Bearer ")
     ? authHeader.substring(7)
@@ -31,6 +27,9 @@ export async function GET(request: NextRequest) {
       { status: 401 }
     )
   }
+
+  const externalUrl = new URL(externalApiUrl)
+  externalUrl.searchParams.set("submodulo_nombre", submoduloParam ?? "")
 
   let externalResponse: Response
   try {

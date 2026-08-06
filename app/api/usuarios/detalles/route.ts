@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { getExternalApiUrl } from "@/app/api/_utils/authApi"
 
-const API_AUTH_URL = process.env.NEXT_PUBLIC_API_AUTH_URL
-
-const getExternalApiUrl = () =>
-  API_AUTH_URL ? `${API_AUTH_URL}/usuarios/detalles` : null
+const EXTERNAL_API_URL = getExternalApiUrl("/usuarios/detalles")
 
 export async function GET(request: NextRequest) {
-  const externalApiUrl = getExternalApiUrl()
+  const externalApiUrl = EXTERNAL_API_URL
 
   if (!externalApiUrl) {
     return NextResponse.json(

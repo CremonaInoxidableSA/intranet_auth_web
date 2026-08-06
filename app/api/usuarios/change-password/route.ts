@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const API_AUTH_URL =
-  process.env.NEXT_PUBLIC_API_AUTH_URL + "/personal/change-password"
+import { getExternalApiUrl } from "@/app/api/_utils/authApi"
+
+const EXTERNAL_API_URL = getExternalApiUrl("/personal/change-password")
 
 export async function PUT(request: NextRequest) {
+  if (!EXTERNAL_API_URL) {
+    return NextResponse.json(
+      { error: "Configuracion faltante: NEXT_PUBLIC_API_AUTH_URL" },
+      { status: 500 }
+    )
+  }
   const authHeader = request.headers.get("authorization")
   const token = authHeader?.startsWith("Bearer ")
     ? authHeader.substring(7)
@@ -37,7 +44,7 @@ export async function PUT(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(API_AUTH_URL, {
+    const response = await fetch(EXTERNAL_API_URL, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

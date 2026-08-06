@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const EXTERNAL_API_URL = process.env.NEXT_PUBLIC_API_AUTH_URL + "/grupos/lista"
+import { getExternalApiUrl } from "@/app/api/_utils/authApi"
+
+const EXTERNAL_API_URL = getExternalApiUrl("/grupos/lista")
 
 export async function GET(request: NextRequest) {
+  if (!EXTERNAL_API_URL) {
+    return NextResponse.json(
+      { error: "Configuracion faltante: NEXT_PUBLIC_API_AUTH_URL" },
+      { status: 500 }
+    )
+  }
+
   const authHeader = request.headers.get("authorization")
   const numeroPaginaParam = request.nextUrl.searchParams.get("numero_pagina")
   const filtroParam = request.nextUrl.searchParams.get("filtro")

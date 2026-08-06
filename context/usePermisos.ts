@@ -2,7 +2,7 @@
 import { useMemo } from "react"
 import { useAuth } from "@/context/AuthProvider"
 import type { PermisoNombre } from "@/lib/permisos"
-import { SubmoduloNombre } from "@/lib/modulos";
+import { SubmoduloNombre } from "@/lib/modulos"
 
 export function usePermisos() {
   const { user } = useAuth()

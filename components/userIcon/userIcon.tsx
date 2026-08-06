@@ -34,7 +34,6 @@ const UserIcon = () => {
 
   const canManageUsers = tieneAcceso("SUBMODULO_CONFIG_USUARIOS")
 
-
   const closeSession = async () => {
     try {
       setLoggingOut(true)
@@ -61,15 +60,15 @@ const UserIcon = () => {
     }
 
     if (canManageUsers) {
-    <Button
-      className="w-full cursor-pointer border border-bluecremona bg-bluecremona/10 hover:bg-bluecremona/30"
-      onClick={() => {
-        router.push("/config_user")
-        setOpen(false)
-      }}
-    >
-      <p className="font-medium text-bluecremona">Configurar usuarios</p>
-    </Button>
+      ;<Button
+        className="w-full cursor-pointer border border-bluecremona bg-bluecremona/10 hover:bg-bluecremona/30"
+        onClick={() => {
+          router.push("/config_user")
+          setOpen(false)
+        }}
+      >
+        <p className="font-medium text-bluecremona">Configurar usuarios</p>
+      </Button>
     }
   }
 

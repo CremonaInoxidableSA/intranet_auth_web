@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const EXTERNAL_API_URL = process.env.NEXT_PUBLIC_API_AUTH_URL + "/modulos/crear"
+import { getExternalApiUrl } from "@/app/api/_utils/authApi"
+
+const EXTERNAL_API_URL = getExternalApiUrl("/modulos/crear")
 
 export async function POST(request: NextRequest) {
+  if (!EXTERNAL_API_URL) {
+    return NextResponse.json(
+      { error: "Configuracion faltante: NEXT_PUBLIC_API_AUTH_URL" },
+      { status: 500 }
+    )
+  }
+
   const authHeader = request.headers.get("authorization")
   const payload = (await request.json().catch(() => null)) as Record<
     string,

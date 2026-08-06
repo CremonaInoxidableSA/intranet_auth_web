@@ -1,10 +1,18 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const EXTERNAL_API_URL =
-  process.env.NEXT_PUBLIC_API_AUTH_URL + "/grupos/editar?modulo_nombre="
+import { getExternalApiUrl } from "@/app/api/_utils/authApi"
+
+const EXTERNAL_API_URL = getExternalApiUrl("/modulos/editar")
 
 export async function PUT(request: NextRequest) {
+  if (!EXTERNAL_API_URL) {
+    return NextResponse.json(
+      { error: "Configuracion faltante: NEXT_PUBLIC_API_AUTH_URL" },
+      { status: 500 }
+    )
+  }
+
   const authHeader = request.headers.get("authorization")
   const token = authHeader?.startsWith("Bearer ")
     ? authHeader.substring(7)
@@ -13,11 +21,11 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   }
 
-  const userId =
+  const moduloNombre =
     request.nextUrl.searchParams.get("modulo_nombre") ??
     request.nextUrl.searchParams.get("nombre")
 
-  if (!userId) {
+  if (!moduloNombre) {
     return NextResponse.json(
       { error: "Falta el identificador del módulo" },
       { status: 400 }
@@ -30,8 +38,8 @@ export async function PUT(request: NextRequest) {
   }
 
   const externalUrl = new URL(EXTERNAL_API_URL)
-  externalUrl.searchParams.set("modulo_nombre", userId)
-  externalUrl.searchParams.set("nombre", userId)
+  externalUrl.searchParams.set("modulo_nombre", moduloNombre)
+  externalUrl.searchParams.set("nombre", moduloNombre)
 
   try {
     const response = await fetch(externalUrl.toString(), {
@@ -43,7 +51,7 @@ export async function PUT(request: NextRequest) {
       body: JSON.stringify(body),
     })
 
-    const data = await response.json()
+    const data = await response.json().catch(() => null)
     return NextResponse.json(data, { status: response.status })
   } catch {
     return NextResponse.json(

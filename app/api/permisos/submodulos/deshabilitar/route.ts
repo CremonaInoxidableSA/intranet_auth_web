@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const EXTERNAL_API_URL =
-  process.env.NEXT_PUBLIC_API_AUTH_URL +
-  "/submodulos/deshabilitar?submodulo_nombre="
+import { getExternalApiUrl } from "@/app/api/_utils/authApi"
+
+const EXTERNAL_API_URL = getExternalApiUrl("/submodulos/deshabilitar")
 
 export async function PUT(request: NextRequest) {
+  if (!EXTERNAL_API_URL) {
+    return NextResponse.json(
+      { error: "Configuracion faltante: NEXT_PUBLIC_API_AUTH_URL" },
+      { status: 500 }
+    )
+  }
+
   const authHeader = request.headers.get("authorization")
   const submoduloNombre = request.nextUrl.searchParams.get("submodulo_nombre")
 
@@ -27,9 +34,10 @@ export async function PUT(request: NextRequest) {
     )
   }
 
-  const externalUrl = `${EXTERNAL_API_URL}${encodeURIComponent(submoduloNombre)}`
+  const externalUrl = new URL(EXTERNAL_API_URL)
+  externalUrl.searchParams.set("submodulo_nombre", submoduloNombre)
 
-  const externalResponse = await fetch(externalUrl, {
+  const externalResponse = await fetch(externalUrl.toString(), {
     method: "PUT",
     headers: {
       Accept: "application/json",

@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const API_AUTH_URL =
-  process.env.NEXT_PUBLIC_API_AUTH_URL + "/usuarios/eliminar?user_id="
+import { getExternalApiUrl } from "@/app/api/_utils/authApi"
+
+const EXTERNAL_API_URL = getExternalApiUrl("/usuarios/eliminar")
 
 export async function DELETE(request: NextRequest) {
+  if (!EXTERNAL_API_URL) {
+    return NextResponse.json(
+      { error: "Configuracion faltante: NEXT_PUBLIC_API_AUTH_URL" },
+      { status: 500 }
+    )
+  }
   const authHeader = request.headers.get("authorization")
   const userIdParam = request.nextUrl.searchParams.get("user_id")
 
@@ -19,7 +26,7 @@ export async function DELETE(request: NextRequest) {
     )
   }
 
-  const externalUrl = new URL(API_AUTH_URL)
+  const externalUrl = new URL(EXTERNAL_API_URL)
   externalUrl.searchParams.set("user_id", userIdParam ?? "")
 
   const externalResponse = await fetch(externalUrl.toString(), {

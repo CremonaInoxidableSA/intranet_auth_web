@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const API_AUTH_URL =
-  process.env.NEXT_PUBLIC_API_AUTH_URL + "/submodulos/eliminar?submodulo_nombre="
+import { getExternalApiUrl } from "@/app/api/_utils/authApi"
+
+const EXTERNAL_API_URL = getExternalApiUrl("/submodulos/eliminar")
 
 export async function DELETE(request: NextRequest) {
+  if (!EXTERNAL_API_URL) {
+    return NextResponse.json(
+      { error: "Configuracion faltante: NEXT_PUBLIC_API_AUTH_URL" },
+      { status: 500 }
+    )
+  }
+
   const authHeader = request.headers.get("authorization")
-  const submoduloNombreParam = request.nextUrl.searchParams.get("submodulo_nombre")
+  const submoduloNombreParam =
+    request.nextUrl.searchParams.get("submodulo_nombre")
 
   const token = authHeader?.startsWith("Bearer ")
     ? authHeader.substring(7)
@@ -19,7 +28,7 @@ export async function DELETE(request: NextRequest) {
     )
   }
 
-  const externalUrl = new URL(API_AUTH_URL)
+  const externalUrl = new URL(EXTERNAL_API_URL)
   externalUrl.searchParams.set("submodulo_nombre", submoduloNombreParam ?? "")
 
   const externalResponse = await fetch(externalUrl.toString(), {

@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { getExternalApiUrl } from "@/app/api/_utils/authApi"
 
-const API_AUTH_URL = process.env.NEXT_PUBLIC_API_AUTH_URL
-
-const getExternalApiUrl = () =>
-  API_AUTH_URL ? `${API_AUTH_URL}/grupos/detalles` : null
+const EXTERNAL_API_URL = getExternalApiUrl("/grupos/detalle")
 
 export async function GET(request: NextRequest) {
-  const externalApiUrl = getExternalApiUrl()
+  const externalApiUrl = EXTERNAL_API_URL
 
   if (!externalApiUrl) {
     return NextResponse.json(
@@ -18,9 +16,6 @@ export async function GET(request: NextRequest) {
 
   const authHeader = request.headers.get("authorization")
   const grupoParam = request.nextUrl.searchParams.get("grupo_nombre")
-  const externalUrl = new URL(externalApiUrl)
-  externalUrl.searchParams.set("grupo_nombre", grupoParam ?? "")
-
   const token = authHeader?.startsWith("Bearer ")
     ? authHeader.substring(7)
     : null
@@ -30,6 +25,11 @@ export async function GET(request: NextRequest) {
       { error: "No autorizado: falta el token" },
       { status: 401 }
     )
+  }
+
+  const externalUrl = new URL(externalApiUrl)
+  if (grupoParam) {
+    externalUrl.searchParams.set("grupo_nombre", grupoParam)
   }
 
   let externalResponse: Response
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
           (typeof data?.message === "string" && data.message) ||
           (typeof data?.error === "string" && data.error) ||
           (typeof rawData === "string" && rawData.trim()) ||
-          "Error al obtener la lista de grupos",
+          "Error al obtener el detalle del grupo",
       },
       { status: externalResponse.status }
     )

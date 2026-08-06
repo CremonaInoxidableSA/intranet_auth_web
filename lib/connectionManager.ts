@@ -60,9 +60,7 @@ export function getApiSourceFromUrl(
 
   const normalized = value.toLowerCase()
 
-  if (
-    normalized.includes("/api/")
-  ) {
+  if (normalized.includes("/api/")) {
     return "auth"
   }
 

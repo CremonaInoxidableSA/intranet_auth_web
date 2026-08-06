@@ -1,12 +1,20 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const EXTERNAL_API_URL =
-  process.env.NEXT_PUBLIC_API_AUTH_URL + "/grupos/deshabilitar?modulo_nombre="
+import { getExternalApiUrl } from "@/app/api/_utils/authApi"
+
+const EXTERNAL_API_URL = getExternalApiUrl("/modulos/deshabilitar")
 
 export async function PUT(request: NextRequest) {
+  if (!EXTERNAL_API_URL) {
+    return NextResponse.json(
+      { error: "Configuracion faltante: NEXT_PUBLIC_API_AUTH_URL" },
+      { status: 500 }
+    )
+  }
+
   const authHeader = request.headers.get("authorization")
-  const userIdParam = request.nextUrl.searchParams.get("user_id")
+  const moduloNombre = request.nextUrl.searchParams.get("modulo_nombre")
 
   const token = authHeader?.startsWith("Bearer ")
     ? authHeader.substring(7)
@@ -20,7 +28,7 @@ export async function PUT(request: NextRequest) {
   }
 
   const externalUrl = new URL(EXTERNAL_API_URL)
-  externalUrl.searchParams.set("user_id", userIdParam ?? "")
+  externalUrl.searchParams.set("modulo_nombre", moduloNombre ?? "")
 
   const externalResponse = await fetch(externalUrl.toString(), {
     method: "PUT",
@@ -35,7 +43,7 @@ export async function PUT(request: NextRequest) {
   if (!externalResponse.ok) {
     return NextResponse.json(
       {
-        error: data?.detail ?? data?.message ?? "Error al deshabilitar usuario",
+        error: data?.detail ?? data?.message ?? "Error al deshabilitar módulo",
       },
       { status: externalResponse.status }
     )
