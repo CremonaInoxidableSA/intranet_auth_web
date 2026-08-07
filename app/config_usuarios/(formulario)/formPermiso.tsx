@@ -13,12 +13,17 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { HoverInfo } from "@/components/components"
 import { PermisosData } from "@/types/types"
 
 type Props = {
   onPermisoCreated?: () => void
   isEditing?: boolean
   initialData?: PermisosData
+}
+
+const hoverInfoText = {
+  nombre: 'El permiso debe tener el fomato "PERMISO_{nombre}"',
 }
 
 export default function FormPermiso({
@@ -137,8 +142,18 @@ export default function FormPermiso({
 
       <div className="grid gap-4">
         <div className="grid gap-2">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
             <Label htmlFor="permiso">Nombre del permiso</Label>
+            <HoverInfo
+              placeholder="i"
+              content={
+                <div className="space-y-1 text-sm">
+                  <p className="font-medium">Nombre del permiso</p>
+                  <p>{hoverInfoText.nombre}</p>
+                </div>
+              }
+              extraClass="h-4 px-0 text-xs text-muted-foreground"
+            />
           </div>
           <Input
             id="permiso"

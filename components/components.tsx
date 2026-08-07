@@ -390,7 +390,7 @@ export function HoverInfo({
           {placeholder}
         </Button>
       </HoverCardTrigger>
-      <HoverCardContent className="flex w-64 flex-col gap-0.5">
+      <HoverCardContent className="flex w-auto max-w-[min(90vw,28rem)] flex-col gap-0.5 wrap-break-word whitespace-normal">
         {content}
       </HoverCardContent>
     </HoverCard>

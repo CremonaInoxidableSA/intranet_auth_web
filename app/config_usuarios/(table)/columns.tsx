@@ -736,7 +736,7 @@ export const getModuloColumns = (
       header: "Nombre",
     },
     {
-      header: "URL",
+      header: "Subdominio",
       className: "hidden xl:table-cell",
       cell: ({ row }) => (
         <p className="items-center justify-start">
@@ -788,7 +788,7 @@ export const getSubmoduloColumns = (
       header: "Nombre",
     },
     {
-      header: "URL",
+      header: "Path",
       className: "hidden xl:table-cell",
       cell: ({ row }) => (
         <p className="items-center justify-start">

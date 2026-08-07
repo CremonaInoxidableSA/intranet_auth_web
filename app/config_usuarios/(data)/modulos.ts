@@ -16,13 +16,19 @@ function toModuloData(raw: {
   subdominio: string
   path: string
   icono: string
+  habilitado?: boolean | string | number | null
 }): ModulosData {
-  const { nombre, subdominio, path, icono } = raw
+  const { nombre, subdominio, path, icono, habilitado } = raw
+
+  const habilitadoNormalizado =
+    habilitado === true || habilitado === "true" || habilitado === 1
+
   return {
     nombre,
     subdominio,
     path,
     icono,
+    habilitado: habilitadoNormalizado,
   }
 }
 

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { TextScrollArea } from "@/components/components"
+import { HoverInfo, TextScrollArea } from "@/components/components"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 import SeleccionarModulos from "../(table)/seleccionarModulos"
 import SeleccionarPermisos from "../(table)/seleccionarPermisos"
@@ -34,6 +34,10 @@ const toNameList = (
   (items ?? [])
     .map((item) => (typeof item === "string" ? item : (item.nombre ?? "")))
     .filter(Boolean)
+
+const hoverInfoText = {
+  nombre: 'El grupo debe tener el fomato "GRUPO_{nombre}"',
+}
 
 export default function FormGrupo({
   onGrupoCreated,
@@ -185,7 +189,19 @@ export default function FormGrupo({
 
       <div className="grid gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="grupo">Nombre del Grupo</Label>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="grupo">Nombre del Grupo</Label>
+            <HoverInfo
+              placeholder="i"
+              content={
+                <div className="space-y-1 text-sm">
+                  <p className="font-medium">Nombre del grupo</p>
+                  <p>{hoverInfoText.nombre}</p>
+                </div>
+              }
+              extraClass="h-4 px-0 text-xs text-muted-foreground"
+            />
+          </div>
           <Input
             id="grupo"
             disabled={isEditing}

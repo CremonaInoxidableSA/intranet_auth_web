@@ -16,6 +16,7 @@ import { toast } from "sonner"
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ModulosData } from "@/types/types"
+import { HoverInfo } from "@/components/components"
 
 type Props = {
   onModuloCreated?: () => void
@@ -29,6 +30,15 @@ const initialForm: ModulosData = {
   path: "",
   icono: "",
   habilitado: true,
+}
+
+const hoverInfoText = {
+  nombre: 'El modulo debe tener el fomato "MODULO_{nombre}"',
+  subdominio:
+    "Parte primaria de la URL: {subdominio}.intranetcreminox.com/{path}",
+  path: "Parte final de la URL: {subdominio}.intranetcreminox.com/{path} Especificar sin / inicial.",
+  icono:
+    "Nombre del icono que utilizará el modulo. (Buscar en react-icons o lucide-react)",
 }
 
 export default function FormModulo({
@@ -103,7 +113,6 @@ export default function FormModulo({
     if (
       !form?.nombre?.trim() ||
       !form?.subdominio?.trim() ||
-      !form?.path?.trim() ||
       !form?.icono?.trim()
     ) {
       toast.error("Complete todos los campos")
@@ -136,14 +145,14 @@ export default function FormModulo({
           isEditing
             ? {
                 subdominio: form.subdominio.trim(),
-                path: form.path.trim(),
+                path: form?.path?.trim(),
                 icono: form.icono.trim(),
                 habilitado: form.habilitado ?? true,
               }
             : {
                 nombre: form.nombre.trim(),
                 subdominio: form.subdominio.trim(),
-                path: form.path.trim(),
+                path: form?.path?.trim(),
                 icono: form.icono.trim(),
                 habilitado: form.habilitado ?? true,
               }
@@ -200,7 +209,19 @@ export default function FormModulo({
 
       <div className="grid gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="modulo">Módulo</Label>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="modulo">Módulo</Label>
+            <HoverInfo
+              placeholder="i"
+              content={
+                <div className="space-y-1 text-sm">
+                  <p className="font-medium">Nombre del módulo</p>
+                  <p>{hoverInfoText.nombre}</p>
+                </div>
+              }
+              extraClass="h-4 px-0 text-xs text-muted-foreground"
+            />
+          </div>
           <Input
             id="modulo"
             disabled={isEditing}
@@ -213,7 +234,19 @@ export default function FormModulo({
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="submodulos">Subdominio</Label>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="submodulos">Subdominio</Label>
+            <HoverInfo
+              placeholder="i"
+              content={
+                <div className="space-y-1 text-sm">
+                  <p className="font-medium">Subdominio</p>
+                  <p>{hoverInfoText.subdominio}</p>
+                </div>
+              }
+              extraClass="h-4 px-0 text-xs text-muted-foreground"
+            />
+          </div>
           <Input
             id="submodulos"
             value={form.subdominio}
@@ -225,19 +258,42 @@ export default function FormModulo({
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="path">Path</Label>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="path">Path</Label>
+            <HoverInfo
+              placeholder="i"
+              content={
+                <div className="space-y-1 text-sm">
+                  <p className="font-medium">Path</p>
+                  <p>{hoverInfoText.path}</p>
+                </div>
+              }
+              extraClass="h-4 px-0 text-xs text-muted-foreground"
+            />
+          </div>
           <Input
             id="path"
             value={form.path}
             onChange={(e) => handleChange("path", e.target.value)}
-            placeholder="Ingrese el path del módulo"
-            required
+            placeholder="Ingrese el path del módulo (opcional)"
             className="border border-background6 bg-background3"
           />
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="icono">Icono</Label>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="icono">Icono</Label>
+            <HoverInfo
+              placeholder="i"
+              content={
+                <div className="space-y-1 text-sm">
+                  <p className="font-medium">Icono</p>
+                  <p>{hoverInfoText.icono}</p>
+                </div>
+              }
+              extraClass="h-4 px-0 text-xs text-muted-foreground"
+            />
+          </div>
           <Input
             id="icono"
             value={form.icono}
