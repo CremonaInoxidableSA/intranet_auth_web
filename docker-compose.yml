@@ -1,0 +1,21 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: intranet_auth_web
+    restart: unless-stopped
+    expose:
+      - "3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    networks:
+      - intranet_auth_web_network
+    volumes:
+      - /home/ec2-user/.aws:/root/.aws:ro
+
+networks:
+  intranet_auth_web_network:
+    external: true
