@@ -1,0 +1,53 @@
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
+
+import { getExternalApiUrl } from "@/app/api/_utils/authApi"
+
+const EXTERNAL_API_URL = getExternalApiUrl("/permisos/eliminar")
+
+export async function DELETE(request: NextRequest) {
+  if (!EXTERNAL_API_URL) {
+    return NextResponse.json(
+      { error: "Configuracion faltante: NEXT_PUBLIC_API_AUTH_URL" },
+      { status: 500 }
+    )
+  }
+
+  const authHeader = request.headers.get("authorization")
+  const permisoNombreParam = request.nextUrl.searchParams.get("permiso_nombre")
+
+  const token = authHeader?.startsWith("Bearer ")
+    ? authHeader.substring(7)
+    : null
+
+  if (!token) {
+    return NextResponse.json(
+      { error: "No autorizado: falta el token" },
+      { status: 401 }
+    )
+  }
+
+  const externalUrl = new URL(EXTERNAL_API_URL)
+  externalUrl.searchParams.set("permiso_nombre", permisoNombreParam ?? "")
+
+  const externalResponse = await fetch(externalUrl.toString(), {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  const data = await externalResponse.json().catch(() => null)
+
+  if (!externalResponse.ok) {
+    return NextResponse.json(
+      {
+        error: data?.detail ?? data?.message ?? "Error al eliminar el permiso",
+      },
+      { status: externalResponse.status }
+    )
+  }
+
+  return NextResponse.json(data, { status: externalResponse.status })
+}

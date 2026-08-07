@@ -27,6 +27,7 @@ export default function FormPermiso({
   initialData,
 }: Props) {
   const [nombre, setNombre] = useState(initialData?.nombre ?? "")
+  const [descripcion, setDescripcion] = useState(initialData?.descripcion ?? "")
   const [identifier] = useState(initialData?.nombre ?? "")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingDetail, setIsLoadingDetail] = useState(false)
@@ -54,6 +55,9 @@ export default function FormPermiso({
         const data = await response.json()
         if (data?.nombre) {
           setNombre(data.nombre)
+        }
+        if (data?.descripcion) {
+          setDescripcion(data.descripcion)
         }
       } catch {
         toast.error("Error de conexión al cargar detalle del permiso")
@@ -91,7 +95,7 @@ export default function FormPermiso({
           )}`
         : "/api/permisos/permisos/crear"
       const method = isEditing ? "PUT" : "POST"
-      const payload = { nombre: nombre.trim() }
+      const payload = { nombre: nombre.trim(), descripcion: descripcion.trim() }
 
       const res = await fetchWithKeycloak(endpoint, {
         method,
@@ -141,6 +145,19 @@ export default function FormPermiso({
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
             placeholder="Ingrese el nombre del permiso"
+            disabled={isEditing && isLoadingDetail}
+            className="border border-background6 bg-background3"
+          />
+        </div>
+        <div className="grid gap-2">
+          <div className="flex items-center justify-between gap-2">
+            <Label htmlFor="descripcion">Descripción del permiso</Label>
+          </div>
+          <Input
+            id="descripcion"
+            value={descripcion}
+            onChange={(e) => setDescripcion(e.target.value)}
+            placeholder="Ingrese la descripción del permiso"
             disabled={isEditing && isLoadingDetail}
             className="border border-background6 bg-background3"
           />
