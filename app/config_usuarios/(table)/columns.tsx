@@ -700,6 +700,11 @@ export const getPermisoColumns = (
       accessorKey: "nombre",
       header: "Nombre",
     },
+    {
+      accessorKey: "descripcion",
+      header: "Descripción",
+      className: "hidden xl:table-cell",
+    }
   ]
 
   if (showActions) {

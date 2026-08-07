@@ -19,6 +19,14 @@ export default function HeaderPrincipal() {
       className: "text-base opacity-70 transition-opacity hover:opacity-100",
       onClick: () => setDrawerOpen(false),
     },
+    {
+      label: "Tickets Soporte",
+      href: urlConfig.ticketsUrl,
+      className: "text-base opacity-70 transition-opacity hover:opacity-100",
+      target: "_blank",
+      rel: "noopener noreferrer",
+      onClick: () => setDrawerOpen(false),
+    },
   ]
 
   return (
@@ -34,6 +42,8 @@ export default function HeaderPrincipal() {
               href={item.href}
               className={item.className}
               onClick={item.onClick}
+              target={item.target}
+              rel={item.rel}
             >
               {item.label}
             </Link>
@@ -120,6 +130,8 @@ export default function HeaderPrincipal() {
               href={item.href}
               className="text-base opacity-70 transition-opacity hover:opacity-100"
               onClick={() => setDrawerOpen(false)}
+              target={item.target}
+              rel={item.rel}
             >
               {item.label}
             </Link>
