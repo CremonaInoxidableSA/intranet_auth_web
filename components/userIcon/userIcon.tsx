@@ -63,13 +63,13 @@ const UserIcon = () => {
       return (
         <>
           <Button
-            className="w-full cursor-pointer border border-bluecremona bg-bluecremona/10 hover:bg-bluecremona/30"
+            className="w-full cursor-pointer border border-greencremona bg-greencremona/10 hover:bg-greencremona/30"
             onClick={() => {
               router.push("/config_usuarios")
               setOpen(false)
             }}
           >
-            <p className="font-medium text-bluecremona">Configurar usuarios</p>
+            <p className="font-medium text-greencremona">Gestionar accesos</p>
           </Button>
           <Button
             className="w-full cursor-pointer border border-bluecremona bg-bluecremona/10 hover:bg-bluecremona/30"

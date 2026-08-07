@@ -16,15 +16,19 @@ function toSubmoduloData(raw: {
   modulo_padre: string
   path: string
   icono: string
-  habilitado: boolean
+  habilitado?: boolean | string | number | null
 }): SubmodulosData {
   const { nombre, modulo_padre, path, icono, habilitado } = raw
+
+  const habilitadoNormalizado =
+    habilitado === true || habilitado === "true" || habilitado === 1
+
   return {
     nombre,
     modulo_padre,
     path,
     icono,
-    habilitado,
+    habilitado: habilitadoNormalizado,
   }
 }
 

@@ -264,7 +264,7 @@ export default function FormGrupo({
             <Label>Submódulos</Label>
             <Dialog>
               <DialogTrigger asChild>
-                <Button type="button" variant="outline" size="sm">
+                <Button size="sm">
                   {submodulosSeleccionados.length > 0
                     ? "Editar submódulos"
                     : "+ Agregar submódulos"}

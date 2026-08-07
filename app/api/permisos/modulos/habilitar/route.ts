@@ -14,7 +14,9 @@ export async function PUT(request: NextRequest) {
   }
 
   const authHeader = request.headers.get("authorization")
-  const moduloNombre = request.nextUrl.searchParams.get("modulo_nombre")
+  const moduloNombre =
+    request.nextUrl.searchParams.get("modulo_nombre") ??
+    request.nextUrl.searchParams.get("nombre")
 
   const token = authHeader?.startsWith("Bearer ")
     ? authHeader.substring(7)
@@ -27,8 +29,12 @@ export async function PUT(request: NextRequest) {
     )
   }
 
+  if (!moduloNombre) {
+    return NextResponse.json({ error: "Falta modulo_nombre" }, { status: 400 })
+  }
+
   const externalUrl = new URL(EXTERNAL_API_URL)
-  externalUrl.searchParams.set("modulo_nombre", moduloNombre ?? "")
+  externalUrl.searchParams.set("modulo_nombre", moduloNombre)
 
   const externalResponse = await fetch(externalUrl.toString(), {
     method: "PUT",
