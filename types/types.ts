@@ -40,6 +40,8 @@ export interface UsersData {
   grupos?: (string | GruposData)[]
   modulos?: (string | ModulosData)[]
   submodulos?: (string | SubmodulosData)[]
+  modulos_personales?: ModulosPersonales
+  submodulos_personales?: SubmodulosPersonales
   permisos?: (string | PermisosData)[]
 
   apellidoNombre?: string
@@ -119,8 +121,14 @@ export interface UserAvatarProps {
 // ─────────────────────────────────────────────────────────────────────────
 
 export interface ModuloPersonal {
-  url: string
+  path: string
+  icono: string
+}
+
+export interface SubmoduloPersonal {
+  path: string
   icono: string
 }
 
 export type ModulosPersonales = Record<string, ModuloPersonal>
+export type SubmodulosPersonales = Record<string, SubmoduloPersonal>

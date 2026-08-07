@@ -18,6 +18,8 @@ import {
   SubmodulosData,
   ModulosData,
   GruposData,
+  ModulosPersonales,
+  SubmodulosPersonales,
 } from "@/types/types"
 
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
@@ -28,6 +30,75 @@ import {
   keycloakLogout,
 } from "@/lib/keycloak/keycloakService"
 
+const toRecord = (value: unknown): Record<string, unknown> | null => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null
+  }
+
+  return value as Record<string, unknown>
+}
+
+const normalizeAccesosPersonales = (
+  value: unknown
+): Record<string, { path: string; icono: string }> => {
+  const payload = toRecord(value)
+
+  if (!payload) {
+    return {}
+  }
+
+  return Object.entries(payload).reduce<
+    Record<string, { path: string; icono: string }>
+  >((acc, [nombre, acceso]) => {
+    const detalle = toRecord(acceso)
+
+    if (!detalle) {
+      return acc
+    }
+
+    const path = typeof detalle.path === "string" ? detalle.path : ""
+    const icono = typeof detalle.icono === "string" ? detalle.icono : ""
+
+    acc[nombre] = {
+      path,
+      icono,
+    }
+
+    return acc
+  }, {})
+}
+
+const getPayloadData = (payload: unknown) => {
+  const payloadRecord = toRecord(payload)
+
+  if (!payloadRecord) {
+    return payload
+  }
+
+  const dataField = payloadRecord.data
+  const dataRecord = toRecord(dataField)
+
+  return dataRecord ?? payload
+}
+
+const parseErrorMessage = (payload: unknown, status: number) => {
+  const payloadRecord = toRecord(payload)
+
+  const serverMessage =
+    typeof payloadRecord?.error === "string"
+      ? payloadRecord.error
+      : typeof payloadRecord?.detail === "string"
+        ? payloadRecord.detail
+        : typeof payloadRecord?.message === "string"
+          ? payloadRecord.message
+          : null
+
+  return (
+    serverMessage ??
+    `No se pudo obtener la informacion del usuario (HTTP ${status})`
+  )
+}
+
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -36,43 +107,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const initTriggered = useRef(false)
 
-  const getUserDetails = useCallback(async (): Promise<UsersData> => {
-    const response = await fetchWithKeycloak("/api/personal/detalles", {
+  const getJsonResponse = async (endpoint: string) => {
+    const response = await fetchWithKeycloak(endpoint, {
       method: "GET",
       headers: {
         Accept: "application/json",
       },
     })
 
-    const payload = (await response.json().catch(() => null)) as Record<
-      string,
-      unknown
-    > | null
+    const payload = await response.json().catch(() => null)
 
     if (!response.ok) {
-      const serverMessage =
-        typeof payload?.error === "string"
-          ? payload.error
-          : typeof payload?.detail === "string"
-            ? payload.detail
-            : typeof payload?.message === "string"
-              ? payload.message
-              : null
-
-      throw new Error(
-        serverMessage ??
-          `No se pudo obtener la información del usuario (HTTP ${response.status})`
-      )
+      throw new Error(parseErrorMessage(payload, response.status))
     }
 
-    const data =
-      payload && typeof payload.data === "object" && payload.data !== null
-        ? (payload.data as Record<string, unknown>)
-        : payload
+    return getPayloadData(payload)
+  }
+
+  const getUserDetails = useCallback(async (): Promise<UsersData> => {
+    const [detailsPayload, modulosPayload, submodulosPayload] =
+      await Promise.all([
+        getJsonResponse("/api/personal/detalles"),
+        getJsonResponse("/api/personal/modulos-personales"),
+        getJsonResponse("/api/personal/submodulos-personales"),
+      ])
+
+    const data = toRecord(detailsPayload)
 
     if (!data) {
-      throw new Error("La API devolvió una respuesta vacía")
+      throw new Error("La API devolvio una respuesta vacia")
     }
+
+    const modulosPersonales = normalizeAccesosPersonales(
+      modulosPayload
+    ) as ModulosPersonales
+
+    const submodulosPersonales = normalizeAccesosPersonales(
+      submodulosPayload
+    ) as SubmodulosPersonales
+
+    const submodulosPermiso = Object.keys(submodulosPersonales).map(
+      (nombre) => ({ nombre })
+    ) as SubmodulosData[]
+
+    const modulosLista = Object.entries(modulosPersonales).map(
+      ([nombre, modulo]) => ({
+        nombre,
+        path: modulo.path,
+        icono: modulo.icono,
+      })
+    ) as ModulosData[]
 
     const legajo =
       typeof data.legajo === "number"
@@ -96,14 +180,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       dni,
 
       grupos: Array.isArray(data.grupos) ? (data.grupos as GruposData[]) : [],
-
-      modulos: Array.isArray(data.modulos)
-        ? (data.modulos as ModulosData[])
-        : [],
-
-      submodulos: Array.isArray(data.submodulos)
-        ? (data.submodulos as SubmodulosData[])
-        : [],
+      modulos: modulosLista,
+      submodulos: submodulosPermiso,
+      modulos_personales: modulosPersonales,
+      submodulos_personales: submodulosPersonales,
 
       permisos: Array.isArray(data.permisos)
         ? (data.permisos as PermisosData[])
