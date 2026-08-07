@@ -21,7 +21,7 @@ import {
 } from "@/types/types"
 
 import { fetchWithKeycloak } from "@/lib/keycloak/keycloak-fetch"
-
+import { toast } from "sonner"
 import {
   initKeycloakSession,
   keycloakLogin,
@@ -134,8 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const userDetails = await getUserDetails()
       setUser(userDetails)
-    } catch (error) {
-      console.error(error)
+    } catch {
       setUser(null)
     } finally {
       setLoading(false)
@@ -155,8 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await keycloakLogin()
 
       return { detail: "Login successful" }
-    } catch (error) {
-      console.error("Keycloak login error", error)
+    } catch {
       setLoading(false)
 
       return {
@@ -168,8 +166,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async (): Promise<boolean> => {
     try {
       await keycloakLogout()
-    } catch (error) {
-      console.error("Keycloak logout error", error)
+    } catch {
+      toast.error("Keycloak logout error")
     }
 
     setUser(null)

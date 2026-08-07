@@ -100,8 +100,7 @@ const CambioPass = ({ open, onOpenChange }: CambioPassProps) => {
       toast.success("Contraseña actualizada correctamente")
       handleClose()
       await logout()
-    } catch (error) {
-      console.error("Error al cambiar contraseña:", error)
+    } catch {
       toast.error("Error de comunicación con el servidor")
     } finally {
       setLoading(false)
