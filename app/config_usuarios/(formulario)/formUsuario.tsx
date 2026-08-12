@@ -517,7 +517,7 @@ export function EditarContraseña({
     setIsSubmitting(true)
 
     try {
-      const res = await fetchWithKeycloak("/api/usuarios/change-password", {
+      const res = await fetchWithKeycloak("/api/usuarios/reset-password", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

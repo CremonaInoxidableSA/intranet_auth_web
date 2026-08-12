@@ -102,16 +102,41 @@ Boton.displayName = "Boton"
 //---------------------------------------SELECTORES---------------------------------------//
 type ObjectArray = Record<string, string | number>[]
 
-export function Selector({ placeholder }: { placeholder: string }) {
+export function Selector({
+  placeholder,
+  data,
+  keyId = "id",
+  keyLabel = "nombre",
+  value,
+  onValueChange,
+  extraClass,
+  disabled = false,
+  id,
+}: {
+  placeholder: string
+  data: ObjectArray
+  keyId?: string
+  keyLabel?: string
+  value?: string
+  onValueChange?: (value: string) => void
+  extraClass?: string
+  disabled?: boolean
+  id?: string
+}) {
   return (
-    <Select>
-      <SelectTrigger className="min-h-10 w-full rounded border-2 border-background6 bg-background3 px-3 py-2 text-sm focus:border-background6">
+    <Select value={value} onValueChange={onValueChange} disabled={disabled}>
+      <SelectTrigger
+        id={id}
+        className={`min-h-10 w-full rounded border-2 border-background6 bg-background3 px-3 py-2 text-sm focus:border-background6 ${extraClass ?? ""}`}
+      >
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent position="popper">
-        <SelectGroup>
-          <SelectItem value="opcion1">1192</SelectItem>
-        </SelectGroup>
+        {data.map((opcion) => (
+          <SelectItem key={String(opcion[keyId])} value={String(opcion[keyId])}>
+            {opcion[keyLabel]}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   )
@@ -357,12 +382,12 @@ export function TabsComp({
       onValueChange={onValueChange}
     >
       <TabsList
-        className="flex flex-wrap gap-2 overflow-visible px-1"
+        className="flex flex-wrap"
         variant="line"
       >
         {data.map((item) => (
           <TabsTrigger
-            className={`min-w-max rounded-full px-4 py-2 text-sm whitespace-nowrap xl:px-5 xl:py-3 ${extraClass ?? ""}`}
+            className={`${extraClass ?? ""}`}
             key={item.id}
             value={String(item.id)}
           >

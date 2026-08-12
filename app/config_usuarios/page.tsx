@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Selector } from "@/components/components"
 import { Boton, TabsComp } from "@/components/components"
 import FormGrupo from "./(formulario)/formGrupo"
 import FormPermiso from "./(formulario)/formPermiso"
@@ -202,9 +203,9 @@ export default function ConfiguracionUsuario() {
 
   return (
     <section className="flex flex-1 flex-col gap-5 p-5">
-      <div className="flex w-full flex-1 flex-col gap-5">
-        <div className="flex w-full flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex w-full flex-col gap-3 xl:w-auto">
+      <div className="flex w-full flex-1 flex-col gap-2 xl:gap-5">
+        <div className="flex w-full flex-col gap-2 xl:flex-row xl:items-center xl:justify-between xl:gap-5">
+          <div className="flex w-full flex-col gap-2 xl:w-auto xl:gap-5">
             {tablas.length > 0 ? (
               <>
                 <div className="hidden xl:block">
@@ -219,20 +220,14 @@ export default function ConfiguracionUsuario() {
                   <label htmlFor="mobile-tab-select" className="sr-only">
                     Seleccionar lista
                   </label>
-                  <select
+                  <Selector
+                    placeholder="Seleccionar lista"
+                    data={tablas}
                     id="mobile-tab-select"
                     value={String(selectedTabId)}
-                    onChange={(event) =>
-                      setSelectedTabId(Number(event.target.value))
-                    }
-                    className="w-full rounded border border-background6 bg-background3 px-3 py-2 text-sm text-foreground transition outline-none focus:border-background5"
-                  >
-                    {tablas.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.nombre}
-                      </option>
-                    ))}
-                  </select>
+                    onValueChange={(value) => setSelectedTabId(Number(value))}
+                    extraClass="w-full rounded border border-background6 bg-background3 px-3 py-2 text-sm text-foreground transition outline-none focus:border-background5"
+                  />
                 </div>
               </>
             ) : (
@@ -265,7 +260,7 @@ export default function ConfiguracionUsuario() {
           ) : null}
         </div>
 
-        <div className="flex w-full flex-col gap-5">
+        <div className="flex w-full flex-col gap-2 xl:gap-5">
           {selectedTabId === TAB_USUARIOS && (
             <div className="flex w-full flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex w-full flex-col gap-2 xl:max-w-xl xl:flex-row">

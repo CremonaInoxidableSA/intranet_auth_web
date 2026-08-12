@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server"
 
 import { getExternalApiUrl } from "@/app/api/_utils/authApi"
 
-const EXTERNAL_API_URL = getExternalApiUrl("/personal/change-password")
+const EXTERNAL_API_URL = getExternalApiUrl("/personal/reset-password")
 
 export async function PUT(request: NextRequest) {
   if (!EXTERNAL_API_URL) {

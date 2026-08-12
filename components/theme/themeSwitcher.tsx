@@ -1,6 +1,6 @@
 "use client"
 
-import { Moon, Palette, SunMedium } from "lucide-react"
+import { Moon, Rose, SunMedium } from "lucide-react"
 import { type LucideIcon } from "lucide-react"
 
 import { useThemeToggle } from "./themeToggleLogic"
@@ -8,7 +8,7 @@ import { useThemeToggle } from "./themeToggleLogic"
 const themeIcons: Record<string, LucideIcon> = {
   light: SunMedium,
   dark: Moon,
-  pinky: Palette,
+  pinky: Rose,
 }
 
 const FallbackIcon = SunMedium
