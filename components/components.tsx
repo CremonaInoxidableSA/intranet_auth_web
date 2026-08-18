@@ -4,7 +4,6 @@ import { ComponentProps } from "react"
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -381,10 +380,7 @@ export function TabsComp({
       defaultValue={String(data[0]?.id)}
       onValueChange={onValueChange}
     >
-      <TabsList
-        className="flex flex-wrap"
-        variant="line"
-      >
+      <TabsList className="flex flex-wrap" variant="line">
         {data.map((item) => (
           <TabsTrigger
             className={`${extraClass ?? ""}`}

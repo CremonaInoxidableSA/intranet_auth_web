@@ -104,7 +104,7 @@ function UserActionsCell({
         <DropdownMenuItem asChild>
           <button
             onClick={() => id && onDisableUser(id)}
-            className="flex w-full cursor-pointer flex-row items-center justify-start gap-2 text-redcremona"
+            className="flex w-full cursor-pointer flex-row items-center justify-start gap-2 text-orangecremona"
           >
             <CircleMinus className="h-4 w-4" />
             <span>Deshabilitar</span>
@@ -353,7 +353,7 @@ function ModuloActionsCell({
           {row.habilitado && puedeDeshabilitarModulo ? (
             <DropdownMenuItem
               onClick={() => nombre && onDisableModulo(nombre)}
-              className="flex-1 cursor-pointer flex-row items-center justify-start text-redcremona"
+              className="flex-1 cursor-pointer flex-row items-center justify-start text-orangecremona"
             >
               <CircleMinus className="h-4 w-4" />
               <p className="items-center justify-start">Deshabilitar</p>
@@ -455,7 +455,7 @@ function SubmoduloActionsCell({
           {row.habilitado && puedeDeshabilitarSubmodulo ? (
             <DropdownMenuItem
               onClick={() => nombre && onDisableSubmodulo(nombre)}
-              className="cursor-pointer flex-row items-center justify-start text-redcremona"
+              className="cursor-pointer flex-row items-center justify-start text-orangecremona"
             >
               <CircleMinus className="h-4 w-4" />
               <p className="items-center justify-start">Deshabilitar</p>
@@ -704,7 +704,7 @@ export const getPermisoColumns = (
       accessorKey: "descripcion",
       header: "Descripción",
       className: "hidden xl:table-cell",
-    }
+    },
   ]
 
   if (showActions) {

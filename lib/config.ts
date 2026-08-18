@@ -9,7 +9,6 @@ export const urlConfig = {
   homeUrl: "/",
   ticketsUrl:
     "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=bAUtuO0D10ig-npfJshKph4XKh2Ie7xDpjemR7EsG4NUMEFOTzlLNkVVQjU4S0pQRjlJNlRCVzU1MCQlQCN0PWcu",
-
 } as const
 
 /* 

@@ -88,7 +88,7 @@ export function EditarUsuario({
           onClick={() => {
             void handleStatusToggle()
           }}
-          className="flex cursor-pointer items-center border border-redcremona bg-redcremona/20 text-redcremona hover:bg-redcremona/70"
+          className="flex cursor-pointer items-center border border-orangecremona bg-orangecremona/20 text-orangecremona hover:bg-orangecremona/70"
         >
           <CircleMinus className="h-4 w-4" />
           Deshabilitar
