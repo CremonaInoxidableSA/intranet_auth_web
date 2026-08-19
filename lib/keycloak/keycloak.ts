@@ -6,7 +6,7 @@ const keycloak = new Keycloak({
     "https://login.intranetcreminox.com",
   realm: process.env.NEXT_PUBLIC_KEYCLOAK_REALM ?? "internos",
   clientId:
-    process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID ?? "internos-login-prueba",
+    process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID ?? "internos-login-prueba3",
 })
 
 let initPromise: Promise<boolean> | null = null

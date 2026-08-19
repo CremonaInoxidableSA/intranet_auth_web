@@ -108,17 +108,14 @@ export default function Page() {
         <div className="grid h-full w-full grid-cols-2 content-start justify-center gap-5 p-5 md:px-50 md:py-20 xl:flex xl:flex-1 xl:flex-wrap">
           {sistemas.map((sistema) => {
             const Icon = sistema.Icon
-            const esEnlaceExterno = /^https?:\/\//i.test(sistema.url)
 
             return (
               <a
                 key={sistema.nombre}
                 href={sistema.url}
-                target={esEnlaceExterno ? "_blank" : undefined}
-                rel={esEnlaceExterno ? "noopener noreferrer" : undefined}
                 className="flex aspect-square flex-col items-center justify-center gap-1 rounded bg-background2 p-5 text-center transition hover:bg-background4 xl:w-1/6"
               >
-                <Icon className="size-30" />
+                <Icon className="size-20 aspect-square" />
                 <div className="text-sm font-semibold xl:text-xl">
                   {sistema.titulo}
                 </div>
