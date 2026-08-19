@@ -1,7 +1,11 @@
 import keycloak, { initKeycloakOnce } from "@/lib/keycloak/keycloak"
 export async function initKeycloakSession(): Promise<boolean> {
   const authenticated = await initKeycloakOnce({
-    onLoad: "login-required",
+    onLoad: "check-sso",
+    silentCheckSsoRedirectUri:
+      typeof window !== "undefined"
+        ? `${window.location.origin}/silent-check-sso.html`
+        : undefined,
     checkLoginIframe: false,
     pkceMethod:
       typeof window !== "undefined" && window.isSecureContext
