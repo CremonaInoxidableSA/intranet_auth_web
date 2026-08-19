@@ -115,7 +115,7 @@ export default function Page() {
                 href={sistema.url}
                 className="flex aspect-square flex-col items-center justify-center gap-1 rounded bg-background2 p-5 text-center transition hover:bg-background4 xl:w-1/6"
               >
-                <Icon className="size-20 aspect-square" />
+                <Icon className="aspect-square size-20" />
                 <div className="text-sm font-semibold xl:text-xl">
                   {sistema.titulo}
                 </div>
