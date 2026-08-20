@@ -61,7 +61,7 @@ function UserActionsCell({
   const puedeEditarUsuario = autorizacion.usuarios.editar
   const puedeHabilitarUsuario = autorizacion.usuarios.habilitar
   const puedeDeshabilitarUsuario = autorizacion.usuarios.deshabilitar
-  const puedeCambiarPass = autorizacion.usuarios.cambiarContrasena
+  const puedeCambiarPass = autorizacion.usuarios.cambiarContrasenaUsuarios
   const puedeEliminarUsuario = autorizacion.usuarios.eliminar
   const puedeGestionarUsuario =
     puedeEditarUsuario ||

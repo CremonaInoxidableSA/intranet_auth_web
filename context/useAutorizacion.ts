@@ -61,7 +61,8 @@ export function useAutorizacion() {
         eliminar: tienePermiso(AUTORIZACIONES.ELIMINAR_USUARIOS),
         deshabilitar: tienePermiso(AUTORIZACIONES.DESHABILITAR_USUARIOS),
         habilitar: tienePermiso(AUTORIZACIONES.HABILITAR_USUARIOS),
-        cambiarContrasena: tienePermiso(AUTORIZACIONES.CAMBIAR_CONTRASENA),
+        cambiarContrasenaPersonal: tienePermiso(AUTORIZACIONES.CAMBIAR_CONTRASENA_PERSONAL),
+        cambiarContrasenaUsuarios: tienePermiso(AUTORIZACIONES.CAMBIAR_CONTRASENA_USUARIOS),
       },
       grupos: {
         consultar: tienePermiso(AUTORIZACIONES.CONSULTAR_GRUPOS),
