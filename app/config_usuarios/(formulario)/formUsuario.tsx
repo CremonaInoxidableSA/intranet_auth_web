@@ -67,7 +67,6 @@ export function EditarUsuario({
   const [isStatusUpdating, setIsStatusUpdating] = useState(false)
   const [gruposSeleccionados, setGruposSeleccionados] = useState<string[]>([])
   const [createPassword, setCreatePassword] = useState("")
-  const [initialLoadDone, setInitialLoadDone] = useState(false)
 
   const [form, setForm] = useState<UsersData>(getEmptyForm(userIdToEdit))
 
@@ -116,7 +115,7 @@ export function EditarUsuario({
   }
 
   useEffect(() => {
-    if (!isEditing || !userIdToEdit || initialLoadDone) {
+    if (!isEditing || !userIdToEdit) {
       return
     }
 
@@ -152,7 +151,6 @@ export function EditarUsuario({
           password: data.password ?? "",
         })
         setGruposSeleccionados(gruposNormalizados)
-        setInitialLoadDone(true)
       } catch {
         toast.error("Error de conexión con la API")
       } finally {
@@ -161,7 +159,7 @@ export function EditarUsuario({
     }
 
     fetchData()
-  }, [isEditing, userIdToEdit, initialLoadDone])
+  }, [isEditing, userIdToEdit])
 
   const handleChange = (
     key: keyof Omit<UsersData, "grupos">,
