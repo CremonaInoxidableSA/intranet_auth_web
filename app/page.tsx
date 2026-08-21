@@ -4,41 +4,15 @@ import { useMemo, type ComponentType } from "react"
 import { type LucideProps } from "lucide-react"
 import { useAuth } from "@/context/AuthProvider"
 import { getModulosPersonales } from "@/lib/modulosUtils"
-import { useAutorizacion } from "@/context/useAutorizacion"
-
-const toAbsoluteUrl = (path: string) => {
-  const rawPath = path.trim()
-
-  if (!rawPath) {
-    return "#"
-  }
-
-  if (rawPath.startsWith("/")) {
-    return rawPath.replace(/\/{2,}/g, "/")
-  }
-
-  if (/^https?:\/\//i.test(rawPath)) {
-    const [protocolo, ...resto] = rawPath.split("://")
-    const rutaNormalizada = resto.join("://").replace(/\/{2,}/g, "/")
-    return `${protocolo}://${rutaNormalizada}`
-  }
-
-  if (rawPath.includes(".")) {
-    return `https://${rawPath}`.replace(/([^:]\/)\/+?/g, "$1")
-  }
-
-  return `/${rawPath.replace(/^\/+/, "").replace(/\/{2,}/g, "/")}`
-}
 
 export default function Page() {
   const { user } = useAuth()
-  const { tieneAccesoSubmodulo } = useAutorizacion()
 
   const sistemas = useMemo(
     () =>
       getModulosPersonales(user?.modulos_personales ?? {}).map((modulo) => ({
         ...modulo,
-        url: toAbsoluteUrl(modulo.path),
+        url: modulo.path,
       })),
     [user?.modulos_personales]
   )
