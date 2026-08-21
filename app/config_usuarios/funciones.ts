@@ -911,7 +911,7 @@ export function useConfiguracionUsuario() {
       autorizacion.usuarios.editar ||
       autorizacion.usuarios.habilitar ||
       autorizacion.usuarios.deshabilitar ||
-      autorizacion.usuarios.cambiarContrasena ||
+      autorizacion.usuarios.cambiarContrasenaUsuarios ||
       autorizacion.usuarios.eliminar
 
     return getUsuarioColumns(
@@ -929,7 +929,7 @@ export function useConfiguracionUsuario() {
     autorizacion.usuarios.editar,
     autorizacion.usuarios.habilitar,
     autorizacion.usuarios.deshabilitar,
-    autorizacion.usuarios.cambiarContrasena,
+    autorizacion.usuarios.cambiarContrasenaUsuarios,
     autorizacion.usuarios.eliminar,
   ])
 
