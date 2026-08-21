@@ -1,33 +1,34 @@
 "use client"
-
+import { useMemo, useState } from "react"
+import { useAuth } from "@/context/AuthProvider"
+import { useAutorizacion } from "@/context/useAutorizacion"
 import { ThemeSwitcher } from "@/components/theme/themeSwitcher"
 import UserIcon from "@/components/userIcon/userIcon"
 
 import Link from "next/link"
-import { useState } from "react"
 import { urlConfig } from "@/lib/config"
 import { LogoCreminox as Logo } from "@/components/Logos"
 
 import { Menu, X } from "lucide-react"
+import { getUnifiedSubmodulos } from "@/lib/modulosUtils";
 
 export default function HeaderPrincipal() {
+  const { user } = useAuth()
+  const { tieneAccesoSubmodulo } = useAutorizacion()
+
+  const submodulosUnificados = useMemo(
+    () =>
+      getUnifiedSubmodulos(
+        user?.submodulos_personales ?? {},
+        tieneAccesoSubmodulo,
+        false,
+        true
+      ),
+    [tieneAccesoSubmodulo, user?.submodulos_personales]
+  )
+
+  const desktopLinks = submodulosUnificados.filter((sub) => sub.isSpecial)
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const HeaderIzquierda = [
-    {
-      label: "Home",
-      href: urlConfig.homeUrl,
-      className: "text-base opacity-70 transition-opacity hover:opacity-100",
-      onClick: () => setDrawerOpen(false),
-    },
-    {
-      label: "Tickets Soporte",
-      href: urlConfig.ticketsUrl,
-      className: "text-base opacity-70 transition-opacity hover:opacity-100",
-      target: "_blank",
-      rel: "noopener noreferrer",
-      onClick: () => setDrawerOpen(false),
-    },
-  ]
 
   return (
     <>
@@ -36,16 +37,20 @@ export default function HeaderPrincipal() {
         <div className="hidden h-full w-[30%] flex-row items-center justify-start gap-5 xl:flex">
           <UserIcon />
           <ThemeSwitcher />
-          {HeaderIzquierda.map((item, index) => (
+          {desktopLinks.map((item) => (
             <Link
-              key={index}
-              href={item.href}
-              className={item.className}
-              onClick={item.onClick}
-              target={item.target}
-              rel={item.rel}
+              key={item.nombre}
+              href={item.path}
+              className="text-base opacity-70 transition-opacity hover:opacity-100"
+              onClick={() => setDrawerOpen(false)}
+              target={item.nombre === "TICKETS_SOPORTE" ? "_blank" : undefined}
+              rel={
+                item.nombre === "TICKETS_SOPORTE"
+                  ? "noopener noreferrer"
+                  : undefined
+              }
             >
-              {item.label}
+              {item.titulo}
             </Link>
           ))}
         </div>
@@ -124,18 +129,26 @@ export default function HeaderPrincipal() {
 
         {/* Links de navegación */}
         <nav className="flex flex-col gap-5 px-4 py-5">
-          {HeaderIzquierda.map((item, index) => (
-            <Link
-              key={index}
-              href={item.href}
-              className="text-base opacity-70 transition-opacity hover:opacity-100"
-              onClick={() => setDrawerOpen(false)}
-              target={item.target}
-              rel={item.rel}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {submodulosUnificados.map((submodulo) => {
+            return (
+              <Link
+                key={submodulo.nombre}
+                href={submodulo.path}
+                className="text-base opacity-70 transition-opacity hover:opacity-100"
+                onClick={() => setDrawerOpen(false)}
+                target={
+                  submodulo.nombre === "TICKETS_SOPORTE" ? "_blank" : undefined
+                }
+                rel={
+                  submodulo.nombre === "TICKETS_SOPORTE"
+                    ? "noopener noreferrer"
+                    : undefined
+                }
+              >
+                {submodulo.titulo}
+              </Link>
+            )
+          })}
         </nav>
       </div>
     </>
