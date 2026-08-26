@@ -14,16 +14,26 @@ const resolveIcon = (iconName: string) => {
 
 const toTitle = (value: string) =>
   value
-    .replace(/^SUBMODULO_/, "")
+    .replace(/^MODULO_/, "")
     .replace(/_/g, " ")
     .toUpperCase()
+
+const normalizeUrl = (url: string): string => {
+  if (url.startsWith("/")) {
+    return url
+  }
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    return `https://${url}`
+  }
+  return url
+}
 
 export interface SubmoduloItem {
   nombre: string
   titulo: string
   path: string
   Icon?: ComponentType<LucideProps>
-  isSpecial?: boolean // Para Home y Tickets
+  isSpecial?: boolean
 }
 
 export const getUnifiedSubmodulos = (
@@ -39,7 +49,7 @@ export const getUnifiedSubmodulos = (
     items.push({
       nombre: "HOME",
       titulo: "HOME",
-      path: urlConfig.homeUrl,
+      path: normalizeUrl(urlConfig.homeUrl),
       Icon: includeIcons ? resolveIcon("Home") : undefined,
       isSpecial: true,
     })
@@ -51,7 +61,7 @@ export const getUnifiedSubmodulos = (
     .map(([nombre, submodulo]) => ({
       nombre,
       titulo: toTitle(nombre),
-      path: submodulo.path,
+      path: normalizeUrl(submodulo.path),
       Icon: includeIcons ? resolveIcon(submodulo.icono) : undefined,
       isSpecial: false,
     }))
@@ -59,12 +69,11 @@ export const getUnifiedSubmodulos = (
 
   items.push(...usuarioSubmodulos)
 
-  // Agregar Tickets Soporte al final si se especifica
   if (includeSpecial) {
     items.push({
       nombre: "TICKETS_SOPORTE",
       titulo: "TICKETS SOPORTE",
-      path: urlConfig.ticketsUrl,
+      path: normalizeUrl(urlConfig.ticketsUrl),
       Icon: includeIcons ? resolveIcon("Ticket") : undefined,
       isSpecial: true,
     })
@@ -72,7 +81,6 @@ export const getUnifiedSubmodulos = (
 
   return items
 }
-
 
 const MODULOS_OCULTOS_HOME = new Set(["MODULO_AUTH"])
 
@@ -93,7 +101,7 @@ export const getModulosPersonales = (
     .map(([nombre, modulo]) => ({
       nombre,
       titulo: toTitle(nombre),
-      path: modulo.path,
+      path: normalizeUrl(modulo.path),
       Icon: includeIcons ? resolveIcon(modulo.icono) : undefined,
       isSpecial: false,
     }))

@@ -21,7 +21,7 @@ export default function Page() {
     <div className="flex w-full flex-col items-center gap-5 p-5 text-center font-medium">
       <p className="max-w-3xl text-base leading-7">
         Hola, bienvenido a la Sistema General de Cremona Inoxidable S.A. Desde
-        acá podés acceder a los siguientes sistemas:
+        acá podés acceder a los siguientes submodulos:
       </p>
       {sistemas.length === 0 ? (
         <p className="text-sm text-muted-foreground">
